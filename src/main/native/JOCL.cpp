@@ -5071,6 +5071,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
     {
         nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
     }
+	nativeNum_objects = (cl_uint)num_objects;
     if (mem_objects != NULL)
     {
         nativeMem_objects = createMemList(env, mem_objects, num_objects);
@@ -5122,6 +5123,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
     {
         nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
     }
+	nativeNum_objects = (cl_uint)num_objects;
     if (mem_objects != NULL)
     {
         nativeMem_objects = createMemList(env, mem_objects, num_objects);
