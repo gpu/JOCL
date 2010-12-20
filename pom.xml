@@ -47,9 +47,9 @@
 
 
 	<scm>
-		<connection>scm:git:git://github.com/jocl/jocl.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:jocl/jocl.git</developerConnection>
-		<url>http://github.com/jocl/jocl</url>
+		<connection>scm:git:git://github.com/gpu/JOCL.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:gpu/JOCL.git</developerConnection>
+		<url>http://github.com/gpu/JOCL</url>
 	</scm>
 
 
