@@ -37,7 +37,7 @@
 #  include <CL/cl_gl.h>
 #endif // __APPLE__
 
-
+#include <string.h>
 #include "Logger.hpp"
 #include <string>
 #include <map>
@@ -957,25 +957,21 @@ JNIEXPORT void JNICALL Java_org_jocl_CL_setLogLevelNative
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
   (JNIEnv *env, jclass cls, jint size, jint alignment, jobject pointer)
 {
-    void *memory = NULL;
-/*
-	// TODO: Find out how to allocate aligned memory on MacOS
-#if !defined __APPLE__ && !defined __MACOSX
-#  if defined (_WIN32)
-    memory = _aligned_malloc(size, alignment);
-#  else
-    memory = memalign(alignment, size);
-#  endif
-#endif 
-
+    void *memory = malloc(size + (alignment-1) + sizeof(void*));
 	if (memory == NULL)
 	{
+        ThrowByName(env, "java/lang/OutOfMemoryError",
+            "Out of memory while allocating aligned memory");
 		return NULL;
 	}
-	env->SetLongField(pointer, NativePointerObject_nativePointer, (jlong)memory);
-	return env->NewDirectByteBuffer(memory, size);
-*/
-    return NULL;
+
+    char *alignedMemory = ((char*)memory) + sizeof(void*);
+    alignedMemory += alignment - ((intptr_t)alignedMemory & (alignment-1));
+    ((void**)alignedMemory)[-1] = memory;
+
+	memset(alignedMemory, 0, size);
+	env->SetLongField(pointer, NativePointerObject_nativePointer, (jlong)alignedMemory);
+	return env->NewDirectByteBuffer(alignedMemory, size);
 }
 
 /*
@@ -986,17 +982,8 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
 JNIEXPORT void JNICALL Java_org_jocl_CL_freeAlignedNative
   (JNIEnv *env, jclass cls, jobject pointer)
 {
-/*
-	void *memory = (void*)env->GetLongField(pointer, NativePointerObject_nativePointer);
-
-#if !defined __APPLE__ && !defined __MACOSX
-#  if defined (_WIN32)
-    _aligned_free(memory);
-#  else
-    free(memory);
-#  endif
-#endif
-*/
+	void *alignedMemory = (void*)env->GetLongField(pointer, NativePointerObject_nativePointer);
+    free( ((void**)alignedMemory)[-1] );
 }
 
 
@@ -1028,7 +1015,7 @@ cl_context_properties* createPropertiesArray(JNIEnv *env, jobject properties)
         return NULL;
     }
     int javaPropertiesSize = 0;
-    long *javaPropertyValues = (long*)propertiesPointerData->pointer;
+    jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
     int MAX_PROPERTIES = 100;
     for (int i=0; i<MAX_PROPERTIES; i++)
     {

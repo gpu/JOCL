@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_image_format
  */
-public class cl_image_format
+public final class cl_image_format
 {
     public int image_channel_order;
     public int image_channel_data_type;

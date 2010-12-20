@@ -22,10 +22,11 @@
 
 package org.jocl;
 
+
 /**
  * Size constants for scalar and vector data types.
  */
-public class Sizeof 
+public final class Sizeof 
 {
 	/**
 	 * Size of a cl_char, in bytes.
@@ -364,7 +365,6 @@ public class Sizeof
             return 4;
         }
     }
-	
 
 	/**
 	 * Private constructor to prevent instantiation

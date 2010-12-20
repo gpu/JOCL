@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_device_id.
  */
-public class cl_device_id extends NativePointerObject
+public final class cl_device_id extends NativePointerObject
 {
     /**
      * Creates a new, uninitialized cl_device_id 

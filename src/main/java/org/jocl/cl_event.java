@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_event.
  */
-public class cl_event extends NativePointerObject
+public final class cl_event extends NativePointerObject
 {
     /**
      * Creates a new, uninitialized cl_event 

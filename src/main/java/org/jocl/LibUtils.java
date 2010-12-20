@@ -30,7 +30,7 @@ package org.jocl;
  * <br />
  * Extended with http://lopica.sourceforge.net/os.html 
  */
-class LibUtils
+final class LibUtils
 {
     /**
      * Enumeration of common operating systems, independent of version or architecture. 

@@ -27,7 +27,7 @@ import java.nio.*;
 /**
  * A Java representation of a void pointer.
  */
-public class Pointer extends NativePointerObject
+public final class Pointer extends NativePointerObject
 {
     /**
      * Creates a new Pointer to the given values.
@@ -111,6 +111,8 @@ public class Pointer extends NativePointerObject
     {
         return new Pointer(DoubleBuffer.wrap(values));
     }
+    
+
 
     /**
      * Creates a new Pointer to the given Buffer. The buffer

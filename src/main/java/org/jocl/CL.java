@@ -33,7 +33,7 @@ import java.util.*;
  * References to tables and sections refer to version 1.0.43 of the
  * OpenCL specification.
  */
-public class CL
+public final class CL
 {
     /**
      * OpenCL version
@@ -1314,11 +1314,9 @@ public class CL
      * @param alignment The alignment, in bytes
      * @return A new direct ByteBuffer
      */
-    // This is still private and not officially available. When it is 
-    // enabled, remember to call CL#initMemoryManagementThread()
-    // during initialization!
-    private static synchronized ByteBuffer allocateAligned(int size, int alignment)
+    static synchronized ByteBuffer allocateAligned(int size, int alignment)
     {
+        assertInit();
         expungeStaleAlignedByteBuffers();
         Pointer pointer = new Pointer();
         ByteBuffer byteBuffer = allocateAlignedNative(size, alignment, pointer);
@@ -1384,7 +1382,12 @@ public class CL
             }
             Pointer pointer = alignedByteBufferMap.get(reference);
             freeAlignedNative(pointer);
+
+            //System.out.println("Expunge, before  "+alignedByteBufferMap);
+
             alignedByteBufferMap.remove(reference);
+            
+            //System.out.println("Expunged, after  "+alignedByteBufferMap);
         }
     }
 
@@ -1392,7 +1395,6 @@ public class CL
      * Creates and starts the daemon thread which will regularly call 
      * {@link CL#expungeStaleAlignedByteBuffers()}
      */
-    // Currently not used - only required when CL#allocateAligned is available
     @SuppressWarnings("unused")
     private static void initMemoryManagementThread()
     {
@@ -1429,7 +1431,7 @@ public class CL
         if (!initialized)
         {
             LibUtils.loadLibrary("JOCL");
-            //initMemoryManagementThread();
+            initMemoryManagementThread();
             
             initialized = true;
         }
@@ -3867,8 +3869,54 @@ public class CL
     public static synchronized int clBuildProgram(cl_program program, int num_devices, cl_device_id device_list[], String options, BuildProgramFunction pfn_notify, Object user_data)
     {
         assertInit();
-        return checkResult(clBuildProgramNative(program, num_devices, device_list, options, pfn_notify, user_data));
+        int result = clBuildProgramNative(program, num_devices, device_list, options, pfn_notify, user_data);
+        
+        if (result != CL.CL_SUCCESS)
+        {
+            if (exceptionsEnabled)
+            {
+                if (result != 1 && result != CL_BUILD_PROGRAM_FAILURE)
+                {
+                    throw new CLException(stringFor_errorCode(result));
+                }
+                else
+                {
+                    throw new CLException(stringFor_errorCode(result)+"\n"+obtainBuildLogs(program));
+                }
+            }
+        }
+        return result;
     }
+    
+    /**
+     * Obtain a single String containing the build logs of the given program for 
+     * all devices that are associated with the given program object.
+     * 
+     * @param program The program object
+     * @return The build logs, as a single string.
+     */
+    private static String obtainBuildLogs(cl_program program)
+    {
+        int numDevices[] = new int[1];
+        CL.clGetProgramInfo(program, CL.CL_PROGRAM_NUM_DEVICES, Sizeof.cl_uint, Pointer.to(numDevices), null);
+        cl_device_id devices[] = new cl_device_id[numDevices[0]];
+        CL.clGetProgramInfo(program, CL.CL_PROGRAM_DEVICES, numDevices[0] * Sizeof.cl_device_id, Pointer.to(devices), null);
+
+        StringBuffer sb = new StringBuffer();
+        for (int i=0; i<devices.length; i++)
+        {
+            sb.append("Build log for device "+i+":\n");
+            long logSize[] = new long[1];
+            CL.clGetProgramBuildInfo(program, devices[i], CL.CL_PROGRAM_BUILD_LOG, 0, null, logSize);
+            byte logData[] = new byte[(int)logSize[0]];
+            CL.clGetProgramBuildInfo(program, devices[i], CL.CL_PROGRAM_BUILD_LOG, logSize[0], Pointer.to(logData), null);
+            sb.append(new String(logData, 0, logData.length-1));
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+    
+    
 
     private static native int clBuildProgramNative(cl_program program, int num_devices, cl_device_id device_list[], String options, BuildProgramFunction pfn_notify, Object user_data);
 

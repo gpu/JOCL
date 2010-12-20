@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_context.
  */
-public class cl_context extends NativePointerObject
+public final class cl_context extends NativePointerObject
 {
     /**
      * Creates a new, uninitialized cl_context 

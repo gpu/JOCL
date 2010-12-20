@@ -27,7 +27,7 @@ import java.nio.LongBuffer;
 /**
  * Java port of cl_context_properties.
  */
-public class cl_context_properties extends NativePointerObject
+public final class cl_context_properties extends NativePointerObject
 {
     /**
      * Creates new, empty cl_context_properties 

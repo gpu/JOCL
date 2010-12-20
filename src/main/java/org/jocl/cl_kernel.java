@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_kernel.
  */
-public class cl_kernel extends NativePointerObject
+public final class cl_kernel extends NativePointerObject
 {
     /**
      * Creates a new, uninitialized cl_kernel 

@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_mem.
  */
-public class cl_mem extends NativePointerObject
+public final class cl_mem extends NativePointerObject
 {
     /**
      * Creates a new, uninitialized cl_mem 

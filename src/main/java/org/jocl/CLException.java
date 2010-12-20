@@ -46,4 +46,16 @@ public class CLException extends RuntimeException
     {
         super(message);
     }
+
+    /**
+     * Creates a new CLException with the given error message.
+     * 
+     * @param message The error message for this CLException
+     * @param cuase The throwable that caused this exception
+     */
+    CLException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
+    
 } 

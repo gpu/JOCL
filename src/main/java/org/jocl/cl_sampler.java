@@ -25,7 +25,7 @@ package org.jocl;
 /**
  * Java port of a cl_sampler.
  */
-public class cl_sampler extends NativePointerObject
+public final class cl_sampler extends NativePointerObject
 {
     /**
      * Creates a new, uninitialized cl_sampler 
