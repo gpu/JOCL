@@ -28,39 +28,20 @@
 package org.jocl;
 
 /**
- * An exception that may be thrown due to a OpenCL error. <br />
- * <br />
- * Exceptions may be enabled or disabled using
- * {@link org.jocl.CL#setExceptionsEnabled(boolean) CL#setExceptionsEnabled(boolean)}.
- * If exceptions are enabled, the JOCL methods will throw a 
- * CLException if the OpenCL function did not return CL_SUCCESS.<br />
+ * Emulation of a function pointer for functions that may be passed to the 
+ * {@link CL#clSetEventCallback(cl_event, int, EventCallbackFunction, Object)
+ * clSetEventCallback} method.
+ * 
+ * @see CL#clSetEventCallback(cl_event, int, EventFunction, Object)
  */
-public class CLException extends RuntimeException
+public interface EventCallbackFunction
 {
     /**
-     * The serial version UID
-     */
-    private static final long serialVersionUID = 1587809813906124159L;
-
-    /**
-     * Creates a new CLException with the given error message.
+     * The function that will be called
      * 
-     * @param message The error message for this CLException
+     * @param event The event
+     * @param command_exec_callback_type The callback type
+     * @param user_data The user data
      */
-    public CLException(String message)
-    {
-        super(message);
-    }
-
-    /**
-     * Creates a new CLException with the given error message.
-     * 
-     * @param message The error message for this CLException
-     * @param cause The throwable that caused this exception
-     */
-    public CLException(String message, Throwable cause)
-    {
-        super(message, cause);
-    }
-    
-} 
+    void function(cl_event event, int command_exec_callback_type, Object user_data);
+}
