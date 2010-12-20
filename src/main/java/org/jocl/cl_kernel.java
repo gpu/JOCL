@@ -1,13 +1,23 @@
 /*
- * JOCL - Java bindings for OpenCL - http://www.jocl.org
+ * JOCL - Java bindings for OpenCL
  * 
- * DISCLAIMER: THIS SOFTWARE IS PROVIDED WITHOUT WARRANTY OF ANY KIND
- * If you find any bugs or errors, report them at http://www.jocl.org 
+ * Copyright 2009 Marco Hutter - http://www.jocl.org/
  * 
- * LICENSE: THIS SOFTWARE IS FREE FOR NON-COMMERCIAL USE ONLY
- * For non-commercial applications, you may use this software without
- * any restrictions. If you wish to use it for commercial purposes, 
- * contact me at http://www.jocl.org 
+ * 
+ * This file is part of JOCL. 
+ * 
+ * JOCL is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * JOCL is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with JOCL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.jocl;

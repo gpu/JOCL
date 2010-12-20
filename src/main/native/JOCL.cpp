@@ -1,27 +1,43 @@
 /*
- * JOCL - Java bindings for OpenCL - http://www.jocl.org
- *
- * DISCLAIMER: THIS SOFTWARE IS PROVIDED WITHOUT WARRANTY OF ANY KIND
- * If you find any bugs or errors, report them at http://www.jocl.org
- *
- * LICENSE: THIS SOFTWARE IS FREE FOR NON-COMMERCIAL USE ONLY
- * For non-commercial applications, you may use this software without
- * any restrictions. If you wish to use it for commercial purposes,
- * contact me at http://www.jocl.org
+ * JOCL - Java bindings for OpenCL
+ * 
+ * Copyright 2009 Marco Hutter - http://www.jocl.org/
+ * 
+ * 
+ * This file is part of JOCL. 
+ * 
+ * JOCL is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * JOCL is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with JOCL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "JOCL.hpp"
 
-#include <CL/cl.h>
+#if defined(__APPLE__) || defined(__MACOSX)
+#  include <OpenCL/cl.h>
+#  include <OpenGL/opengl.h>
+#  include <OpenCL/cl_gl.h>
+#else
+#  include <CL/cl.h>
+#  ifdef _WIN32
+#    define WINDOWS_LEAN_AND_MEAN
+#    define NOMINMAX
+#    include <windows.h>
+#  endif // _WIN32
+#  include <GL/gl.h>
+#  include <CL/cl_gl.h>
+#endif // __APPLE__
 
-#ifdef _WIN32
-#  define WINDOWS_LEAN_AND_MEAN
-#  define NOMINMAX
-#  include <windows.h>
-#endif
 
-#include <GL/gl.h>
-#include <CL/cl_gl.h>
 #include "Logger.hpp"
 #include <string>
 #include <map>
@@ -102,8 +118,6 @@ static jclass cl_kernel_Class;
 static jmethodID cl_kernel_Constructor;
 
 
-
-
 /**
  * Typedef for function pointers that may be passed to the
  * clCreateContext* functions
@@ -171,9 +185,9 @@ enum MemoryType
  * that means it is only valid for the duration of the JNI call in
  * which it has been initialzed.
  */
-typedef struct
+typedef struct PointerData
 {
-    /** A local reference to the Java Pointer object */
+    /** A global reference to the Java Pointer object */
     jobject pointerObject;
 
     /** The starting address of the buffer or its array */
@@ -184,6 +198,9 @@ typedef struct
 
     /** The type of the memory the pointer points to */
     MemoryType memoryType;
+
+	/** The data of pointers the pointer points to */
+	PointerData **pointers;
 
 } PointerData;
 
@@ -420,7 +437,7 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
             "Out of memory while initializing pointer data");
         return NULL;
     }
-    pointerData->pointerObject = pointerObject;
+
     pointerData->startPointer = NULL;
     pointerData->pointer = NULL;
     pointerData->memoryType = NATIVE;
@@ -429,6 +446,17 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
     {
         return pointerData;
     }
+	else
+	{
+		pointerData->pointerObject = env->NewGlobalRef(pointerObject);
+		if (pointerData->pointerObject == NULL)
+		{
+			ThrowByName(env, "java/lang/OutOfMemoryError",
+				"Out of memory while creating reference to pointer object");
+			return NULL;
+		}
+	}
+
 
     pointerData->startPointer = env->GetLongField(pointerData->pointerObject, NativePointerObject_nativePointer);
 
@@ -454,6 +482,8 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
         // pointers, and store them as the data of the pointerData
         jsize size = env->GetArrayLength(pointersArray);
         void **localPointer = new void*[size];
+		PointerData **localPointerDatas = new PointerData*[size];
+
         if (localPointer == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -467,14 +497,25 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
             {
                 return NULL;
             }
-            if (p != NULL)
+			if (p != NULL)
             {
-                void *localStartPointer = (void*)env->GetLongField(p, NativePointerObject_nativePointer);
-                long localByteOffset = (long)env->GetLongField(p, NativePointerObject_byteOffset);
-                localPointer[i] = (void*)(((char*)localStartPointer)+localByteOffset);
+				// Initialize a PointerData for the pointer object that 
+				// the pointer points to
+				PointerData *localPointerData = initPointerData(env, p);
+				if (localPointerData == NULL)
+				{
+					return NULL;
+				}
+				localPointerDatas[i] = localPointerData;
+				localPointer[i] = (void*)localPointerData->startPointer;
             }
-        }
-
+			else
+			{
+				localPointerDatas[i] = NULL;
+				localPointer[i] = NULL;
+			}
+	    }
+		pointerData->pointers = localPointerDatas;
         pointerData->startPointer = (jlong)localPointer;
 
         // Set the actual pointer to be the startPointer + the byte offset
@@ -569,6 +610,48 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
 
 
 
+/**
+ * Tries to convert the given pointer into a Java NativePointerObject
+ * of the type appropriate for the given array, and stores the object
+ * in the given array at the given index. 
+ * Returns 'true' if this object could be created and stored, or
+ * 'false' if an exception occurred.
+ */
+bool createPointerObject(JNIEnv *env, jobjectArray pointersArray, int index, void *pointer)
+{
+    Logger::log(LOG_DEBUGTRACE, "Creating result pointer object at index %d\n", index);
+
+	jobject pointersArrayClassObject = env->CallObjectMethod(pointersArray, Object_getClass);
+	if (env->ExceptionCheck())
+	{
+		return false;
+	}
+	jobject pointersArrayComponentTypeClass = env->CallObjectMethod(pointersArrayClassObject, Class_getComponentType);
+	if (env->ExceptionCheck())
+	{
+		return false;
+	}
+	if (pointersArrayComponentTypeClass != NULL)
+	{
+		jobject resultObject = env->CallObjectMethod(pointersArrayComponentTypeClass, Class_newInstance);
+		if (env->ExceptionCheck())
+		{
+			return false;
+		}
+		env->SetObjectArrayElement(pointersArray, index, resultObject);
+		if (env->ExceptionCheck())
+		{
+			return false;
+		}
+	    env->SetLongField(resultObject, NativePointerObject_nativePointer, (jlong)pointer);
+	    env->SetLongField(resultObject, NativePointerObject_byteOffset, 0);
+		return true;
+	}
+	return false;
+}
+
+
+
 
 /**
  * Release the given PointerData and deletes the PointerData object.
@@ -609,6 +692,7 @@ bool releasePointerData(JNIEnv *env, PointerData* &pointerData, jint mode=0)
         }
 
         env->ReleasePrimitiveArrayCritical(array, (void*)pointerData->startPointer, mode);
+		env->DeleteGlobalRef(pointerData->pointerObject);
         delete pointerData;
         pointerData = NULL;
         return true;
@@ -625,6 +709,7 @@ bool releasePointerData(JNIEnv *env, PointerData* &pointerData, jint mode=0)
         }
 
         env->ReleasePrimitiveArrayCritical(array, (void*)pointerData->startPointer, JNI_ABORT);
+		env->DeleteGlobalRef(pointerData->pointerObject);
         delete pointerData;
         pointerData = NULL;
         return true;
@@ -641,7 +726,6 @@ bool releasePointerData(JNIEnv *env, PointerData* &pointerData, jint mode=0)
         void **localPointer = (void**)pointerData->startPointer;
         for (int i=0; i<size; i++)
         {
-
 			// Obtain the native pointer object at the current index,
 			// and set its nativePointer value to the value from the
 			// native array
@@ -650,7 +734,8 @@ bool releasePointerData(JNIEnv *env, PointerData* &pointerData, jint mode=0)
             {
                 return false;
             }
-            if (p != NULL)
+
+			if (p != NULL)
             {
                 env->SetLongField(p, NativePointerObject_nativePointer, (jlong)localPointer[i]);
                 env->SetLongField(p, NativePointerObject_byteOffset, 0);
@@ -662,37 +747,29 @@ bool releasePointerData(JNIEnv *env, PointerData* &pointerData, jint mode=0)
 				// to create the appropriate pointer object for the
 				// target array and store the non-NULL value in the
 				// created object
-
-		        Logger::log(LOG_DEBUGTRACE, "Creating result pointer object at index %d\n", i);
-
-				jobject pointersArrayClassObject = env->CallObjectMethod(pointersArray, Object_getClass);
-				if (env->ExceptionCheck())
+				if (!createPointerObject(env, pointersArray, i, localPointer[i]))
 				{
 					return false;
-				}
-				jobject pointersArrayComponentTypeClass = env->CallObjectMethod(pointersArrayClassObject, Class_getComponentType);
-				if (env->ExceptionCheck())
-				{
-					return false;
-				}
-				if (pointersArrayComponentTypeClass != NULL)
-				{
-					jobject resultObject = env->CallObjectMethod(pointersArrayComponentTypeClass, Class_newInstance);
-					if (env->ExceptionCheck())
-					{
-						return false;
-					}
-					env->SetObjectArrayElement(pointersArray, i, resultObject);
-					if (env->ExceptionCheck())
-					{
-						return false;
-					}
-	                env->SetLongField(resultObject, NativePointerObject_nativePointer, (jlong)localPointer[i]);
-		            env->SetLongField(resultObject, NativePointerObject_byteOffset, 0);
 				}
 			}
         }
+
+		// Release the PointerDatas for the pointer objects that 
+		// the pointer points to
+		PointerData **localPointerDatas = pointerData->pointers;
+		if (localPointerDatas != NULL)
+		{
+	        for (int i=0; i<size; i++)
+		    {
+				if (localPointerDatas[i] != NULL)
+				{
+					if (!releasePointerData(env, localPointerDatas[i])) return false;
+				}
+			}
+			delete[] localPointerDatas;
+		}
         delete[] (void*)pointerData->startPointer;
+		env->DeleteGlobalRef(pointerData->pointerObject);
         delete pointerData;
         pointerData = NULL;
         return true;
@@ -881,12 +958,15 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
   (JNIEnv *env, jclass cls, jint size, jint alignment, jobject pointer)
 {
     void *memory = NULL;
-
-#if defined (_WIN32)
+/*
+	// TODO: Find out how to allocate aligned memory on MacOS
+#if !defined __APPLE__ && !defined __MACOSX
+#  if defined (_WIN32)
     memory = _aligned_malloc(size, alignment);
-#else
+#  else
     memory = memalign(alignment, size);
-#endif
+#  endif
+#endif 
 
 	if (memory == NULL)
 	{
@@ -894,6 +974,8 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
 	}
 	env->SetLongField(pointer, NativePointerObject_nativePointer, (jlong)memory);
 	return env->NewDirectByteBuffer(memory, size);
+*/
+    return NULL;
 }
 
 /*
@@ -904,12 +986,17 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
 JNIEXPORT void JNICALL Java_org_jocl_CL_freeAlignedNative
   (JNIEnv *env, jclass cls, jobject pointer)
 {
+/*
 	void *memory = (void*)env->GetLongField(pointer, NativePointerObject_nativePointer);
-#if defined (_WIN32)
+
+#if !defined __APPLE__ && !defined __MACOSX
+#  if defined (_WIN32)
     _aligned_free(memory);
-#else
+#  else
     free(memory);
+#  endif
 #endif
+*/
 }
 
 
@@ -1223,10 +1310,9 @@ void finishCallback(JNIEnv *env)
 {
 	if (env->ExceptionCheck())
     {
-        jclass newExceptionClass;
         env->ExceptionDescribe();
         env->ExceptionClear();
-        newExceptionClass = env->FindClass("java/lang/RuntimeException");
+        jclass newExceptionClass = env->FindClass("java/lang/RuntimeException");
         if (newExceptionClass == NULL)
         {
             globalJvm->DetachCurrentThread();
@@ -1664,14 +1750,6 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
 }
 
 
-
-void TEST_CreateContextFunction(const char *errinfo, const void *private_info, size_t cb, void *user_dataInfo)
-{
-	Logger::log(LOG_ERROR, "TEST_CreateContextFunction called");
-}
-
-
-
 /*
  * Class:     org_jocl_CL
  * Method:    clCreateContextFromTypeNative
@@ -1709,7 +1787,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextFromTypeNative
     nativeUser_data = (void*)callbackInfo;
 
 
-    nativeContext = clCreateContextFromType(nativeProperties, nativeDevice_type, &TEST_CreateContextFunction /*nativePfn_notify*/, nativeUser_data, &nativeErrcode_ret);
+    nativeContext = clCreateContextFromType(nativeProperties, nativeDevice_type, nativePfn_notify, nativeUser_data, &nativeErrcode_ret);
     if (nativeContext != NULL)
     {
         contextCallbackMap[nativeContext] = callbackInfo;
@@ -3561,7 +3639,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
     int result = clEnqueueReadBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_read, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
 
     // Write back native variable values and clean up
-    if (!releasePointerData(env, ptrPointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
+    if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 
@@ -3629,7 +3707,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
     int result = clEnqueueWriteBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_write, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
 
     // Write back native variable values and clean up
-    if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
+    if (!releasePointerData(env, ptrPointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 
@@ -3778,7 +3856,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
     // Write back native variable values and clean up
     delete[] nativeOrigin;
     delete[] nativeRegion;
-    if (!releasePointerData(env, ptrPointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
+    if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 
@@ -3866,7 +3944,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
     // Write back native variable values and clean up
     delete[] nativeOrigin;
     delete[] nativeRegion;
-    if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
+    if (!releasePointerData(env, ptrPointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 

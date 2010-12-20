@@ -1,13 +1,23 @@
 /*
- * JOCL - Java bindings for OpenCL - http://www.jocl.org
+ * JOCL - Java bindings for OpenCL
  * 
- * DISCLAIMER: THIS SOFTWARE IS PROVIDED WITHOUT WARRANTY OF ANY KIND
- * If you find any bugs or errors, report them at http://www.jocl.org 
+ * Copyright 2009 Marco Hutter - http://www.jocl.org/
  * 
- * LICENSE: THIS SOFTWARE IS FREE FOR NON-COMMERCIAL USE ONLY
- * For non-commercial applications, you may use this software without
- * any restrictions. If you wish to use it for commercial purposes, 
- * contact me at http://www.jocl.org 
+ * 
+ * This file is part of JOCL. 
+ * 
+ * JOCL is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * JOCL is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with JOCL.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package org.jocl;
@@ -166,7 +176,6 @@ public class NativePointerObject
     }
     
     
-    
     /**
      * Returns a String representation of this object.
      * 
@@ -194,6 +203,45 @@ public class NativePointerObject
                 "nativePointer=0x"+Long.toHexString(getNativePointer())+","+
                 "byteOffset="+byteOffset+"]";
         }
+    }
+
+    
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((buffer == null) ? 0 : buffer.hashCode());
+        result = prime * result + (int) (byteOffset ^ (byteOffset >>> 32));
+        result = prime * result + (int) (nativePointer ^ (nativePointer >>> 32));
+        result = prime * result + Arrays.hashCode(pointers);
+        return result;
+    }
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final NativePointerObject other = (NativePointerObject) obj;
+        if (buffer == null)
+        {
+            if (other.buffer != null)
+                return false;
+        }
+        else if (!buffer.equals(other.buffer))
+            return false;
+        if (byteOffset != other.byteOffset)
+            return false;
+        if (nativePointer != other.nativePointer)
+            return false;
+        if (!Arrays.equals(pointers, other.pointers))
+            return false;
+        return true;
     }
 
     
