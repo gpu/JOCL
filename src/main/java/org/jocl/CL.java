@@ -25,6 +25,7 @@ package org.jocl;
 import java.lang.ref.*;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * JOCL - Java bindings for OpenCL.<br />
@@ -133,7 +134,7 @@ public final class CL
     public static final int CL_INVALID_MIP_LEVEL                        = -62;
     public static final int CL_INVALID_GLOBAL_WORK_SIZE                 = -63;
     public static final int CL_JOCL_INTERNAL_ERROR                      = -64;
-    
+    public static final int CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR      = -1000;    
     
     // cl_bool
     public static final boolean CL_TRUE = true;
@@ -398,8 +399,6 @@ public final class CL
     public static final int CL_PROFILING_COMMAND_START = 0x1282;
     public static final int CL_PROFILING_COMMAND_END = 0x1283;
 
-    public static final int CL_GL_CONTEXT                   = 0x1071;
-
     // cl_gl_object_type
     public static final int CL_GL_OBJECT_BUFFER             = 0x2000;
     public static final int CL_GL_OBJECT_TEXTURE2D          = 0x2001;
@@ -409,12 +408,22 @@ public final class CL
      // cl_gl_texture_info
     public static final int CL_GL_TEXTURE_TARGET            = 0x2004;
     public static final int CL_GL_MIPMAP_LEVEL              = 0x2005;
+
+    
+    // cl_khr_gl_sharing
+    public static final int CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR  =  0x2006;
+    public static final int CL_DEVICES_FOR_GL_CONTEXT_KHR         =  0x2007;
+    public static final int CL_GL_CONTEXT_KHR               = 0x2008;
+    public static final int CL_EGL_DISPLAY_KHR              = 0x2009;
+    public static final int CL_GLX_DISPLAY_KHR              = 0x200A;
+    public static final int CL_WGL_HDC_KHR                  = 0x200B;
+    public static final int CL_CGL_SHAREGROUP_KHR           = 0x200C;
     
     /**
      * Whether JOCL was already initialized and the native library
      * was already loaded
      */
-    private static boolean initialized = false;
+    private static volatile boolean initialized = false;
     
     /**
      * Indicates whether exceptions are enabled. When exceptions are
@@ -422,6 +431,13 @@ public final class CL
      * a result code that is not CL.CL_SUCCESS
      */
     private static boolean exceptionsEnabled = false;
+    
+    
+    /**
+     * The thread that frees aligned byte buffers which are no longer
+     * referenced
+     */
+    private static Thread memoryManagementThread = null;
     
     /**
      * A map from Weak references to aligned ByteBuffers that have been 
@@ -439,6 +455,39 @@ public final class CL
      */
     private static ReferenceQueue<ByteBuffer> alignedByteBufferReferenceQueue = 
         new ReferenceQueue<ByteBuffer>();    
+    
+    
+    /**
+     * An implementation of a ThreadFactory that creates low-priority
+     * daemon threads
+     */
+    private static ThreadFactory daemonThreadFactory = new ThreadFactory()
+    {
+        private long currentID = 0;
+        
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            Thread thread = new Thread(r, "AsyncOpThread-"+(currentID++));
+            thread.setPriority(Thread.MIN_PRIORITY);
+            thread.setDaemon(true);
+            return thread;
+        }
+        
+    };
+    
+    /**
+     * The executor which will manage the threads that prevent
+     * objects from being garbage collected during non-blocking
+     * write operations
+     */
+    private static Executor referenceReleaseExecutor = 
+        new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+        10, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), 
+        daemonThreadFactory);
+    
+    
+    
     
     
     /**
@@ -540,7 +589,8 @@ public final class CL
             case CL_INVALID_MIP_LEVEL: return "CL_INVALID_MIP_LEVEL";
             case CL_INVALID_GLOBAL_WORK_SIZE: return "CL_INVALID_GLOBAL_WORK_SIZE";
             case CL_JOCL_INTERNAL_ERROR: return "CL_JOCL_INTERNAL_ERROR";
-            
+            case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
+                        
             // Some OpenCL implementation return 1 for glBuildProgram
             // if the source code contains errors...
             case 1: return "Error in program source code";
@@ -692,6 +742,11 @@ public final class CL
         switch (n)
         {
             case CL_CONTEXT_PLATFORM: return "CL_CONTEXT_PLATFORM";
+            case CL_GL_CONTEXT_KHR: return "CL_GL_CONTEXT_KHR";
+            case CL_EGL_DISPLAY_KHR: return "CL_EGL_DISPLAY_KHR";
+            case CL_GLX_DISPLAY_KHR: return "CL_GLX_DISPLAY_KHR";
+            case CL_WGL_HDC_KHR: return "CL_WGL_HDC_KHR";
+            case CL_CGL_SHAREGROUP_KHR: return "CL_CGL_SHAREGROUP_KHR";
         }
         return "INVALID cl_context_properties: " + n;
     }
@@ -1095,6 +1150,28 @@ public final class CL
         }
         return "INVALID cl_gl_texture_info: " + n;
     }
+
+    /**
+     * Returns the String identifying the given cl_khr_gl_sharing
+     *
+     * @param n A cl_khr_gl_sharing value
+     * @return The String for the given cl_khr_gl_sharing
+     */
+    public static String stringFor_cl_khr_gl_sharing(int n)
+    {
+        switch (n)
+        {
+            case CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR: return "CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR";
+            case CL_DEVICES_FOR_GL_CONTEXT_KHR: return "CL_DEVICES_FOR_GL_CONTEXT_KHR";
+            case CL_GL_CONTEXT_KHR: return "CL_GL_CONTEXT_KHR";
+            case CL_EGL_DISPLAY_KHR: return "CL_EGL_DISPLAY_KHR";
+            case CL_GLX_DISPLAY_KHR: return "CL_GLX_DISPLAY_KHR";
+            case CL_WGL_HDC_KHR: return "CL_WGL_HDC_KHR";
+            case CL_CGL_SHAREGROUP_KHR: return "CL_CGL_SHAREGROUP_KHR";
+        }
+        return "INVALID cl_khr_gl_sharing: " + n;
+    }
+    
     
     
     //=== String methods for constants of bitfields ==========================
@@ -1317,7 +1394,12 @@ public final class CL
     static synchronized ByteBuffer allocateAligned(int size, int alignment)
     {
         assertInit();
-        expungeStaleAlignedByteBuffers();
+
+        if (memoryManagementThread == null)
+        {
+            initMemoryManagementThread();
+        }
+        
         Pointer pointer = new Pointer();
         ByteBuffer byteBuffer = allocateAlignedNative(size, alignment, pointer);
         if (byteBuffer == null)
@@ -1365,53 +1447,39 @@ public final class CL
     */
     private static native void freeAlignedNative(Pointer pointer);
 
-    /**
-     * Frees the memory of all aligned ByteBuffers that had been allocated
-     * with {@link CL#allocateAligned(int, int)} and which are already
-     * marked for garbage collection.
-     */
-    private static synchronized void expungeStaleAlignedByteBuffers() 
-    {
-        while (true)
-        {
-            Reference<? extends ByteBuffer> reference = 
-                alignedByteBufferReferenceQueue.poll();
-            if (reference == null)
-            {
-                break;
-            }
-            Pointer pointer = alignedByteBufferMap.get(reference);
-            freeAlignedNative(pointer);
-
-            //System.out.println("Expunge, before  "+alignedByteBufferMap);
-
-            alignedByteBufferMap.remove(reference);
-            
-            //System.out.println("Expunged, after  "+alignedByteBufferMap);
-        }
-    }
 
     /**
-     * Creates and starts the daemon thread which will regularly call 
-     * {@link CL#expungeStaleAlignedByteBuffers()}
+     * Creates and starts the daemon thread which will fetch the
+     * references to ByteBuffers that have been marked for 
+     * garbage collection from thealignedByteBufferReferenceQueue,
+     * and free the associated aligned native pointers.  
      */
-    @SuppressWarnings("unused")
     private static void initMemoryManagementThread()
     {
-        Thread memoryManagementThread = new Thread(new Runnable()
+        memoryManagementThread = new Thread(new Runnable()
         {
             public void run()
             {
                 while (true)
                 {
-                    expungeStaleAlignedByteBuffers();
                     try
                     {
-                        Thread.sleep(100);
+                        Reference<? extends ByteBuffer> reference = 
+                            alignedByteBufferReferenceQueue.remove();
+                        
+                        //System.out.println("Free, before  "+alignedByteBufferMap);
+
+                        Pointer pointer = alignedByteBufferMap.get(reference);
+                        freeAlignedNative(pointer);
+                        alignedByteBufferMap.remove(reference);
+                        
+                        //System.out.println("Freed, after  "+alignedByteBufferMap);
+                        
                     }
                     catch (InterruptedException e)
                     {
                         Thread.currentThread().interrupt();
+                        break;
                     }
                 }
             }
@@ -1420,7 +1488,194 @@ public final class CL
         memoryManagementThread.setDaemon(true);
         memoryManagementThread.start();
     }
+
     
+    
+    // NON_BLOCKING_READ
+    /*
+     * Implementation note concerning non-blocking reads:
+     * 
+     * Currently, there is no proper way of synchronizing calls like a
+     * non-blocking clEnqueueReadBuffer/Image. The pointer data that is
+     * passed in may be associated with the respective event. An own
+     * thread may be spawned that only waits for the event, and
+     * releases the pointer data as soon as possible. In most cases
+     * this will work - namely, if the pointer data contained a direct
+     * buffer or an array that could be pinned on native side. But if
+     * the array was copied, as indicated by the MemoryType ARRAY_COPY
+     * in the JNI part, then there is no way to assert that the pointer
+     * data is actually released and written back before any other thread
+     * accesses the data on Java side.
+     * 
+     * Possible solutions:
+     * - It might be possible to use a native kernel for writing back the
+     *   pointer data. This could, however, not be transparent for the user, 
+     *   and most devices probably don't support native kernels at all.
+     * - The native implementation may check whether the pointer data
+     *   has been copied. In this case, it might throw an Exception. 
+     *   But the behavior would then be completely unpredictable, since 
+     *   the decision about copying or pinning is left to the VM.
+     * - The native implementation may check whether the pointer data
+     *   for a non-blocking call had been copied. It might then enforce
+     *   a blocking call to the actual CL function. But this would give
+     *   the user to feedback and no information why the call behaves
+     *   like a blocking call, although it was enqueued as non-blocking.
+     * - One of the two behaviors described above may be controlled via
+     *   additional (optional) parameters for the clEnqueueRead* methods.
+     *      
+     * Current solution:
+     * - On Java side, it is made sure that for non-blocking read operations,
+     *   only Pointers that are pointing to direct buffers are used.
+     */
+    /*
+    private static void releasePendingPointerData(cl_event event)
+    {
+        System.out.println("Releasing pointer data for "+event);
+        releasePendingPointerDataNative(event);
+    }
+    private static native void releasePendingPointerDataNative(cl_event event);
+    
+    private static Executor pendingPointerDataExecutor = 
+        new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+        60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), 
+        daemonThreadFactory);
+    
+    private static void schedulePointerDataRelease(final cl_event event)
+    {
+        System.out.println("Scheduling release of pointer data for "+event);
+        Runnable runnable = new Runnable()
+        {
+            public void run()
+            {
+                clWaitForEvents(1, new cl_event[]{event});
+                releasePendingPointerData(event);
+            }
+        };
+        pendingPointerDataExecutor.execute(runnable);
+    }
+    //*/
+    
+    
+    
+    
+    
+    /* 
+     * Implementation note concerning non-blocking writes:
+     * 
+     * When a non-blocking write operation is scheduled, it might happen that 
+     * the source data (which is about to be written to an OpenCL memory 
+     * object) is garbage collected before the write operation is complete.
+     * This could cause highly undeterministic errors, possibly crashes or 
+     * function calls that silently work on bogus data.
+     * 
+     * To avoid this, for each non-blocking write operation, a Runnable is 
+     * started (in an own thread), which only contains a reference to the
+     * data and waits for the OpenCL event that is associated with the write 
+     * operation. Thus, it keeps the reference alive and prevents the data 
+     * from being garbage collected until the write operation is finished. 
+     */ 
+    
+    /**
+     * Keep a reference to the given object, to prevent it from
+     * being garbage collected, until waiting for the given
+     * event on a separate thread has completed.
+     *  
+     * @param event The event to wait for
+     * @param object The object to which a reference should be kept
+     */
+    private static void scheduleReferenceRelease(final cl_event event, final Object object)
+    {
+        Runnable runnable = new Runnable()
+        {
+            // Could the compiler detect that the object 
+            // is not really required and perform optimizations
+            // that cause the object to be GC'ed too early?
+
+            @SuppressWarnings("unused")
+            private Object localObject = object;
+            
+            public void run()
+            {
+                clWaitForEvents(1, new cl_event[]{event});
+            }
+        };
+        referenceReleaseExecutor.execute(runnable);
+        
+    }
+    
+    
+    /*
+     * Implementation note concerning non-blocking writes:
+     * 
+     * One drawback of the current implementation of non-blocking writes
+     * using the scheduleReferenceRelease method could be that in case of 
+     * a sequence of many small non-blocking write operations, a large 
+     * number of threads could be created, although the threads are 
+     * maintained using a cached thread pool. First tests have shown that 
+     * this is not the case, but if this turns out to be a problem later, 
+     * an alternative implementation might be used (see commented-out 
+     * method "scheduleReferenceReleasePhantom" below): In this approach, 
+     * phantom references to the data are kept. When the garbage 
+     * collector finds out that the data is only reachable via this 
+     * phantom reference, the reference is enqueued into a reference
+     * queue. A single thread is polling this queue, and if it finds 
+     * the reference to some data, then it waits for the associated
+     * event to be completed. If the event already has completed, then
+     * the reference may be discarded and the data may be freed. 
+     * Otherwise, the single thread will wait for the respective
+     * event, deferring the release of subsequently scheduled references
+     * until the pending write operation is finished. 
+     */
+//   private static Map<PhantomReference<Object>, cl_event> dataReferenceMap =
+//       new HashMap<PhantomReference<Object>, cl_event>();
+//   private static ReferenceQueue<Object> dataReferenceQueue = 
+//       new ReferenceQueue<Object>();    
+//   private static Thread referenceManagementThread = null;
+//   
+//   private static void scheduleReferenceReleasePhantom(final cl_event event, final Object object)
+//   {
+//       if (referenceManagementThread == null)
+//       {
+//           initReferenceManagementThread();
+//       }
+//       PhantomReference<Object> phantomReference = 
+//           new PhantomReference<Object>(object, dataReferenceQueue);
+//       dataReferenceMap.put(phantomReference, event);
+//   }
+//   
+//   private static void initReferenceManagementThread()
+//   {
+//       Thread referenceManagementThread = new Thread(new Runnable()
+//       {
+//           public void run()
+//           {
+//               while (true)
+//               {
+//                   try
+//                   {
+//                       Reference<? extends Object> reference = 
+//                           dataReferenceQueue.remove();
+//                       
+//                       cl_event event = dataReferenceMap.get(reference);
+//                       
+//                       clWaitForEvents(1, new cl_event[]{event});
+//                       //scheduleReferenceRelease(event, reference);
+//                       
+//                       dataReferenceMap.remove(reference);
+//                   }
+//                   catch (InterruptedException e)
+//                   {
+//                       Thread.currentThread().interrupt();
+//                       break;
+//                   }
+//               }
+//           }
+//       }, "referenceManagementThread");
+//       referenceManagementThread.setPriority(Thread.MIN_PRIORITY);
+//       referenceManagementThread.setDaemon(true);
+//       referenceManagementThread.start();
+//       
+//   }
     
      
     /**
@@ -1428,12 +1683,18 @@ public final class CL
      */
     private static void assertInit()
     {
+        // Double-checked locking using a volatile flag is working: 
+        // www.cs.umd.edu/~pugh/java/memoryModel/DoubleCheckedLocking.html
         if (!initialized)
         {
-            LibUtils.loadLibrary("JOCL");
-            initMemoryManagementThread();
-            
-            initialized = true;
+            synchronized (CL.class)
+            {
+                if (!initialized)
+                {
+                    LibUtils.loadLibrary("JOCL");
+                    initialized = true;
+                }
+            }
         }
     }
 
@@ -2184,13 +2445,21 @@ public final class CL
     public static synchronized cl_context clCreateContext(cl_context_properties properties, int num_devices, cl_device_id devices[], CreateContextFunction pfn_notify, Object user_data, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_context result = clCreateContextNative(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_context result = clCreateContextNative(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_context result = clCreateContextNative(properties, num_devices, devices, pfn_notify, user_data, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_context clCreateContextNative(cl_context_properties properties, int num_devices, cl_device_id devices[], CreateContextFunction pfn_notify, Object user_data, int errcode_ret[]);
@@ -2268,13 +2537,21 @@ public final class CL
     public static synchronized cl_context clCreateContextFromType(cl_context_properties properties, long device_type, CreateContextFunction pfn_notify, Object user_data, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_context result = clCreateContextFromTypeNative(properties, device_type, pfn_notify, user_data, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_context result = clCreateContextFromTypeNative(properties, device_type, pfn_notify, user_data, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_context result = clCreateContextFromTypeNative(properties, device_type, pfn_notify, user_data, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_context clCreateContextFromTypeNative(cl_context_properties properties, long device_type, CreateContextFunction pfn_notify, Object user_data, int errcode_ret[]);
@@ -2489,13 +2766,21 @@ public final class CL
     public static synchronized cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, long properties, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_command_queue result = clCreateCommandQueueNative(context, device, properties, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_command_queue result = clCreateCommandQueueNative(context, device, properties, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_command_queue result = clCreateCommandQueueNative(context, device, properties, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_command_queue clCreateCommandQueueNative(cl_context context, cl_device_id device, long properties, int errcode_ret[]);
@@ -2785,13 +3070,21 @@ public final class CL
     public static synchronized cl_mem clCreateBuffer(cl_context context, long flags, long size, Pointer host_ptr, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateBufferNative(context, flags, size, host_ptr, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateBufferNative(context, flags, size, host_ptr, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateBufferNative(context, flags, size, host_ptr, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateBufferNative(cl_context context, long flags, long size, Pointer host_ptr, int errcode_ret[]);
@@ -2895,13 +3188,21 @@ public final class CL
     public static synchronized cl_mem clCreateImage2D(cl_context context, long flags, cl_image_format image_format[], long image_width, long image_height, long image_row_pitch, Pointer host_ptr, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateImage2DNative(context, flags, image_format, image_width, image_height, image_row_pitch, host_ptr, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateImage2DNative(context, flags, image_format, image_width, image_height, image_row_pitch, host_ptr, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateImage2DNative(context, flags, image_format, image_width, image_height, image_row_pitch, host_ptr, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateImage2DNative(cl_context context, long flags, cl_image_format image_format[], long image_width, long image_height, long image_row_pitch, Pointer host_ptr, int errcode_ret[]);
@@ -3017,13 +3318,21 @@ public final class CL
     public static synchronized cl_mem clCreateImage3D(cl_context context, long flags, cl_image_format image_format[], long image_width, long image_height, long image_depth, long image_row_pitch, long image_slice_pitch, Pointer host_ptr, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateImage3DNative(context, flags, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, host_ptr, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateImage3DNative(context, flags, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, host_ptr, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateImage3DNative(context, flags, image_format, image_width, image_height, image_depth, image_row_pitch, image_slice_pitch, host_ptr, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateImage3DNative(cl_context context, long flags, cl_image_format image_format[], long image_width, long image_height, long image_depth, long image_row_pitch, long image_slice_pitch, Pointer host_ptr, int errcode_ret[]);
@@ -3380,13 +3689,21 @@ public final class CL
     public static synchronized cl_sampler clCreateSampler(cl_context context, boolean normalized_coords, int addressing_mode, int filter_mode, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_sampler result = clCreateSamplerNative(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_sampler result = clCreateSamplerNative(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_sampler result = clCreateSamplerNative(context, normalized_coords, addressing_mode, filter_mode, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_sampler clCreateSamplerNative(cl_context context, boolean normalized_coords, int addressing_mode, int filter_mode, int errcode_ret[]);
@@ -3573,13 +3890,21 @@ public final class CL
     public static synchronized cl_program clCreateProgramWithSource(cl_context context, int count, String strings[], long lengths[], int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_program result = clCreateProgramWithSourceNative(context, count, strings, lengths, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_program result = clCreateProgramWithSourceNative(context, count, strings, lengths, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_program result = clCreateProgramWithSourceNative(context, count, strings, lengths, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_program clCreateProgramWithSourceNative(cl_context context, int count, String strings[], long lengths[], int errcode_ret[]);
@@ -3703,13 +4028,21 @@ public final class CL
     public static synchronized cl_program clCreateProgramWithBinary(cl_context context, int num_devices, cl_device_id device_list[], long lengths[], byte binaries[][], int binary_status[], int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_program result = clCreateProgramWithBinaryNative(context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_program result = clCreateProgramWithBinaryNative(context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_program result = clCreateProgramWithBinaryNative(context, num_devices, device_list, lengths, binaries, binary_status, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_program clCreateProgramWithBinaryNative(cl_context context, int num_devices, cl_device_id device_list[], long lengths[], byte binaries[][], int binary_status[], int errcode_ret[]);
@@ -4203,13 +4536,21 @@ public final class CL
     public static synchronized cl_kernel clCreateKernel(cl_program program, String kernel_name, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_kernel result = clCreateKernelNative(program, kernel_name, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_kernel result = clCreateKernelNative(program, kernel_name, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_kernel result = clCreateKernelNative(program, kernel_name, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_kernel clCreateKernelNative(cl_program program, String kernel_name, int errcode_ret[]);
@@ -4993,36 +5334,16 @@ public final class CL
      * const cl_event *<i>event_wait_list</i>, cl_event *<i>event</i>)
      * </p>
      * 
-     * @see CL#clEnqueueWriteBuffer(cl_command_queue, cl_mem, boolean, long, long, Pointer, int, cl_event[], cl_event)
-     */
-    public static synchronized int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
-    {
-        assertInit();
-        return checkResult(clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
-    }
-
-    private static native int clEnqueueReadBufferNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
-
-    /**
-     * Enqueue commands to write from a buffer object from host memory.
-     * <p>
-     * cl_int <b>clEnqueueWriteBuffer</b> (cl_command_queue <i>command_queue</i>,
-     * cl_mem <i>buffer</i>, cl_bool <i>blocking_write</i>, size_t <i>offset</i>,
-     * size_t <i>cb</i>, const void *<i>ptr</i>, cl_uint
-     * <i>num_events_in_wait_list</i>, const cl_event *<i>event_wait_list</i>,
-     * cl_event *<i>event</i>)
-     * </p>
-     * <p>
-     * <i>command_queue</i> refers to the command-queue in which the read /
-     * write command will be queued. <i>command_queue</i> and <i>buffer</i>
+     * <i>command_queue</i> refers to the command-queue in which the read
+     * command will be queued. <i>command_queue</i> and <i>buffer</i>
      * must be created with the same OpenCL context.
      * </p>
      * <p>
      * <i>buffer</i> refers to a valid buffer object.
      * </p>
      * <p>
-     * <i>blocking_read</i> and <i>blocking_write</i> indicate if the read and
-     * write operations are <i>blocking</i> or <i>non</i><i>blocking</i>.
+     * <i>blocking_read</i> indicates if the read operation is <i>blocking</i> 
+     * or <i>non</i><i>blocking</i>.
      * </p>
      * <p>
      * If <i>blocking_read</i> is CL_TRUE i.e. the read command is blocking,
@@ -5040,31 +5361,14 @@ public final class CL
      * application.
      * </p>
      * <p>
-     * If <i>blocking_write </i>is CL_TRUE, the OpenCL implementation copies the
-     * data referred to by <i>ptr </i>and enqueues the write operation in the
-     * command-queue. The memory pointed to by <i>ptr</i> can be reused by the
-     * application after the <b>clEnqueueWriteBuffer</b> call returns.
+     * <i>offset</i> is the offset in bytes in the buffer object to read from.
      * </p>
      * <p>
-     * If <i>blocking_write</i> is CL_FALSE, the OpenCL implementation will use
-     * <i>ptr</i> to perform a nonblocking write. As the write is non-blocking
-     * the implementation can return immediately. The memory pointed to by
-     * <i>ptr</i> cannot be reused by the application after the call returns.
-     * The <i>event </i>argument returns an event object which can be used to
-     * query the execution status of the write command. When the write command
-     * has completed, the memory pointed to by <i>ptr</i> can then be reused by
-     * the application.
-     * </p>
-     * <p>
-     * <i>offset</i> is the offset in bytes in the buffer object to read from
-     * or write to.
-     * </p>
-     * <p>
-     * <i>cb</i> is the size in bytes of data being read or written.
+     * <i>cb</i> is the size in bytes of data being read.
      * </p>
      * <p>
      * <i>ptr</i> is the pointer to buffer in host memory where data is to be
-     * read into or to be written from.
+     * read into.
      * </p>
      * <p>
      * <i>event_wait_list</i> and <i>num_events_in_wait_list</i> specify
@@ -5080,13 +5384,13 @@ public final class CL
      * </p>
      * <p>
      * <i>event</i> returns an event object that identifies this particular
-     * read / write command and can be used to query or queue a wait for this
+     * read command and can be used to query or queue a wait for this
      * particular command to complete. <i>event</i> can be NULL in which case
      * it will not be possible for the application to query the status of this
      * command or queue a wait for this command to complete.
      * </p>
      * <p>
-     * <b>clEnqueueReadBuffer</b> and <b>clEnqueueWriteBuffer</b> return
+     * <b>clEnqueueReadBuffer</b> returns
      * CL_SUCCESS if the function is executed successfully. Otherwise, it
      * returns one of the following errors:
      * </p>
@@ -5104,7 +5408,7 @@ public final class CL
      * CL_INVALID_MEM_OBJECT if <i>buffer</i> is not a valid buffer object.
      * </p>
      * <p>
-     * CL_INVALID_VALUE if the region being read or written specified by (<i>offset</i>,
+     * CL_INVALID_VALUE if the region being read specified by (<i>offset</i>,
      * <i>cb</i>) is out of bounds or if <i>ptr</i> is a NULL value.
      * </p>
      * <p>
@@ -5138,6 +5442,157 @@ public final class CL
      * <li > The buffer object is not used by any command-queue until the read
      * command has finished execution. </li>
      * </ul>
+     * <br />
+     * <u>Note:</u> For non-blocking read operations, the given Pointer must be a
+     * Pointer to a direct buffer. Otherwise, an IllegalArgumentException will
+     * be thrown.
+     * 
+     * @throws IllegalArgumentException If <code>blocking_read==false</code> and
+     * the given Pointer is <i>not</i> a Pointer to a direct buffer.
+     */
+    public static synchronized int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        assertInit();
+
+        if (!blocking_read && !ptr.isDirectBufferPointer())
+        {
+            throw new IllegalArgumentException(
+                "Non-blocking read operations may only be " +
+                "performed using pointers to direct buffers");
+        }
+        
+        return checkResult(clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
+        
+        // NON_BLOCKING_READ
+        /*
+        //blocking_read = true;
+        
+        if (blocking_read)
+        {
+            int result = clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
+            return checkResult(result);
+        }
+        else
+        {
+            if (event == null)
+            {
+                event = new cl_event(); 
+            }
+            int result = clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
+            clEnqueueMarker(command_queue, event);
+            schedulePointerDataRelease(event);
+            return checkResult(result);
+        }
+        */
+    }
+
+    private static native int clEnqueueReadBufferNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    /**
+     * Enqueue commands to write from a buffer object from host memory.
+     * <p>
+     * cl_int <b>clEnqueueWriteBuffer</b> (cl_command_queue <i>command_queue</i>,
+     * cl_mem <i>buffer</i>, cl_bool <i>blocking_write</i>, size_t <i>offset</i>,
+     * size_t <i>cb</i>, const void *<i>ptr</i>, cl_uint
+     * <i>num_events_in_wait_list</i>, const cl_event *<i>event_wait_list</i>,
+     * cl_event *<i>event</i>)
+     * </p>
+     * <p>
+     * <i>command_queue</i> refers to the command-queue in which the
+     * write command will be queued. <i>command_queue</i> and <i>buffer</i>
+     * must be created with the same OpenCL context.
+     * </p>
+     * <p>
+     * <i>buffer</i> refers to a valid buffer object.
+     * </p>
+     * <p>
+     * <i>blocking_write</i> indicates if the write operation is <i>blocking</i> 
+     * or <i>non</i><i>blocking</i>.
+     * </p>
+     * <p>
+     * If <i>blocking_write </i>is CL_TRUE, the OpenCL implementation copies the
+     * data referred to by <i>ptr </i>and enqueues the write operation in the
+     * command-queue. The memory pointed to by <i>ptr</i> can be reused by the
+     * application after the <b>clEnqueueWriteBuffer</b> call returns.
+     * </p>
+     * <p>
+     * If <i>blocking_write</i> is CL_FALSE, the OpenCL implementation will use
+     * <i>ptr</i> to perform a nonblocking write. As the write is non-blocking
+     * the implementation can return immediately. The memory pointed to by
+     * <i>ptr</i> cannot be reused by the application after the call returns.
+     * The <i>event </i>argument returns an event object which can be used to
+     * query the execution status of the write command. When the write command
+     * has completed, the memory pointed to by <i>ptr</i> can then be reused by
+     * the application.
+     * </p>
+     * <p>
+     * <i>offset</i> is the offset in bytes in the buffer object to write to.
+     * </p>
+     * <p>
+     * <i>cb</i> is the size in bytes of data being written.
+     * </p>
+     * <p>
+     * <i>ptr</i> is the pointer to buffer in host memory where data is to be
+     * written to.
+     * </p>
+     * <p>
+     * <i>event_wait_list</i> and <i>num_events_in_wait_list</i> specify
+     * events that need to complete before this particular command can be
+     * executed. If <i>event_wait_list</i> is NULL, then this particular
+     * command does not wait on any event to complete. If <i>event_wait_list</i>
+     * is NULL, <i>num_events_in_wait_list </i>must be 0. If <i>event_wait_list</i>
+     * is not NULL, the list of events pointed to by <i>event_wait_list</i>
+     * must be valid and <i>num_events_in_wait_list</i> must be greater than 0.
+     * The events specified in <i>event_wait_list</i> act as synchronization
+     * points. The context associated with events in <i>event_wait_list</i> and
+     * <i>command_queue</i> must be the same.
+     * </p>
+     * <p>
+     * <i>event</i> returns an event object that identifies this particular
+     * write command and can be used to query or queue a wait for this
+     * particular command to complete. <i>event</i> can be NULL in which case
+     * it will not be possible for the application to query the status of this
+     * command or queue a wait for this command to complete.
+     * </p>
+     * <p>
+     * <b>clEnqueueWriteBuffer</b> returns
+     * CL_SUCCESS if the function is executed successfully. Otherwise, it
+     * returns one of the following errors:
+     * </p>
+     * <p>
+     * CL_INVALID_COMMAND_QUEUE if <i>command_queue</i> is not a valid
+     * command-queue.
+     * </p>
+     * <p>
+     * CL_INVALID_CONTEXT if the context associated with <i>command_queue</i>
+     * and <i>buffer</i> are not the same or if the context associated with
+     * <i>command_queue</i> and events in <i>event_wait_list</i> are not the
+     * same.
+     * </p>
+     * <p>
+     * CL_INVALID_MEM_OBJECT if <i>buffer</i> is not a valid buffer object.
+     * </p>
+     * <p>
+     * CL_INVALID_VALUE if the region being written specified by (<i>offset</i>,
+     * <i>cb</i>) is out of bounds or if <i>ptr</i> is a NULL value.
+     * </p>
+     * <p>
+     * CL_INVALID_EVENT_WAIT_LIST if <i>event_wait_list</i> is NULL and
+     * <i>num_events_in_wait_list</i> &gt; 0, or <i>event_wait_list</i> is not
+     * NULL and <i>num_events_in_wait_list</i> is 0, or if event objects in
+     * <i>event_wait_list</i> are not valid events.
+     * </p>
+     * <p>
+     * CL_MEM_OBJECT_ALLOCATION_FAILURE if there is a failure to allocate memory
+     * for data store associated with <i>buffer</i>.
+     * </p>
+     * <p>
+     * CL_OUT_OF_HOST_MEMORY if there is a failure to allocate resources
+     * required by the OpenCL implementation on the host.
+     * </p>
+     * <p>
+     * NOTE:
+     * </p>
      * <p>
      * Calling<b> clEnqueueWriteBuffer</b> to update the latest bits in a
      * region of the buffer object with the <i>ptr</i> argument value set to
@@ -5158,7 +5613,20 @@ public final class CL
     public static synchronized int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
         assertInit();
-        return checkResult(clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
+        if (blocking_write)
+        {
+            return checkResult(clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
+        }
+        else
+        {
+            if (event == null)
+            {
+                event = new cl_event();
+            }
+            int result = clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
+            scheduleReferenceRelease(event, ptr);
+            return checkResult(result);
+        }
     }
 
     private static native int clEnqueueWriteBufferNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
@@ -5278,38 +5746,16 @@ public final class CL
      * <i>num_events_in_wait_list</i>, const cl_event *<i>event_wait_list</i>,
      * cl_event <i>*event</i>)
      * </p>
-     * 
-     * @see CL#clEnqueueWriteImage(cl_command_queue, cl_mem, boolean, long[], long[], long, long, Pointer, int, cl_event[], cl_event)
-     */
-    public static synchronized int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
-    {
-        assertInit();
-        return checkResult(clEnqueueReadImageNative(command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
-    }
-
-    private static native int clEnqueueReadImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
-
-    /**
-     * Enqueue commands to write to a 2D or 3D image object from host memory.
-     * <p>
-     * cl_int <b>clEnqueueWriteImage</b> (cl_command_queue <i>command_queue</i>,
-     * cl_mem <i>image</i>, cl_bool <i>blocking_write</i>, const size_t
-     * <i>origin</i>[3], const size_t <i>region</i>[3], size_t
-     * <i>input_row_pitch</i>, size_t <i>input_slice_pitch</i>, const void *<i>
-     * ptr</i>, cl_uint <i>num_events_in_wait_list</i>, const cl_event *<i>event_wait_list</i>,
-     * cl_event *<i>event</i>)
-     * </p>
-     * <p>
-     * <i>command_queue</i> refers to the command-queue in which the read /
-     * write command will be queued. <i>command_queue</i> and <i>image</i>
+     * <i>command_queue</i> refers to the command-queue in which the read
+     * command will be queued. <i>command_queue</i> and <i>image</i>
      * must be created with the same OpenCL context.
      * </p>
      * <p>
      * <i>image</i> refers to a valid 2D or 3D image object.
      * </p>
      * <p>
-     * <i>blocking_read</i> and <i>blocking_write</i> indicate if the read and
-     * write operations are <i>blocking</i> or <i>non</i><i>blocking</i>.
+     * <i>blocking_read</i> indicates if the read operation is <i>blocking</i> 
+     * or <i>non</i><i>blocking</i>.
      * </p>
      * <p>
      * If <i>blocking_read</i> is CL_TRUE i.e. the read command is blocking,
@@ -5327,37 +5773,20 @@ public final class CL
      * application.
      * </p>
      * <p>
-     * If <i>blocking_write </i>is CL_TRUE, the OpenCL implementation copies the
-     * data referred to by <i>ptr </i>and enqueues the write command in the
-     * command-queue. The memory pointed to by <i>ptr</i> can be reused by the
-     * application after the <b>clEnqueueWriteImage</b> call returns.
-     * </p>
-     * <p>
-     * If <i>blocking_write</i> is CL_FALSE, the OpenCL implementation will use
-     * <i>ptr</i> to perform a nonblocking write. As the write is non-blocking
-     * the implementation can return immediately. The memory pointed to by
-     * <i>ptr</i> cannot be reused by the application after the call returns.
-     * The <i>event </i>argument returns an event object which can be used to
-     * query the execution status of the write command. When the write command
-     * has completed, the memory pointed to by <i>ptr</i> can then be reused by
-     * the application.
-     * </p>
-     * <p>
      * <i>origin</i> defines the (<i>x</i>, <i>y</i>, <i>z</i>) offset in
-     * pixels in the image from where to read or write. If <i>image</i> is a 2D
+     * pixels in the image from where to read. If <i>image</i> is a 2D
      * image object, the <i>z</i> value given by <i>origin</i>[2] must be 0.
      * </p>
      * <p>
      * <i>region </i>defines the (<i>width</i>, <i>height, depth</i>) in
-     * pixels of the 2D or 3D rectangle being read or written. If <i>image</i>
+     * pixels of the 2D or 3D rectangle being read. If <i>image</i>
      * is a 2D image object, the <i>depth</i> value given by <i>region</i>[2]
      * must be 1.
      * </p>
      * <p>
-     * <i>row_pitch</i> in <b>clEnqueueReadImage</b> and <i>input_row_pitch</i>
-     * in <b>clEnqueueWriteImage</b> is the length of each row in bytes. This
-     * value must be greater than or equal to the element size in bytes
-     * * <i>width</i>. If <i>row_pitch</i> (or <i>input_row_pitch</i>) is
+     * <i>row_pitch</i> in <b>clEnqueueReadImage</b> is the length of each row 
+     * in bytes. This value must be greater than or equal to the element size in 
+     * bytes <i>width</i>. If <i>row_pitch</i> (or <i>input_row_pitch</i>) is
      * set to 0, the appropriate row pitch is calculated based on the size of
      * each element in bytes multiplied by <i>width</i>.
      * </p>
@@ -5380,6 +5809,87 @@ public final class CL
      * <li > The image object is not used by any command-queue until the read
      * command has finished execution. </li>
      * </ul>
+     * <br />
+     * <u>Note:</u> For non-blocking read operations, the given Pointer must be a
+     * Pointer to a direct buffer. Otherwise, an IllegalArgumentException will
+     * be thrown.
+     * 
+     * @throws IllegalArgumentException If <code>blocking_read==false</code> and
+     * the given Pointer is <i>not</i> a Pointer to a direct buffer.
+     */
+    public static synchronized int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        assertInit();
+
+        if (!blocking_read && !ptr.isDirectBufferPointer())
+        {
+            throw new IllegalArgumentException(
+                "Non-blocking read operations may only be " +
+                "performed using pointers to direct buffers");
+        }
+        // NON_BLOCKING_READ (see clEnqueueReadBuffer)
+        
+        return checkResult(clEnqueueReadImageNative(command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+    }
+
+    private static native int clEnqueueReadImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    /**
+     * Enqueue commands to write to a 2D or 3D image object from host memory.
+     * <p>
+     * cl_int <b>clEnqueueWriteImage</b> (cl_command_queue <i>command_queue</i>,
+     * cl_mem <i>image</i>, cl_bool <i>blocking_write</i>, const size_t
+     * <i>origin</i>[3], const size_t <i>region</i>[3], size_t
+     * <i>input_row_pitch</i>, size_t <i>input_slice_pitch</i>, const void *<i>
+     * ptr</i>, cl_uint <i>num_events_in_wait_list</i>, const cl_event *<i>event_wait_list</i>,
+     * cl_event *<i>event</i>)
+     * </p>
+     * <p>
+     * <i>command_queue</i> refers to the command-queue in which the write 
+     * command will be queued. <i>command_queue</i> and <i>image</i>
+     * must be created with the same OpenCL context.
+     * </p>
+     * <p>
+     * <i>image</i> refers to a valid 2D or 3D image object.
+     * </p>
+     * <p>
+     * <i>blocking_write</i> indicates if the write operation is <i>blocking</i> 
+     * or <i>non</i><i>blocking</i>.
+     * </p>
+     * <p>
+     * If <i>blocking_write </i>is CL_TRUE, the OpenCL implementation copies the
+     * data referred to by <i>ptr </i>and enqueues the write command in the
+     * command-queue. The memory pointed to by <i>ptr</i> can be reused by the
+     * application after the <b>clEnqueueWriteImage</b> call returns.
+     * </p>
+     * <p>
+     * If <i>blocking_write</i> is CL_FALSE, the OpenCL implementation will use
+     * <i>ptr</i> to perform a nonblocking write. As the write is non-blocking
+     * the implementation can return immediately. The memory pointed to by
+     * <i>ptr</i> cannot be reused by the application after the call returns.
+     * The <i>event </i>argument returns an event object which can be used to
+     * query the execution status of the write command. When the write command
+     * has completed, the memory pointed to by <i>ptr</i> can then be reused by
+     * the application.
+     * </p>
+     * <p>
+     * <i>origin</i> defines the (<i>x</i>, <i>y</i>, <i>z</i>) offset in
+     * pixels in the image from where to write. If <i>image</i> is a 2D
+     * image object, the <i>z</i> value given by <i>origin</i>[2] must be 0.
+     * </p>
+     * <p>
+     * <i>region </i>defines the (<i>width</i>, <i>height, depth</i>) in
+     * pixels of the 2D or 3D rectangle being written. If <i>image</i>
+     * is a 2D image object, the <i>depth</i> value given by <i>region</i>[2]
+     * must be 1.
+     * </p>
+     * <p>
+     * <i>input_row_pitch</i> in <b>clEnqueueWriteImage</b> is the length of each 
+     * row in bytes. This value must be greater than or equal to the element size in 
+     * bytes <i>width</i>. If <i>row_pitch</i> (or <i>input_row_pitch</i>) is
+     * set to 0, the appropriate row pitch is calculated based on the size of
+     * each element in bytes multiplied by <i>width</i>.
+     * </p>
      * <p>
      * Calling<b> clEnqueueWriteImage</b> to update the latest bits in a
      * region of the image object with the <i>ptr</i> argument value set to
@@ -5399,12 +5909,24 @@ public final class CL
      * <li > The image object is not used by any command-queue until the write
      * command has finished execution. </li>
      * </ul>
-     * 
      */
     public static synchronized int clEnqueueWriteImage(cl_command_queue command_queue, cl_mem image, boolean blocking_write, long origin[], long region[], long input_row_pitch, long input_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
         assertInit();
-        return checkResult(clEnqueueWriteImageNative(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+        if (blocking_write)
+        {
+            return checkResult(clEnqueueWriteImageNative(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+        }
+        else
+        {
+            if (event == null)
+            {
+                event = new cl_event();
+            }
+            int result = clEnqueueWriteImageNative(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
+            scheduleReferenceRelease(event, ptr);
+            return checkResult(result);
+        }
     }
 
     private static native int clEnqueueWriteImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_write, long origin[], long region[], long input_row_pitch, long input_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
@@ -5908,13 +6430,21 @@ public final class CL
     public static synchronized ByteBuffer clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_map, long map_flags, long offset, long cb, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            ByteBuffer result = clEnqueueMapBufferNative(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        ByteBuffer result = clEnqueueMapBufferNative(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            ByteBuffer result = clEnqueueMapBufferNative(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+            return result;
+        }
     }
 
     private static native ByteBuffer clEnqueueMapBufferNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_map, long map_flags, long offset, long cb, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[]);
@@ -6097,13 +6627,21 @@ public final class CL
     public static synchronized ByteBuffer clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, boolean blocking_map, long map_flags, long origin[], long region[], long image_row_pitch[], long image_slice_pitch[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            ByteBuffer result = clEnqueueMapImageNative(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        ByteBuffer result = clEnqueueMapImageNative(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            ByteBuffer result = clEnqueueMapImageNative(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
+            return result;
+        }
     }
 
     private static native ByteBuffer clEnqueueMapImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_map, long map_flags, long origin[], long region[], long image_row_pitch[], long image_slice_pitch[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[]);
@@ -6201,7 +6739,13 @@ public final class CL
     public static synchronized int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, ByteBuffer mapped_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
         assertInit();
-        return checkResult(clEnqueueUnmapMemObjectNative(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event));
+        if (event == null)
+        {
+            event = new cl_event();
+        }
+        int result = clEnqueueUnmapMemObjectNative(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
+        scheduleReferenceRelease(event, mapped_ptr);
+        return checkResult(result);
     }
 
     private static native int clEnqueueUnmapMemObjectNative(cl_command_queue command_queue, cl_mem memobj, ByteBuffer mapped_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
@@ -6561,6 +7105,49 @@ public final class CL
      * <i>num_mem_objects</i> is the number of buffer objects that are passed
      * in <i>args</i>.
      * </p>
+     * <p>
+     * <i>mem_list</i> is a list of valid buffer objects, if <i>num_mem_objects</i>
+     * &gt; 0. The buffer object values specified in <i>mem_list</i> are memory 
+     * object handles (cl_memvalues) returned by <b>clCreateBuffer</b> or NULL.
+     * </p>
+     * <p>
+     * <i>args_mem_loc</i>  is a pointer to appropriate locations that <i>args</i>
+     * points to where memory object handles (cl_memvalues) are stored.
+     * Before the user function is executed, the memory object handles are
+     * replaced by pointers to global memory.
+     * </p>
+     * <p>
+     * <i>event_wait_list, num_events_in_wait_list and event</i>
+     * are as described in <b>clEnqueueNDRangeKernel</b>.
+     * </p>
+     * <p>
+     * <b>clEnqueueNativeKernel</b> returns CL_SUCCESS if the user function 
+     * execution instance was successfully queued. Otherwise, it returns one 
+     * of the following errors: CL_INVALID_COMMAND_QUEUE if <i>command_queue</i>
+     * is not a valid command-queue. CL_INVALID_CONTEXT if context associated 
+     * with <i>command_queue</i> and events in <i>event_wait_list</i> are not 
+     * the same. CL_INVALID_VALUE if <i>user_func</i> is NULL. CL_INVALID_VALUE 
+     * if <i>args</i> is a NULL value and <i>cb_args</i> &gt; 0, or if 
+     * <i>args</i> is a NULL value and <i>num_mem_objects</i> &gt; 0. 
+     * CL_INVALID_VALUE if <i>args</i> is not NULL and <i>cb_args</i> is 0. 
+     * CL_INVALID_VALUE if <i>num_mem_objects</i> &gt; 0 and <i>mem_list</i>
+     * or <i>args_mem_loc</i> are NULL. CL_INVALID_VALUE if <i>num_mem_objects</i>
+     * = 0 and <i>mem_list</i> or <i>args_mem_loc</i> are not NULL. 
+     * CL_INVALID_OPERATION if <i>device</i> cannot execute the native kernel. 
+     * CL_INVALID_MEM_OBJECT if one or more memory objects specified in
+     * <i>mem_list</i> are not valid or are not buffer objects. 
+     * CL_OUT_OF_RESOURCES if there is a failure to queue the execution 
+     * instance of <i>kernel</i> on the command-queue because of insufficient 
+     * resources needed to execute the kernel. CL_MEM_OBJECT_ALLOCATION_FAILURE 
+     * if there is a failure to allocate memory for data store associated with 
+     * buffer objects specified as arguments to <i>kernel</i>. 
+     * CL_INVALID_EVENT_WAIT_LIST if <i>event_wait_list</i> is NULL and
+     * <i>num_events_in_wait_list</i> &gt; 0, or <i>event_wait_list</i>
+     * is not NULL and <i>num_events_in_wait_list</i> is 0, or if event objects 
+     * in <i>event_wait_list</i> are not valid events.
+     * CL_OUT_OF_HOST_MEMORY if there is a failure to allocate resources
+     * required by the OpenCL implementation on the host.
+     * </p>
      */
     public static synchronized int clEnqueueNativeKernel(cl_command_queue command_queue, EnqueueNativeKernelFunction user_func, Object args, long cb_args, int num_mem_objects, cl_mem mem_list[], Pointer args_mem_loc[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
@@ -6766,13 +7353,21 @@ public final class CL
     public static synchronized cl_mem clCreateFromGLBuffer(cl_context context, long flags, int bufobj, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateFromGLBufferNative(context, flags, bufobj, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateFromGLBufferNative(context, flags, bufobj, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateFromGLBufferNative(context, flags, bufobj, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateFromGLBufferNative(cl_context context, long flags, int bufobj, int errcode_ret[]);
@@ -6923,13 +7518,21 @@ public final class CL
     public static synchronized cl_mem clCreateFromGLTexture2D(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateFromGLTexture2DNative(context, flags, target, miplevel, texture, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateFromGLTexture2DNative(context, flags, target, miplevel, texture, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateFromGLTexture2DNative(context, flags, target, miplevel, texture, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateFromGLTexture2DNative(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[]);
@@ -7094,13 +7697,21 @@ public final class CL
     public static synchronized cl_mem clCreateFromGLTexture3D(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateFromGLTexture3DNative(context, flags, target, miplevel, texture, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateFromGLTexture3DNative(context, flags, target, miplevel, texture, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateFromGLTexture3DNative(context, flags, target, miplevel, texture, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateFromGLTexture3DNative(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[]);
@@ -7218,13 +7829,21 @@ public final class CL
     public static synchronized cl_mem clCreateFromGLRenderbuffer(cl_context context, long flags, int renderbuffer, int errcode_ret[])
     {
         assertInit();
-        if (errcode_ret == null)
+        if (exceptionsEnabled)
         {
-            errcode_ret = new int[1];
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateFromGLRenderbufferNative(context, flags, renderbuffer, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
         }
-        cl_mem result = clCreateFromGLRenderbufferNative(context, flags, renderbuffer, errcode_ret);
-        checkResult(errcode_ret[0]);
-        return result;
+        else
+        {
+            cl_mem result = clCreateFromGLRenderbufferNative(context, flags, renderbuffer, errcode_ret);
+            return result;
+        }
     }
 
     private static native cl_mem clCreateFromGLRenderbufferNative(cl_context context, long flags, int renderbuffer, int errcode_ret[]);
@@ -7693,10 +8312,42 @@ public final class CL
 
     private static native int clEnqueueReleaseGLObjectsNative(cl_command_queue command_queue, int num_objects, cl_mem mem_objects[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
+    
+    
+    /**
+     * Can be used to query information about a CL/GL context.
+     * 
+     * TODO: Add documentation 
+     */
+    /*
+    public static synchronized int clGetGLContextInfoKHR(cl_context_properties properties, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[])
+    {
+        assertInit();
+        return checkResult(clGetGLContextInfoKHRNative(properties, param_name, param_value_size, param_value, param_value_size_ret));
+    }
+    
+    private static native int clGetGLContextInfoKHRNative(cl_context_properties properties, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
+    */
+    
     /**
      * Private constructor to prevent instantiation
      */
     private CL()
     {}
 
+    
+    /* 
+     * XXX GL_INTEROPERABILITY - This function is ONLY for testing! 
+     */
+    /*
+    public static void initGLSharedContextProperties(cl_context_properties properties)
+    {
+        long propertiesArray[] = createGLSharedContextPropertiesArrayNative();
+        for (int i=0; i<propertiesArray.length-1; i+=2)
+        {
+            properties.addProperty(propertiesArray[i+0], propertiesArray[i+1]);
+        }
+    }
+    private static native long[] createGLSharedContextPropertiesArrayNative();
+    */
 }

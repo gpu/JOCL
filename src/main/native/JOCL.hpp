@@ -197,6 +197,8 @@ extern "C" {
 #define org_jocl_CL_CL_INVALID_GLOBAL_WORK_SIZE -63L
 #undef org_jocl_CL_CL_JOCL_INTERNAL_ERROR
 #define org_jocl_CL_CL_JOCL_INTERNAL_ERROR -64L
+#undef org_jocl_CL_CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR
+#define org_jocl_CL_CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR -1000L
 #undef org_jocl_CL_CL_TRUE
 #define org_jocl_CL_CL_TRUE 1L
 #undef org_jocl_CL_CL_FALSE
@@ -595,8 +597,6 @@ extern "C" {
 #define org_jocl_CL_CL_PROFILING_COMMAND_START 4738L
 #undef org_jocl_CL_CL_PROFILING_COMMAND_END
 #define org_jocl_CL_CL_PROFILING_COMMAND_END 4739L
-#undef org_jocl_CL_CL_GL_CONTEXT
-#define org_jocl_CL_CL_GL_CONTEXT 4209L
 #undef org_jocl_CL_CL_GL_OBJECT_BUFFER
 #define org_jocl_CL_CL_GL_OBJECT_BUFFER 8192L
 #undef org_jocl_CL_CL_GL_OBJECT_TEXTURE2D
@@ -609,6 +609,20 @@ extern "C" {
 #define org_jocl_CL_CL_GL_TEXTURE_TARGET 8196L
 #undef org_jocl_CL_CL_GL_MIPMAP_LEVEL
 #define org_jocl_CL_CL_GL_MIPMAP_LEVEL 8197L
+#undef org_jocl_CL_CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR
+#define org_jocl_CL_CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR 8198L
+#undef org_jocl_CL_CL_DEVICES_FOR_GL_CONTEXT_KHR
+#define org_jocl_CL_CL_DEVICES_FOR_GL_CONTEXT_KHR 8199L
+#undef org_jocl_CL_CL_GL_CONTEXT_KHR
+#define org_jocl_CL_CL_GL_CONTEXT_KHR 8200L
+#undef org_jocl_CL_CL_EGL_DISPLAY_KHR
+#define org_jocl_CL_CL_EGL_DISPLAY_KHR 8201L
+#undef org_jocl_CL_CL_GLX_DISPLAY_KHR
+#define org_jocl_CL_CL_GLX_DISPLAY_KHR 8202L
+#undef org_jocl_CL_CL_WGL_HDC_KHR
+#define org_jocl_CL_CL_WGL_HDC_KHR 8203L
+#undef org_jocl_CL_CL_CGL_SHAREGROUP_KHR
+#define org_jocl_CL_CL_CGL_SHAREGROUP_KHR 8204L
 /*
  * Class:     org_jocl_CL
  * Method:    setLogLevelNative
@@ -1216,6 +1230,20 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
   (JNIEnv *, jclass, jobject, jint, jobjectArray, jint, jobjectArray, jobject);
+
+
+/* 
+ * XXX GL_INTEROPERABILITY - This function is ONLY for testing! 
+ */
+/*
+ * Class:     org_jocl_CL
+ * Method:    createGLSharedContextPropertiesArrayNative
+ * Signature: ()[J
+ */
+/*
+JNIEXPORT jlongArray JNICALL Java_org_jocl_CL_createGLSharedContextPropertiesArrayNative
+  (JNIEnv *, jclass);
+*/
 
 #ifdef __cplusplus
 }

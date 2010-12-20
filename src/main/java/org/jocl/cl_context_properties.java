@@ -24,6 +24,8 @@ package org.jocl;
 
 import java.nio.LongBuffer;
 
+//TODO: This probably does not have to be a NativePointerObject
+
 /**
  * Java port of cl_context_properties.
  */
@@ -43,10 +45,11 @@ public final class cl_context_properties extends NativePointerObject
      * @param id The property ID
      * @param value The property value
      */
-    private void addProperty(long id, long value)
+    public void addProperty(long id, long value)
     {
         LongBuffer oldBuffer = (LongBuffer)getBuffer();
         long newArray[] = new long[oldBuffer.capacity()+2];
+        oldBuffer.get(newArray, 0, oldBuffer.capacity());
         newArray[oldBuffer.capacity()-1] = id;
         newArray[oldBuffer.capacity()+0] = value;
         newArray[oldBuffer.capacity()+1] = 0;
@@ -73,6 +76,24 @@ public final class cl_context_properties extends NativePointerObject
     @Override
     public String toString()
     {
-        return "cl_context_properties[0x"+Long.toHexString(getNativePointer())+"]";
+        //return "cl_context_properties[0x"+Long.toHexString(getNativePointer())+"]";
+        
+        StringBuilder result = new StringBuilder("cl_context_properties[");
+        LongBuffer buffer = (LongBuffer)getBuffer();
+        int entries = buffer.capacity() / 2;
+        for (int i=0; i<entries; i++)
+        {
+            int n0 = (int)buffer.get(i*2+0);
+            int n1 = (int)buffer.get(i*2+1);
+            result.append(CL.stringFor_cl_context_properties(n0));
+            result.append("=");
+            result.append(String.valueOf(n1));
+            if (i<entries-1)
+            {
+                result.append(",");
+            }
+        }
+        result.append("]");
+        return result.toString();
     }
 }

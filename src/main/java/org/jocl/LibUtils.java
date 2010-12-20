@@ -22,6 +22,8 @@
 
 package org.jocl;
 
+import java.util.Locale;
+
 /**
  * Utility class for detecting the operating system and architecture
  * types, and automatically loading the matching native library. <br />
@@ -54,6 +56,8 @@ final class LibUtils
      * with the given argument.
      *    
      * @param baseName The base name of the library
+     * @throws UnsatisfiedLinkError if the native library 
+     * could not be loaded.
      */
     public static void loadLibrary(String baseName)
     {
@@ -71,7 +75,7 @@ final class LibUtils
             System.err.println("Architecture bit size: "+System.getProperty("sun.arch.data.model"));
             System.err.println("Stack trace:");
             t.printStackTrace();
-            System.exit(1);
+            throw new UnsatisfiedLinkError("Could not load the native library");
         }
     }
     
@@ -92,8 +96,8 @@ final class LibUtils
         OSType osType = calculateOS();
         ARCHType archType = calculateArch();
         String libName = baseName;
-        libName += "-" + osType.toString().toLowerCase();
-        libName += "-" + archType.toString().toLowerCase();
+        libName += "-" + osType.toString().toLowerCase(Locale.ENGLISH);
+        libName += "-" + archType.toString().toLowerCase(Locale.ENGLISH);
         return libName;
     }
     
@@ -134,7 +138,7 @@ final class LibUtils
      */
     public static ARCHType calculateArch()
     {
-        String osArch = System.getProperty("os.arch").toLowerCase();
+        String osArch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
         assert osArch != null;
         if (osArch.equals("i386") || osArch.equals("x86") || osArch.equals("i686"))
         {

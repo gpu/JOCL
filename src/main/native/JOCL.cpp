@@ -22,20 +22,39 @@
 
 #include "JOCL.hpp"
 
-#if defined(__APPLE__) || defined(__MACOSX)
-#  include <OpenCL/cl.h>
-#  include <OpenGL/opengl.h>
-#  include <OpenCL/cl_gl.h>
+// GL includes
+/*
+#include <GL/glew.h>
+#if defined (__APPLE__) || defined(MACOSX)
+    #include <GLUT/glut.h>
 #else
-#  include <CL/cl.h>
-#  ifdef _WIN32
-#    define WINDOWS_LEAN_AND_MEAN
-#    define NOMINMAX
-#    include <windows.h>
-#  endif // _WIN32
-#  include <GL/gl.h>
-#  include <CL/cl_gl.h>
+    #include <GL/glut.h>
+#endif
+
+#ifdef UNIX
+    #if defined (__APPLE__) || defined(MACOSX)
+        #include <OpenGL/OpenGL.h>
+        #include <GLUT/glut.h>
+    #else
+        #include <GL/glx.h>
+    #endif
+#endif
+*/
+
+// CL includes
+#if defined(__APPLE__) || defined(__MACOSX)
+    #include <OpenCL/opencl.h>
+#else
+    #include <CL/opencl.h>
+    #ifdef _WIN32
+        #define WINDOWS_LEAN_AND_MEAN
+        #define NOMINMAX
+        #include <windows.h>
+    #endif // _WIN32
+    #include <GL/gl.h>
 #endif // __APPLE__
+
+
 
 #include <string.h>
 #include "Logger.hpp"
@@ -165,8 +184,6 @@ std::map<cl_context, CallbackInfo*> contextCallbackMap;
 
 
 
-
-
 /**
  * The type of a native host memory pointer. The initPointerData function
  * will set the MemoryType of the Pointer to the respective value, so
@@ -180,10 +197,7 @@ enum MemoryType
 
 /**
  * A structure containing all information necessary for maintaining
- * a pointer to java memory, i.e. to a Java Pointer object. The
- * pointerObject stored in this stucture is only a local reference,
- * that means it is only valid for the duration of the JNI call in
- * which it has been initialzed.
+ * a pointer to java memory, i.e. to a Java Pointer object. 
  */
 typedef struct PointerData
 {
@@ -204,6 +218,12 @@ typedef struct PointerData
 
 } PointerData;
 
+
+/** 
+ * A map from cl_event objects to the PointerDatas that have
+ * to be released when the event has finished. 
+ */
+// XXX NON_BLOCKING_READ std::map<cl_event, PointerData*> pendingPointerDataMap;
 
 
 //=== JNI initialization helper functions ====================================
@@ -360,7 +380,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
 
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved)
 {
-    // TODO: Deleting global references here should not be necessary...
+    // Deleting global references here should not be necessary...
 }
 
 
@@ -368,7 +388,6 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved)
 
 
 //=== JNI helper functions ===================================================
-
 
 
 /**
@@ -619,7 +638,7 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
  */
 bool createPointerObject(JNIEnv *env, jobjectArray pointersArray, int index, void *pointer)
 {
-    Logger::log(LOG_DEBUGTRACE, "Creating result pointer object at index %d\n", index);
+    Logger::log(LOG_DEBUGTRACE, "Creating result pointer object at index %d for native pointer %p\n", pointer);
 
 	jobject pointersArrayClassObject = env->CallObjectMethod(pointersArray, Object_getClass);
 	if (env->ExceptionCheck())
@@ -661,7 +680,8 @@ bool createPointerObject(JNIEnv *env, jobjectArray pointersArray, int index, voi
  *
  * Otherwise, the actions are depending on the memoryType of the pointerData:
  *
- * - For NATIVE or DIRECT memory, nothing has to be done.
+ * - For NATIVE or DIRECT memory, only the global reference to the 
+ *   Java pointer object is released
  * - For ARRAY memory, the respective java primitive array will be released
  * - For ARRAY_COPY memory, the respective java primitive array will be
  *   released, and the memory will be copied back (except when the given
@@ -673,14 +693,16 @@ bool createPointerObject(JNIEnv *env, jobjectArray pointersArray, int index, voi
  */
 bool releasePointerData(JNIEnv *env, PointerData* &pointerData, jint mode=0)
 {
-    if (pointerData->pointerObject == NULL)
-    {
-        delete pointerData;
-        pointerData = NULL;
-        return true;
-    }
+	if (pointerData->memoryType == NATIVE || pointerData->memoryType == DIRECT)
+	{
+        Logger::log(LOG_DEBUGTRACE, "Releasing pointer data for direct or native data\n");
 
-    if (pointerData->memoryType == ARRAY_COPY)
+		env->DeleteGlobalRef(pointerData->pointerObject);
+		delete pointerData;
+        pointerData = NULL;
+		return true;
+	}
+    else if (pointerData->memoryType == ARRAY_COPY)
     {
         Logger::log(LOG_DEBUGTRACE, "Releasing host memory from array in java buffer\n");
 
@@ -1077,10 +1099,11 @@ void setCl_image_format(JNIEnv *env, jobject image_format, cl_image_format &nati
  * java cl_event objects in the given java array. To delete the
  * returned array is left to the caller. The returned array will
  * have num_events entries. If one of the java objects is 'null',
- * then the respecive entry in the array will be NULL. If the java
- * array has less than num_events elements, then the array entries
- * with an index greater than or equal the java array length will
- * be NULL. Returns NULL if an error occurs.
+ * then a NullPointerException will be thrown and the function
+ * returns NULL. If the java array has less than num_events 
+ * elements, then and ArrayIndexOutOfBoundsException will be
+ * thrown and the function returns NULL. 
+ * Returns NULL if an error occurs.
  */
 cl_event* createEventList(JNIEnv *env, jobjectArray event_list, cl_uint num_events)
 {
@@ -1093,12 +1116,13 @@ cl_event* createEventList(JNIEnv *env, jobjectArray event_list, cl_uint num_even
     }
 
     cl_uint event_listLength = (cl_uint)env->GetArrayLength(event_list);
-    unsigned int actualNumEvents = (unsigned int)num_events;
-    if (event_listLength < num_events)
-    {
-        actualNumEvents = event_listLength;
-    }
-    for (unsigned int i=0; i<actualNumEvents; i++)
+	if (event_listLength < num_events)
+	{
+        ThrowByName(env, "java/lang/ArrayIndexOutOfBoundsException",
+            "Event list size is smaller than specified number of events");
+        return NULL;
+	}
+    for (unsigned int i=0; i<num_events; i++)
     {
         jobject ev = env->GetObjectArrayElement(event_list, i);
 		if (env->ExceptionCheck())
@@ -1106,10 +1130,14 @@ cl_event* createEventList(JNIEnv *env, jobjectArray event_list, cl_uint num_even
 			delete[] nativeEvent_list;
 			return NULL;
 		}
-        if (ev != NULL)
+        if (ev == NULL)
         {
-            nativeEvent_list[i] = (cl_event)env->GetLongField(ev, NativePointerObject_nativePointer);
-        }
+			delete[] nativeEvent_list;
+	        ThrowByName(env, "java/lang/NullPointerException",
+		        "Event list contains 'null' elements");
+			return NULL;
+		}
+        nativeEvent_list[i] = (cl_event)env->GetLongField(ev, NativePointerObject_nativePointer);
     }
     return nativeEvent_list;
 }
@@ -1119,10 +1147,11 @@ cl_event* createEventList(JNIEnv *env, jobjectArray event_list, cl_uint num_even
  * java cl_device_id objects in the given java array. To delete the
  * returned array is left to the caller. The returned array will
  * have num_devices entries. If one of the java objects is 'null',
- * then the respecive entry in the array will be NULL. If the java
- * array has less than num_devices elements, then the array entries
- * with an index greater than or equal the java array length will
- * be NULL. Returns NULL if an error occurs.
+ * then a NullPointerException will be thrown and the function
+ * returns NULL. If the java array has less than num_devices
+ * elements, then and ArrayIndexOutOfBoundsException will be
+ * thrown and the function returns NULL. 
+ * Returns NULL if an error occurs.
  */
 cl_device_id* createDeviceList(JNIEnv *env, jobjectArray device_list, cl_uint num_devices)
 {
@@ -1135,12 +1164,13 @@ cl_device_id* createDeviceList(JNIEnv *env, jobjectArray device_list, cl_uint nu
     }
 
     cl_uint device_listLength = (cl_uint)env->GetArrayLength(device_list);
-    unsigned int actualNumDevices = (unsigned int)num_devices;
-    if (device_listLength < num_devices)
-    {
-        actualNumDevices = device_listLength;
-    }
-    for (unsigned int i=0; i<actualNumDevices; i++)
+	if (device_listLength < num_devices)
+	{
+        ThrowByName(env, "java/lang/ArrayIndexOutOfBoundsException",
+            "Device list size is smaller than specified number of devices");
+        return NULL;
+	}
+    for (unsigned int i=0; i<num_devices; i++)
     {
         jobject device = env->GetObjectArrayElement(device_list, i);
 		if (env->ExceptionCheck())
@@ -1148,10 +1178,14 @@ cl_device_id* createDeviceList(JNIEnv *env, jobjectArray device_list, cl_uint nu
 			delete[] nativeDevice_list;
 			return NULL;
 		}
-        if (device != NULL)
+        if (device == NULL)
         {
-            nativeDevice_list[i] = (cl_device_id)env->GetLongField(device, NativePointerObject_nativePointer);
-        }
+			delete[] nativeDevice_list;
+	        ThrowByName(env, "java/lang/NullPointerException",
+		        "Device list contains 'null' elements");
+			return NULL;
+		}
+        nativeDevice_list[i] = (cl_device_id)env->GetLongField(device, NativePointerObject_nativePointer);
     }
     return nativeDevice_list;
 }
@@ -1162,10 +1196,11 @@ cl_device_id* createDeviceList(JNIEnv *env, jobjectArray device_list, cl_uint nu
  * java cl_mem objects in the given java array. To delete the
  * returned array is left to the caller. The returned array will
  * have num_mems entries. If one of the java objects is 'null',
- * then the respecive entry in the array will be NULL. If the java
- * array has less than num_mems elements, then the array entries
- * with an index greater than or equal the java array length will
- * be NULL. Returns NULL if an error occurs.
+ * then a NullPointerException will be thrown and the function
+ * returns NULL. If the java array has less than num_mems
+ * elements, then and ArrayIndexOutOfBoundsException will be
+ * thrown and the function returns NULL. 
+ * Returns NULL if an error occurs.
  */
 cl_mem* createMemList(JNIEnv *env, jobjectArray mem_list, cl_uint num_mems)
 {
@@ -1178,12 +1213,13 @@ cl_mem* createMemList(JNIEnv *env, jobjectArray mem_list, cl_uint num_mems)
     }
 
     cl_uint mem_listLength = (cl_uint)env->GetArrayLength(mem_list);
-    unsigned int actualNumMems = (unsigned int)num_mems;
-    if (mem_listLength < num_mems)
-    {
-        actualNumMems = mem_listLength;
-    }
-    for (unsigned int i=0; i<actualNumMems; i++)
+	if (mem_listLength < num_mems)
+	{
+        ThrowByName(env, "java/lang/ArrayIndexOutOfBoundsException",
+            "Memory object list size is smaller than specified number of memory objects");
+        return NULL;
+	}
+    for (unsigned int i=0; i<num_mems; i++)
     {
         jobject mem = env->GetObjectArrayElement(mem_list, i);
 		if (env->ExceptionCheck())
@@ -1191,10 +1227,14 @@ cl_mem* createMemList(JNIEnv *env, jobjectArray mem_list, cl_uint num_mems)
 			delete[] nativeMem_list;
 			return NULL;
 		}
-        if (mem != NULL)
+        if (mem == NULL)
         {
-            nativeMem_list[i] = (cl_mem)env->GetLongField(mem, NativePointerObject_nativePointer);
+			delete[] nativeMem_list;
+	        ThrowByName(env, "java/lang/NullPointerException",
+		        "Memory object list contains 'null' elements");
+			return NULL;
         }
+        nativeMem_list[i] = (cl_mem)env->GetLongField(mem, NativePointerObject_nativePointer);
     }
     return nativeMem_list;
 }
@@ -1370,7 +1410,15 @@ void BuildProgramFunction(cl_program program, void *user_dataInfo)
     JNIEnv *env = NULL;
     globalJvm->AttachCurrentThread((void **)&env, NULL);
 
-    env->CallVoidMethod(pfn_notify, BuildProgramFunction_function, program, user_data);
+	// Create the program object which will be passed to the callback function
+    jobject programObject = env->NewObject(cl_program_Class, cl_program_Constructor);
+    if (env->ExceptionCheck())
+    {
+        return;
+    }
+    setNativePointer(env, programObject, (jlong)program);
+	
+    env->CallVoidMethod(pfn_notify, BuildProgramFunction_function, programObject, user_data);
 
     finishCallback(env);
 }
@@ -1447,7 +1495,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
     // Write back native variable values and clean up
     if (platforms != NULL)
     {
-        for (unsigned int i=0; i<nativeNum_platforms; i++)
+		unsigned int n = nativeNum_entries < nativeNum_platforms ? nativeNum_entries : nativeNum_platforms;
+        for (unsigned int i=0; i<n; i++)
         {
             jobject platform = env->GetObjectArrayElement(platforms, i);
             if (env->ExceptionCheck())
@@ -1564,7 +1613,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
     // Write back native variable values and clean up
     if (devices != NULL)
     {
-        for (unsigned int i=0; i<nativeNum_devices; i++)
+		unsigned int n = nativeNum_entries < nativeNum_devices ? nativeNum_entries : nativeNum_devices;
+        for (unsigned int i=0; i<n; i++)
         {
             jobject device = env->GetObjectArrayElement(devices, i);
             if (device == NULL)
@@ -1665,7 +1715,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
             return NULL;
         }
     }
-    nativeNum_devices = (cl_uint)num_devices;
+	nativeNum_devices = (cl_uint)num_devices;
     if (devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(devices);
@@ -2016,7 +2066,6 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetCommandQueueInfoNative
         return CL_INVALID_HOST_PTR;
     }
     nativeParam_value = (void*)param_valuePointerData->pointer;
-
 
     int result = clGetCommandQueueInfo(nativeCommand_queue, nativeParam_name, nativeParam_value_size, nativeParam_value, &nativeParam_value_size_ret);
 
@@ -2944,9 +2993,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
 	}
     nativeUser_data = (void*)callbackInfo;
 
-	//Logger::log(LOG_ERROR, "calling native");
     int result = clBuildProgram(nativeProgram, nativeNum_devices, nativeDevice_list, nativeOptions, nativePfn_notify, nativeUser_data);
-	//Logger::log(LOG_ERROR, "calling native done");
 
     // Write back native variable values and clean up
     delete[] nativeDevice_list;
@@ -3007,7 +3054,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetProgramInfoNative
     }
     nativeParam_value = (void*)param_valuePointerData->pointer;
 
-    int result = clGetProgramInfo(nativeProgram, nativeParam_name, nativeParam_value_size, nativeParam_value, &nativeParam_value_size_ret);
+	int result = clGetProgramInfo(nativeProgram, nativeParam_name, nativeParam_value_size, nativeParam_value, &nativeParam_value_size_ret);
 
     // Write back native variable values and clean up
     if (!releasePointerData(env, param_valuePointerData)) return CL_INVALID_HOST_PTR;
@@ -3573,6 +3620,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clFinishNative
  * Method:    clEnqueueReadBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
+//
+// If blocking_read is true, event may not be null. 
+// This is usually asserted on Java side.
+//
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
   (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jboolean blocking_read, jlong offset, jlong cb, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
@@ -3598,12 +3649,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
     {
         nativeBuffer = (cl_mem)env->GetLongField(buffer, NativePointerObject_nativePointer);
     }
-
-    // TODO: Let this default to CL_TRUE as set in the
-    // declaration. Non-blocking operations will be
-    // the challenging part...
-    //nativeBlocking_read = (cl_bool)blocking_read;
-
+    nativeBlocking_read = (cl_bool)blocking_read;
     nativeOffset = (size_t)offset;
     nativeCb = (size_t)cb;
     PointerData *ptrPointerData = initPointerData(env, ptr);
@@ -3622,17 +3668,65 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
         }
     }
 
-
     int result = clEnqueueReadBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_read, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
 
     // Write back native variable values and clean up
-    if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
+	/* // XXX NON_BLOCKING_READ
+    if (nativeBlocking_read)
+	{
+		if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
+	}
+	else
+	{
+        Logger::log(LOG_ERROR, "Storing pending release of pointer data for event %p\n", nativeEvent);
+		pendingPointerDataMap[nativeEvent] = ptrPointerData;
+	}
+	*/
+
+	
+	if (!releasePointerData(env, ptrPointerData)) return CL_INVALID_HOST_PTR;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 
     return result;
 }
 
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    releasePendingPointerDataNative
+ * Signature: (Lorg/jocl/cl_event;)V
+ */
+// 
+// The event may not be null.
+// This is usually asserted on Java side.
+//
+// XXX NON_BLOCKING_READ
+JNIEXPORT void JNICALL Java_org_jocl_CL_releasePendingPointerDataNative
+  (JNIEnv *env, jclass cls, jobject event)
+{
+/*
+    Logger::log(LOG_ERROR, "Executing releasePendingPointerData\n");
+
+    cl_event nativeEvent = (cl_event)env->GetLongField(event, NativePointerObject_nativePointer);
+
+	std::map<cl_event, PointerData*>::iterator iter =
+        pendingPointerDataMap.find(nativeEvent);
+    if (iter != pendingPointerDataMap.end())
+    {
+        pendingPointerDataMap.erase(iter);
+		if (!releasePointerData(env, iter->second)) 
+		{
+			ThrowByName(env, "java/lang/RuntimeException", "Failed to release pointer data");
+		}
+    }
+	else
+	{
+		// Should never happen
+	    Logger::log(LOG_ERROR, "Could not find pointer data for event %p\n", nativeEvent);
+	}
+*/
+}
 
 
 
@@ -3667,10 +3761,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
         nativeBuffer = (cl_mem)env->GetLongField(buffer, NativePointerObject_nativePointer);
     }
 
-    // TODO: Let this default to CL_TRUE as set in the
-    // declaration. Non-blocking operations will be
-    // the challenging part...
-    //nativeBlocking_write = (cl_bool)blocking_write;
+    nativeBlocking_write = (cl_bool)blocking_write;
 
     nativeOffset = (size_t)offset;
     nativeCb = (size_t)cb;
@@ -3798,10 +3889,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
         nativeImage = (cl_mem)env->GetLongField(image, NativePointerObject_nativePointer);
     }
 
-    // TODO: Let this default to CL_TRUE as set in the
-    // declaration. Non-blocking operations will be
-    // the challenging part...
-    //nativeBlocking_read = (cl_bool)blocking_read;
+    nativeBlocking_read = (cl_bool)blocking_read;
 
     if (origin != NULL)
     {
@@ -3839,6 +3927,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
 
 
     int result = clEnqueueReadImage(nativeCommand_queue, nativeImage, nativeBlocking_read, nativeOrigin, nativeRegion, nativeRow_pitch, nativeSlice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+
+	// XXX NON_BLOCKING_READ (see clEnqueueReadBuffer!)
 
     // Write back native variable values and clean up
     delete[] nativeOrigin;
@@ -3886,10 +3976,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
         nativeImage = (cl_mem)env->GetLongField(image, NativePointerObject_nativePointer);
     }
 
-    // TODO: Let this default to CL_TRUE as set in the
-    // declaration. Non-blocking operations will be
-    // the challenging part...
-    //nativeBlocking_write = (cl_bool)blocking_write;
+    nativeBlocking_write = (cl_bool)blocking_write;
 
     if (origin != NULL)
     {
@@ -4213,10 +4300,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
         nativeBuffer = (cl_mem)env->GetLongField(buffer, NativePointerObject_nativePointer);
     }
 
-    // TODO: Let this default to CL_TRUE as set in the
-    // declaration. Non-blocking operations will be
-    // the challenging part...
-    //nativeBlocking_map = (cl_bool)blocking_map;
+    nativeBlocking_map = (cl_bool)blocking_map;
 
     nativeMap_flags = (cl_map_flags)map_flags;
     nativeOffset = (size_t)offset;
@@ -4230,8 +4314,6 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
             return NULL;
         }
     }
-
-
 
     nativeHostPointer = clEnqueueMapBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_map, nativeMap_flags, nativeOffset, nativeCb, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent, &nativeErrcode_ret);
 
@@ -4279,10 +4361,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
         nativeImage = (cl_mem)env->GetLongField(image, NativePointerObject_nativePointer);
     }
 
-    // TODO: Let this default to CL_TRUE as set in the
-    // declaration. Non-blocking operations will be
-    // the challenging part...
-    //nativeBlocking_map = (cl_bool)blocking_map;
+    nativeBlocking_map = (cl_bool)blocking_map;
 
     nativeMap_flags = (cl_map_flags)map_flags;
     nativeOrigin = convertArray(env, origin);
@@ -4303,7 +4382,6 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
             return NULL;
         }
     }
-
 
     nativeHostPointer = clEnqueueMapImage(nativeCommand_queue, nativeImage, nativeBlocking_map, nativeMap_flags, nativeOrigin, nativeRegion, &nativeImage_row_pitch, &nativeImage_slice_pitch, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent, &nativeErrcode_ret);
 
@@ -4441,9 +4519,6 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
         }
     }
 
-	//Logger::log(LOG_ERROR, "nativeGlobal_work_size[0] %ld\n", nativeGlobal_work_size[0]);
-	//Logger::log(LOG_ERROR, "nativeLocal_work_size[0] %ld\n", nativeLocal_work_size[0]);
-
     int result = clEnqueueNDRangeKernel(nativeCommand_queue, nativeKernel, nativeWork_dim, nativeGlobal_work_offset, nativeGlobal_work_size, nativeLocal_work_size, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
 
     // Write back native variable values and clean up
@@ -4516,12 +4591,6 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
   (JNIEnv *env, jclass cls, jobject command_queue, jobject user_func, jobject args, jlong cb_args, jint num_mem_objects, jobjectArray mem_list, jobjectArray args_mem_loc, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
-
-	// TODO: This method will not work in its current form.
-	Logger::log(LOG_ERROR, "Error: clEnqueueNativeKernel is not yet supported!\n");
-	if (true) return CL_INVALID_OPERATION;
-
-
     Logger::log(LOG_TRACE, "Executing clEnqueueNativeKernel\n");
 
     // Native variables declaration
@@ -4596,9 +4665,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
     }
 
 
-    // TODO: This will not work: The call would have to be blocking,
+    // TODO: The call currently has to be blocking,
     // to prevent the nativeArgs from being deleted
     int result = clEnqueueNativeKernel(nativeCommand_queue, nativeUser_func, nativeArgs, nativeCb_args, nativeNum_mem_objects, nativeMem_list, (const void**)nativeArgs_mem_loc, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+	
+	// TODO: Have to block in the current implementation
+	clWaitForEvents(1, &nativeEvent);
 
     // Write back native variable values and clean up
     deleteCallbackInfo(env, callbackInfo); // TODO: This has to be done AFTER the function has been executed
@@ -5077,3 +5149,109 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
 
     return result;
 }
+
+
+
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clGetGLContextInfoKHRNative
+ * Signature: (Lorg/jocl/cl_context_properties;IJLorg/jocl/Pointer;[J)I
+ */
+/*
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoKHRNative
+  (JNIEnv *env, jclass cls, jobject properties, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+{
+    Logger::log(LOG_TRACE, "Executing clGetGLContextInfoKHR\n");
+
+    // Native variables declaration
+    cl_context_properties *nativeProperties = NULL;
+    cl_context_info nativeParam_name = NULL;
+    size_t nativeParam_value_size = 0;
+    void *nativeParam_value = NULL;
+    size_t nativeParam_value_size_ret = 0;
+
+    // Obtain native variable values
+    if (properties != NULL)
+    {
+        nativeProperties = createPropertiesArray(env, properties);
+        if (nativeProperties == NULL)
+        {
+            return NULL;
+        }
+    }
+    nativeParam_name = (cl_context_info)param_name;
+    nativeParam_value_size = (size_t)param_value_size;
+    PointerData *param_valuePointerData = initPointerData(env, param_value);
+    if (param_valuePointerData == NULL)
+    {
+        return CL_INVALID_HOST_PTR;
+    }
+    nativeParam_value = (void*)param_valuePointerData->pointer;
+
+    int result = clGetGLContextInfoKHR(nativeProperties, nativeParam_name, nativeParam_value_size, nativeParam_value, &nativeParam_value_size_ret);
+
+    // Write back native variable values and clean up
+	delete[] nativeProperties;
+    if (!releasePointerData(env, param_valuePointerData)) return CL_INVALID_HOST_PTR;
+    if (!set(env, param_value_size_ret, 0, (long)nativeParam_value_size_ret)) return CL_OUT_OF_HOST_MEMORY;
+
+    return result;
+}
+*/
+
+
+
+/* 
+ * XXX GL_INTEROPERABILITY - This function is ONLY for testing! 
+ */
+/*
+ * Class:     org_jocl_CL
+ * Method:    createGLSharedContextPropertiesArrayNative
+ * Signature: ()[J
+ */
+/*
+JNIEXPORT jlongArray JNICALL Java_org_jocl_CL_createGLSharedContextPropertiesArrayNative
+  (JNIEnv *env, jclass cls)
+{
+	#if defined (__APPLE__)
+		CGLContextObj cglContext = CGLGetCurrentContext();
+		CGLShareGroupObj cglShareGroup = CGLGetShareGroup(cglContext);
+		cl_context_properties nativeProperties[] = 
+		{
+			CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)cglShareGroup, 
+			0, 0,
+			0
+		};
+	#else
+		#ifdef UNIX
+			cl_context_properties nativeProperties[] = 
+			{
+				CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(), 
+				CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(), 
+				0
+			};
+		#else // Win32
+			cl_context_properties nativeProperties[] = 
+			{
+				CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(), 
+				CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(), 
+				0
+			};
+		#endif
+	#endif
+
+    jlongArray array = env->NewLongArray(5);
+    jlong *a = (jlong*)env->GetPrimitiveArrayCritical(array, NULL);
+    if (env->ExceptionCheck())
+    {
+        return false;
+    }
+	for (int i=0; i<5; i++)
+	{
+		a[i] = (jlong)nativeProperties[i];
+	}
+    env->ReleasePrimitiveArrayCritical(array, a, 0);
+	return array;
+}
+*/

@@ -205,6 +205,16 @@ public final class Pointer extends NativePointerObject
         super(other, byteOffset);
     }
     
+    /**
+     * Returns whether this Pointer is a Pointer to a direct Buffer.
+     * 
+     * @return Whether this pointer is a Pointer to a direct Buffer
+     */
+    boolean isDirectBufferPointer()
+    {
+        return getBuffer().isDirect();
+    }
+    
     
     /**
      * Returns a new pointer with an offset of the given number
