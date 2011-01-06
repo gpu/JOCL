@@ -10,7 +10,7 @@
 
     <groupId>org.jocl</groupId>
     <artifactId>jocl</artifactId>
-    <version>0.1.4a</version>
+    <version>0.1.5-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
