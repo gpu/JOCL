@@ -64,7 +64,7 @@ public class NativePointerObject
     /**
      * Creates a new (null) Pointer
      */
-    NativePointerObject()
+    protected NativePointerObject()
     {
         buffer = null;
         pointers = null;
@@ -128,7 +128,7 @@ public class NativePointerObject
      * 
      * @return The native pointer value
      */
-    long getNativePointer()
+    protected long getNativePointer()
     {
         return nativePointer;
     }
