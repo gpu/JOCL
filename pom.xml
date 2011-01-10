@@ -10,7 +10,7 @@
 
     <groupId>org.jocl</groupId>
     <artifactId>jocl</artifactId>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.4c-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -96,7 +96,7 @@
 
                     <execution>
                         <id>copy-resources-again</id>
-                        <phase>perform-package</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
