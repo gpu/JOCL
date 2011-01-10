@@ -10,7 +10,7 @@
 
     <groupId>org.jocl</groupId>
     <artifactId>jocl</artifactId>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.4c-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -72,7 +72,6 @@
 
                 <executions>
 
-                    <!-- once ... -->
                     <execution>
                         <id>copy-resources</id>
                         <phase>prepare-package</phase>
@@ -80,33 +79,10 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration> <!-- over convention -->
-                            <outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/nativeLibs/</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>*.dll</include>
-                                        <include>*.jnilib</include>
-                                        <include>*.so</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-
-                    <!-- twice .. with a different directory ... -->
-                    <execution>
-                        <id>copy-resources-again</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration> <!-- over convention -->
-                            <outputDirectory>${project.build.outputDirectory}/checkout/target/lib</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../../nativeLibs/</directory>
                                     <filtering>false</filtering>
                                     <includes>
                                         <include>*.dll</include>
