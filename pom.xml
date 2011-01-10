@@ -10,7 +10,7 @@
 
     <groupId>org.jocl</groupId>
     <artifactId>jocl</artifactId>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.4c-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -79,7 +79,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration> <!-- over convention -->
-                            <outputDirectory>${project.build.directory}/src/main/resources/lib</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/nativeLibs/</directory>
@@ -101,7 +101,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration> <!-- over convention -->
-                            <outputDirectory>${project.build.directory}/src/main/resources/lib</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/../../nativeLibs/</directory>
