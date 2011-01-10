@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2011 Marco Hutter - http://www.jocl.org
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -1593,20 +1593,18 @@ public final class CL
      * Current solution:
      * - On Java side, it is made sure that for non-blocking read operations,
      *   only Pointers that are pointing to direct buffers are used.
-     */
-    
-    /*
-     * TODO:
-     * Update for OpenCL 1.1: The event callback mechanism may offer
-     * some new options here. One option could be to register an 
-     * event callback that acquires a monitor (lock) on the array
-     * as soon as the OpenCL command for reading the buffer has been
-     * completed, and releases the monitor as soon as the data has been
-     * written back to Java by ReleasePrimitiveArrayCritical. This way,
-     * it might be possible to avoid that any Java thread accesses the
-     * array between the end of the OpenCL command and the time when 
-     * the array has been written back to Java. These options have to 
-     * be evaluated for future releases. 
+     *   
+     *   
+     * The event callback mechanism which has been added in OpenCL 1.1
+     * offers a new option: When a non-blocking operation on an array
+     * is requested, the array can be obtained with the  
+     * Get<Type>ArrayElements method. The PointerData contains a 
+     * reference to this array (and its type). An event callback is
+     * registered for the read-operation event. The callback is
+     * responsible for releasing the PointerData, including the
+     * call to Release<Type>ArrayElements. However, this would 
+     * require ALL platforms to support at least OpenCL 1.1, which
+     * can currently not be assumed.
      */
     /*
     private static void releasePendingPointerData(cl_event event)
@@ -1784,16 +1782,16 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetPlatformIDs</b>(</code>
-     *           <td>cl_uint <var>num_entries</var>, </td>
+     *           <td>cl_uint<var>num_entries</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_platform_id <var>*platforms</var>, </td>
+     *           <td></td>
+     *           <td>cl_platform_id<var>*platforms</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>*num_platforms</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_uint<var>*num_platforms</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -1866,24 +1864,24 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetPlatformInfo</b>(</code>
-     *           <td>cl_platform_id <var>platform</var>, </td>
+     *           <td>cl_platform_id<var>platform</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_platform_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_platform_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -2055,24 +2053,24 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetDeviceIDs</b>(</code>
-     *           <td>cl_platform_id <var>platform</var>, </td>
+     *           <td>cl_platform_id<var>platform</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_type <var>device_type</var>, </td>
+     *           <td></td>
+     *           <td>cl_device_type<var>device_type</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_entries</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_entries</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_id <var>*devices</var>, </td>
+     *           <td></td>
+     *           <td>cl_device_id<var>*devices</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>*num_devices</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_uint<var>*num_devices</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -2236,24 +2234,24 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetDeviceInfo</b>(</code>
-     *           <td>cl_device_id <var>device</var>, </td>
+     *           <td>cl_device_id<var>device</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_device_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -2942,38 +2940,38 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_context <b>clCreateContext</b>(</code>
-     *           <td>const cl_context_properties <var>*properties</var>, </td>
+     *           <td>const cl_context_properties<var>*properties</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_devices</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_devices</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_device_id <var>*devices</var>, </td>
+     *           <td></td>
+     *           <td>const cl_device_id<var>*devices</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>
-     *             (voidCL_CALLBACK  <var>*pfn_notify)</var>
+     *             (voidCL_CALLBACK <var>*pfn_notify)</var>
      *             <code>(</code>
      *             <div>
-     *               <p>const char *errinfo, <br />
-     *                                         const void *private_info, size_t cb, <br />
-     *                                         void *user_data
+     *               <p>constchar*errinfo,<br />
+     *                 constvoid*private_info,size_tcb,<br />
+     *                 void*user_data
      *               </p>
      *             </div>
      *             <code>)</code>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*user_data</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*user_data</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -3055,7 +3053,7 @@ public final class CL
      *                       </p>
      *                     </div>
      *                   </td>
-     *                   <td align="left"> </td>
+     *                   <td align="left"></td>
      *                   <td align="left">Available if the <span><span>cl_khr_gl_sharing</span></span>
      *                     extension is enabled.
      *                   </td>
@@ -3264,51 +3262,51 @@ public final class CL
      *             </b>
      *             (</code>
      *           <td>const cl_context_properties
-     *              <var> *properties</var>,
+     *             <var> *properties</var>,
      *           </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>cl_device_type
-     *              <var>device_type</var>,
+     *             <var>device_type</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>void
-     *              <var>(CL_CALLBACK *pfn_notify)
+     *             <var>(CL_CALLBACK *pfn_notify)
      *             (const char *errinfo</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>const void
-     *              <var>*private_info</var>,
+     *             <var>*private_info</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>size_t
-     *              <var>cb</var>,
+     *             <var>cb</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>void
-     *              <var>*user_data)</var>,
+     *             <var>*user_data)</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>void
-     *              <var>*user_data</var>,
+     *             <var>*user_data</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>cl_int
-     *              <var>*errcode_ret</var><code>)</code>
+     *             <var>*errcode_ret</var><code>)</code>
      *           </td>
      *         </tr>
      *       </table>
@@ -3369,7 +3367,7 @@ public final class CL
      *                       </p>
      *                     </div>
      *                   </td>
-     *                   <td align="left"> </td>
+     *                   <td align="left"></td>
      *                   <td align="left">Available if the <span><span>cl_khr_gl_sharing</span></span>
      *                     extension is enabled.
      *                   </td>
@@ -3646,7 +3644,7 @@ public final class CL
      *             clRetainContext
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var><code>)</code></td>
+     *           <td>cl_context<var>context</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -3727,7 +3725,7 @@ public final class CL
      *             clReleaseContext
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var><code>)</code></td>
+     *           <td>cl_context<var>context</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -3803,24 +3801,24 @@ public final class CL
      *             clGetContextInfo
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_context_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_context_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t * <var>param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t *<var>param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4023,20 +4021,20 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_command_queue <b>clCreateCommandQueue</b>(</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_id <var>device</var>, </td>
+     *           <td></td>
+     *           <td>cl_device_id<var>device</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_command_queue_properties <var>properties</var>, </td>
+     *           <td></td>
+     *           <td>cl_command_queue_properties<var>properties</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4200,7 +4198,7 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clRetainCommandQueue</b>(</code>
-     *           <td>cl_command_queue <var>command_queue</var><code>)</code></td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -4265,7 +4263,7 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clReleaseCommandQueue</b>(</code>
-     *           <td>cl_command_queue <var>command_queue</var><code>)</code></td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -4336,24 +4334,24 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetCommandQueueInfo</b>(</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_command_queue_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_command_queue_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4517,20 +4515,20 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clSetCommandQueueProperty</b>(</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_command_queue_properties <var>properties</var>, </td>
+     *           <td></td>
+     *           <td>cl_command_queue_properties<var>properties</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>enable</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>enable</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_command_queue_properties <var>*old_properties</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_command_queue_properties<var>*old_properties</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4642,24 +4640,24 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateBuffer</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*host_ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*host_ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4904,24 +4902,24 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateSubBuffer</b>
      *             (</code>
-     *           <td>cl_mem <var>buffer</var>, </td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_buffer_create_type <var>buffer_create_type</var>, </td>
+     *           <td></td>
+     *           <td>cl_buffer_create_type<var>buffer_create_type</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const void <var>*buffer_create_info</var>, </td>
+     *           <td></td>
+     *           <td>const void<var>*buffer_create_info</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -5068,10 +5066,10 @@ public final class CL
      *           <p>The type of buffer object to be created. The supported value for <code>buffer_create_type</code> is CL_BUFFER_CREATE_TYPE_REGION, which create a buffer object that represents a specific region in <code>buffer</code>. <code>buffer_create_info</code> is a pointer to the following structure:</p>
      *           <div>
      *             <p><br />
-     *               typedef struct _cl_buffer_region {<br />
-     *                   size_t origin;<br />
-     *                   size_t size;<br />
-     *               } cl_buffer_region;<br />
+     *               typedefstruct_cl_buffer_region{<br />
+     *               size_torigin;<br />
+     *               size_tsize;<br />
+     *               }cl_buffer_region;<br />
      *             </p>
      *           </div>
      *           <p>(<code>origin, size</code>) defines the offset and size in bytes in <code>buffer</code>.</p>
@@ -5135,6 +5133,7 @@ public final class CL
      */
     public static cl_mem clCreateSubBuffer(cl_mem buffer, /*cl_mem_flags*/ int flags, /*cl_buffer_create_type*/ int buffer_create_type, Pointer buffer_create_info, int errcode_ret[])
     {
+        // OPENCL_1_1
         if (exceptionsEnabled)
         {
             if (errcode_ret == null)
@@ -5172,36 +5171,36 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateImage2D</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_image_format <var>*image_format</var>, </td>
+     *           <td></td>
+     *           <td>const cl_image_format<var>*image_format</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_width</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_width</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_height</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_height</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*host_ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*host_ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -5399,44 +5398,44 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateImage3D</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_image_format <var>*image_format</var>, </td>
+     *           <td></td>
+     *           <td>const cl_image_format<var>*image_format</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_width</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_width</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_height</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_height</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_depth</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_depth</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>image_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>image_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*host_ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*host_ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -5658,7 +5657,7 @@ public final class CL
      *             cl_int
      *             <b>clRetainMemObject</b>
      *             (</code>
-     *           <td>cl_mem <var>memobj</var><code>)</code></td>
+     *           <td>cl_mem<var>memobj</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -5721,7 +5720,7 @@ public final class CL
      *             cl_int
      *             <b>clReleaseMemObject</b>
      *             (</code>
-     *           <td>cl_mem <var>memobj</var><code>)</code></td>
+     *           <td>cl_mem<var>memobj</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -5783,28 +5782,28 @@ public final class CL
      *             cl_int
      *             <b>clGetSupportedImageFormats</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_object_type <var>image_type</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_object_type<var>image_type</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_entries</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_entries</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_image_format <var>*image_formats</var>, </td>
+     *           <td></td>
+     *           <td>cl_image_format<var>*image_formats</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>*num_image_formats</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_uint<var>*num_image_formats</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6049,24 +6048,24 @@ public final class CL
      *             cl_int
      *             <b>clGetMemObjectInfo</b>
      *             (</code>
-     *           <td>cl_mem <var>memobj</var>, </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6331,24 +6330,24 @@ public final class CL
      *             <code>
      *             cl_int * <b>clGetImageInfo</b>
      *             (</code>
-     *           <td>cl_mem <var>image</var>, </td>
+     *           <td>cl_mem<var>image</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_image_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_image_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6588,20 +6587,20 @@ public final class CL
      *             <code>cl_int
      *             <b>clSetMemObjectDestructorCallback</b>
      *             (</code>
-     *           <td>cl_mem <var>memobj</var>, </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void (CL_CALLBACK  <var>*pfn_notify</var>) (cl_mem memobj, </td>
+     *           <td></td>
+     *           <td>void (CL_CALLBACK <var>*pfn_notify</var>) (cl_mem memobj, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*user_data</var>), </td>
+     *           <td></td>
+     *           <td>void<var>*user_data</var>), </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*user_data</var><code>)</code></td>
+     *           <td></td>
+     *           <td>void<var>*user_data</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6746,6 +6745,7 @@ public final class CL
      */
     public static int clSetMemObjectDestructorCallback(cl_mem memobj, MemObjectDestructorCallbackFunction pfn_notify, Object user_data)
     {
+        // OPENCL_1_1
         return checkResult(clSetMemObjectDestructorCallbackNative(memobj, pfn_notify, user_data));
     }
     private static native int clSetMemObjectDestructorCallbackNative(cl_mem memobj, MemObjectDestructorCallbackFunction pfn_notify, Object user_data);
@@ -6767,24 +6767,24 @@ public final class CL
      *             <code>
      *             cl_sampler <b>clCreateSampler</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>normalized_coords</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>normalized_coords</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_addressing_mode <var>addressing_mode</var>, </td>
+     *           <td></td>
+     *           <td>cl_addressing_mode<var>addressing_mode</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_filter_mode <var>filter_mode</var>, </td>
+     *           <td></td>
+     *           <td>cl_filter_mode<var>filter_mode</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6925,7 +6925,7 @@ public final class CL
      *             <code>
      *             cl_int
      *             <b>clRetainSampler</b>(</code>
-     *           <td>cl_sampler <var>sampler</var><code>)</code></td>
+     *           <td>cl_sampler<var>sampler</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -6996,7 +6996,7 @@ public final class CL
      *             cl_int
      *             <b>clReleaseSampler</b>
      *             (</code>
-     *           <td>cl_sampler <var>sampler</var><code>)</code></td>
+     *           <td>cl_sampler<var>sampler</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -7054,24 +7054,24 @@ public final class CL
      *             cl_int
      *             <b>clGetSamplerInfo</b>
      *             (</code>
-     *           <td>cl_sampler <var>sampler</var>, </td>
+     *           <td>cl_sampler<var>sampler</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_sampler_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_sampler_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -7264,24 +7264,24 @@ public final class CL
      *             <code>
      *             cl_program <b>clCreateProgramWithSource</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>count</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>count</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const char <var>**strings</var>, </td>
+     *           <td></td>
+     *           <td>const char<var>**strings</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>*lengths</var>, </td>
+     *           <td></td>
+     *           <td>const size_t<var>*lengths</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -7423,32 +7423,32 @@ public final class CL
      *             <code>
      *             cl_program <b>clCreateProgramWithBinary</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_devices</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_devices</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_device_id <var>*device_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_device_id<var>*device_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>*lengths</var>, </td>
+     *           <td></td>
+     *           <td>const size_t<var>*lengths</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const unsigned char <var>**binaries</var>, </td>
+     *           <td></td>
+     *           <td>const unsigned char<var>**binaries</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*binary_status</var>, </td>
+     *           <td></td>
+     *           <td>cl_int<var>*binary_status</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -7643,7 +7643,7 @@ public final class CL
      *             cl_int
      *             <b>clRetainProgram</b>
      *             (</code>
-     *           <td>cl_program <var>program</var><code>)</code></td>
+     *           <td>cl_program<var>program</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -7691,7 +7691,7 @@ public final class CL
      *             <code>
      *             cl_int <b>clReleaseProgram</b>
      *             (</code>
-     *           <td>cl_program <var>program</var><code>)</code></td>
+     *           <td>cl_program<var>program</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -7748,28 +7748,28 @@ public final class CL
      *             cl_int
      *             <b>clBuildProgram</b>
      *             (</code>
-     *           <td>cl_program <var>program</var>, </td>
+     *           <td>cl_program<var>program</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_devices</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_devices</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_device_id <var>*device_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_device_id<var>*device_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const char <var>*options</var>, </td>
+     *           <td></td>
+     *           <td>const char<var>*options</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>(CL_CALLBACK *pfn_notify)(cl_program program, void *user_data)</var>, </td>
+     *           <td></td>
+     *           <td>void<var>(CL_CALLBACK *pfn_notify)(cl_program program, void *user_data)</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*user_data</var><code>)</code></td>
+     *           <td></td>
+     *           <td>void<var>*user_data</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -7995,7 +7995,7 @@ public final class CL
      *         <dd>
      *           <p>
      *             Allow optimizations for floating-point arithmetic that assume that arguments and results
-     *             are not NaNs or ±âˆž. This option may violate the OpenCL numerical compliance
+     *             are not NaNs or âˆž. This option may violate the OpenCL numerical compliance
      *             requirements defined in section 7.4 for single-precision floating-point,
      *             section 9.3.9 for double-precision floating-point, and edge case behavior in section 7.5.
      *           </p>
@@ -8189,7 +8189,7 @@ public final class CL
      *             cl_int
      *             <b>clUnloadCompiler</b>
      *             (</code>
-     *           <td>void <var></var><code>)</code></td>
+     *           <td>void<var></var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -8232,24 +8232,24 @@ public final class CL
      *             cl_int
      *             <b>clGetProgramInfo</b>
      *             (</code>
-     *           <td>cl_program <var>program</var>, </td>
+     *           <td>cl_program<var>program</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_program_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_program_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8520,28 +8520,28 @@ public final class CL
      *             cl_int
      *             <b>clGetProgramBuildInfo</b>
      *             (</code>
-     *           <td>cl_program  <var>program</var>, </td>
+     *           <td>cl_program <var>program</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_id  <var>device</var>, </td>
+     *           <td></td>
+     *           <td>cl_device_id <var>device</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_program_build_info  <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_program_build_info <var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t  <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t <var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void  <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void <var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t  <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8755,16 +8755,16 @@ public final class CL
      *             <code>
      *             cl_kernel <b>clCreateKernel</b>
      *             (</code>
-     *           <td>cl_program  <var>program</var>, </td>
+     *           <td>cl_program <var>program</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const char <var>*kernel_name</var>, </td>
+     *           <td></td>
+     *           <td>const char<var>*kernel_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8889,20 +8889,20 @@ public final class CL
      *             cl_int
      *             <b>clCreateKernelsInProgram</b>
      *             (</code>
-     *           <td>cl_program  <var>program</var>, </td>
+     *           <td>cl_program <var>program</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_kernels</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_kernels</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_kernel <var>*kernels</var>, </td>
+     *           <td></td>
+     *           <td>cl_kernel<var>*kernels</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>*num_kernels_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_uint<var>*num_kernels_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9030,7 +9030,7 @@ public final class CL
      *             cl_int
      *             <b>clRetainKernel</b>
      *             (</code>
-     *           <td>cl_kernel <var>kernel</var><code>)</code></td>
+     *           <td>cl_kernel<var>kernel</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -9085,7 +9085,7 @@ public final class CL
      *             cl_int
      *             <b>clReleaseKernel</b>
      *             (</code>
-     *           <td>cl_kernel <var>kernel</var><code>)</code></td>
+     *           <td>cl_kernel<var>kernel</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -9142,20 +9142,20 @@ public final class CL
      *             cl_int
      *             <b>clSetKernelArg</b>
      *             (</code>
-     *           <td>cl_kernel <var>kernel</var>, </td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>arg_index</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>arg_index</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>arg_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>arg_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const void <var>*arg_value</var><code>)</code></td>
+     *           <td></td>
+     *           <td>const void<var>*arg_value</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9370,24 +9370,24 @@ public final class CL
      *             cl_int
      *             <b>clGetKernelInfo</b>
      *             (</code>
-     *           <td>cl_kernel <var>kernel</var>, </td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_kernel_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_kernel_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9578,28 +9578,28 @@ public final class CL
      *             cl_int
      *             <b>clGetKernelWorkGroupInfo</b>
      *             (</code>
-     *           <td>cl_kernel <var>kernel</var>, </td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_id <var>device</var>, </td>
+     *           <td></td>
+     *           <td>cl_device_id<var>device</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_kernel_work_group_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_kernel_work_group_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9841,12 +9841,12 @@ public final class CL
      *             cl_int
      *             <b>clWaitForEvents</b>
      *             (</code>
-     *           <td>cl_uint <var>num_events</var>, </td>
+     *           <td>cl_uint<var>num_events</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_list</var><code>)</code></td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_list</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9938,24 +9938,24 @@ public final class CL
      *             clGetEventInfo
      *             </b>
      *             (</code>
-     *           <td>cl_event <var>event</var>, </td>
+     *           <td>cl_event<var>event</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_event_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -10088,12 +10088,12 @@ public final class CL
      *                         CL_COMMAND_WRITE_BUFFER_RECT<br />
      *                         CL_COMMAND_COPY_BUFFER_RECT<br />
      *                         CL_COMMAND_USER<br />
-     *                         CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR <br />
-     *                           (if cl_khr_gl_event is enabled)<br />
+     *                         CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR<br />
+     *                         (ifcl_khr_gl_eventisenabled)<br />
      *                         CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR<br />
-     *                           (if cl_khr_d3d10_sharing is enabled)<br />
-     *                         CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR  <br />
-     *                           (if cl_khr_d3d10_sharing is enabled)
+     *                         (ifcl_khr_d3d10_sharingisenabled)<br />
+     *                         CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR<br />
+     *                         (ifcl_khr_d3d10_sharingisenabled)
      *                       </p>
      *                     </div>
      *                   </td>
@@ -10192,12 +10192,12 @@ public final class CL
      *             <code>
      *             cl_event <b>clCreateUserEvent</b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -10262,6 +10262,7 @@ public final class CL
      */
     public static cl_event clCreateUserEvent(cl_context context, int errcode_ret[])
     {
+        // OPENCL_1_1
         if (exceptionsEnabled)
         {
             if (errcode_ret == null)
@@ -10300,7 +10301,7 @@ public final class CL
      *             cl_int
      *             <b>clRetainEvent</b>
      *             (</code>
-     *           <td>cl_event <var>event</var><code>)</code></td>
+     *           <td>cl_event<var>event</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -10370,7 +10371,7 @@ public final class CL
      *             cl_int
      *             <b>clReleaseEvent</b>
      *             (</code>
-     *           <td>cl_event <var>event</var><code>)</code></td>
+     *           <td>cl_event<var>event</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -10440,12 +10441,12 @@ public final class CL
      *             <code>
      *             cl_mem <b>clSetUserEventStatus</b>
      *             (</code>
-     *           <td>cl_event <var>event</var>, </td>
+     *           <td>cl_event<var>event</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>execution_status</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>execution_status</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -10567,6 +10568,7 @@ public final class CL
      */
     public static int clSetUserEventStatus(cl_event event, int execution_status)
     {
+        // OPENCL_1_1
         return checkResult(clSetUserEventStatusNative(event, execution_status));
     }
     private static native int clSetUserEventStatusNative(cl_event event, int execution_status);
@@ -10586,27 +10588,27 @@ public final class CL
      *             <code>
      *             cl_int <b>clSetEventCallback</b>
      *             (</code>
-     *           <td>cl_event <var>event</var>, </td>
+     *           <td>cl_event<var>event</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td></td>
      *           <td>
      *             cl_int
-     *              <var>command_exec_callback_type</var>
+     *             <var>command_exec_callback_type</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void (CL_CALLBACK  <var>*pfn_event_notify)
+     *           <td></td>
+     *           <td>void (CL_CALLBACK <var>*pfn_event_notify)
      *             (cl_event event, cl_int event_command_exec_status,
      *             void *user_data</var>),
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*user_data</var><code>)</code></td>
+     *           <td></td>
+     *           <td>void<var>*user_data</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -10769,6 +10771,7 @@ public final class CL
      */
     public static int clSetEventCallback(cl_event event, int command_exec_callback_type, EventCallbackFunction pfn_notify, Object user_data)
     {
+        // OPENCL_1_1
         return checkResult(clSetEventCallbackNative(event, command_exec_callback_type, pfn_notify, user_data));
     }
     private static native int clSetEventCallbackNative(cl_event event, int command_exec_callback_type, EventCallbackFunction pfn_notify, Object user_data);
@@ -10792,24 +10795,24 @@ public final class CL
      *             cl_int
      *             <b>clGetEventProfilingInfo</b>
      *             (</code>
-     *           <td>cl_event <var>event</var>, </td>
+     *           <td>cl_event<var>event</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_profiling_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_profiling_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -11014,7 +11017,7 @@ public final class CL
      *             cl_int
      *             <b>clFlush</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var><code>)</code></td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -11098,7 +11101,7 @@ public final class CL
      *             cl_int
      *             <b>clFinish</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var><code>)</code></td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -11159,40 +11162,40 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueReadBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_read</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_read</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>cb</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>cb</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -11424,60 +11427,60 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueReadBufferRect</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_read</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_read</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>buffer_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>buffer_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>host_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>host_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>buffer_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>buffer_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>buffer_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>buffer_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>host_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>host_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>host_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>host_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -11673,6 +11676,7 @@ public final class CL
      */
     public static int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long[] buffer_offset, long[] host_offset, long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
+        // OPENCL_1_1
         if (!blocking_read && !ptr.isDirectBufferPointer())
         {
             throw new IllegalArgumentException(
@@ -11701,40 +11705,40 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWriteBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_write</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_write</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>cb</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>cb</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const void <var>*ptr</var>, </td>
+     *           <td></td>
+     *           <td>const void<var>*ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -11936,7 +11940,7 @@ public final class CL
     {
         if (blocking_write)
         {
-            return checkResult(clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
+        return checkResult(clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
         }
         else
         {
@@ -11969,60 +11973,60 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWriteBufferRect</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_write</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_write</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>buffer_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>buffer_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>host_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>host_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>buffer_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>buffer_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>buffer_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>buffer_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>host_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>host_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>host_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>host_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -12230,6 +12234,7 @@ public final class CL
      */
     public static int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event)
     {
+        // OPENCL_1_1
         return checkResult(clEnqueueWriteBufferRectNative(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
     }
 
@@ -12251,40 +12256,40 @@ public final class CL
      *             <code>
      *             cl_int <b>clEnqueueCopyBuffer </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>src_buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>src_buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>dst_buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>dst_buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>src_offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>src_offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>dst_offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>dst_offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>cb</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>cb</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -12445,56 +12450,56 @@ public final class CL
      *             <code>
      *             cl_int <b>clEnqueueCopyBufferRect </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>src_buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>src_buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>dst_buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>dst_buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>src_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>src_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>dst_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>dst_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>src_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>src_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>src_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>src_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>dst_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>dst_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>dst_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>dst_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -12666,6 +12671,7 @@ public final class CL
      */
     public static int clEnqueueCopyBufferRect(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, long[] src_origin, long[] dst_origin, long[] region, long src_row_pitch, long src_slice_pitch, long dst_row_pitch, long dst_slice_pitch, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event)
     {
+        // OPENCL_1_1
         return checkResult(clEnqueueCopyBufferRectNative(command_queue, src_buffer, dst_buffer, src_origin, dst_origin, region, src_row_pitch, src_slice_pitch, dst_row_pitch, dst_slice_pitch, num_events_in_wait_list, event_wait_list, event));
     }
 
@@ -12688,48 +12694,48 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueReadImage</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_read</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_read</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -12965,7 +12971,6 @@ public final class CL
      */
     public static int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
-
         if (!blocking_read && !ptr.isDirectBufferPointer())
         {
             throw new IllegalArgumentException(
@@ -12995,48 +13000,48 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWriteImage</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_write</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_write</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>input_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>input_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>input_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>input_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const void <var>* ptr</var>, </td>
+     *           <td></td>
+     *           <td>const void<var>* ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13299,40 +13304,40 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueCopyImage</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>src_image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>src_image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>dst_image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>dst_image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>src_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>src_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>dst_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>dst_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13529,40 +13534,40 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueCopyImageToBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>src_image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>src_image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem  <var>dst_buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem <var>dst_buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>src_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>src_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>dst_offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>dst_offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13741,40 +13746,40 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueCopyBufferToImage</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>src_buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>src_buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem  <var>dst_image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem <var>dst_image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>src_offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>src_offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>dst_origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>dst_origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13965,44 +13970,44 @@ public final class CL
      *             <code>
      *             void * <b>clEnqueueMapBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>buffer</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_map</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_map</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_map_flags <var>map_flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_map_flags<var>map_flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>offset</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>cb</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>cb</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var>, </td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -14238,52 +14243,52 @@ public final class CL
      *             <code>
      *             void * <b>clEnqueueMapImage </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>image</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>image</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_map</var>, </td>
+     *           <td></td>
+     *           <td>cl_bool<var>blocking_map</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_map_flags <var>map_flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_map_flags<var>map_flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>origin</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>origin</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>region</var>[3], </td>
+     *           <td></td>
+     *           <td>const size_t<var>region</var>[3], </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*image_row_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>*image_row_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*image_slice_pitch</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>*image_slice_pitch</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var>, </td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -14567,28 +14572,28 @@ public final class CL
      *             <code>
      *             cl_int  <b>clEnqueueUnmapMemObject </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem <var>memobj</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*mapped_ptr</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*mapped_ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -14752,40 +14757,40 @@ public final class CL
      *             clEnqueueNDRangeKernel
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_kernel <var>kernel</var>, </td>
+     *           <td></td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>work_dim</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>work_dim</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>*global_work_offset</var>, </td>
+     *           <td></td>
+     *           <td>const size_t<var>*global_work_offset</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>*global_work_size</var>, </td>
+     *           <td></td>
+     *           <td>const size_t<var>*global_work_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const size_t <var>*local_work_size</var>, </td>
+     *           <td></td>
+     *           <td>const size_t<var>*local_work_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -15030,24 +15035,24 @@ public final class CL
      *             clEnqueueTask
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_kernel <var>kernel</var>, </td>
+     *           <td></td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -15197,44 +15202,44 @@ public final class CL
      *             clEnqueueNativeKernel
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>(*user_func)(void *)</var>, </td>
+     *           <td></td>
+     *           <td>void<var>(*user_func)(void *)</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*args</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*args</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>cb_args</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>cb_args</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_mem_objects</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_mem_objects</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_mem <var>*mem_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_mem<var>*mem_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const void <var>**args_mem_loc</var>, </td>
+     *           <td></td>
+     *           <td>const void<var>**args_mem_loc</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -15452,12 +15457,12 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueMarker</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -15517,16 +15522,16 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWaitForEvents</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_list</var><code>)</code></td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_list</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -15733,7 +15738,7 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueBarrier</b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var><code>)</code></td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
      *         </tr>
      *       </table>
@@ -15792,20 +15797,20 @@ public final class CL
      *             clCreateFromGLBuffer
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLuint <var>bufobj</var>, </td>
+     *           <td></td>
+     *           <td>GLuint<var>bufobj</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>* errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>* errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -15947,28 +15952,28 @@ public final class CL
      *             clCreateFromGLTexture2D
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLenum <var>texture_target</var>, </td>
+     *           <td></td>
+     *           <td>GLenum<var>texture_target</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLint <var>miplevel</var>, </td>
+     *           <td></td>
+     *           <td>GLint<var>miplevel</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLuint <var>texture</var>, </td>
+     *           <td></td>
+     *           <td>GLuint<var>texture</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -16168,28 +16173,28 @@ public final class CL
      *             clCreateFromGLTexture3D
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLenum <var>texture_target</var>, </td>
+     *           <td></td>
+     *           <td>GLenum<var>texture_target</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLint <var>miplevel</var>, </td>
+     *           <td></td>
+     *           <td>GLint<var>miplevel</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLuint <var>texture</var>, </td>
+     *           <td></td>
+     *           <td>GLuint<var>texture</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>* errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>* errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -16393,20 +16398,20 @@ public final class CL
      *             clCreateFromGLRenderbuffer
      *             </b>
      *             (</code>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context<var>context</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLuint <var>renderbuffer</var>, </td>
+     *           <td></td>
+     *           <td>GLuint<var>renderbuffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>* errcode_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_int<var>* errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -16682,16 +16687,16 @@ public final class CL
      *             clGetGLObjectInfo
      *             </b>
      *             (</code>
-     *           <td>cl_mem <var>memobj</var>, </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_gl_object_type <var>*gl_object_type</var>, </td>
+     *           <td></td>
+     *           <td>cl_gl_object_type<var>*gl_object_type</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLuint <var>*gl_object_name</var><code>)</code></td>
+     *           <td></td>
+     *           <td>GLuint<var>*gl_object_name</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -16786,24 +16791,24 @@ public final class CL
      *             clGetGLTextureInfo
      *             </b>
      *             (</code>
-     *           <td>cl_mem <var>memobj</var>, </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_gl_texture_info <var>param_name</var>, </td>
+     *           <td></td>
+     *           <td>cl_gl_texture_info<var>param_name</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>param_value_size</var>, </td>
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*param_value</var>, </td>
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>*param_value_size_ret</var><code>)</code></td>
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -16964,28 +16969,28 @@ public final class CL
      *             clEnqueueAcquireGLObjects
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_objects</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_objects</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_mem <var>*mem_objects</var>, </td>
+     *           <td></td>
+     *           <td>const cl_mem<var>*mem_objects</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -17225,28 +17230,28 @@ public final class CL
      *             clEnqueueReleaseGLObjects
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_objects</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_objects</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_mem <var>*mem_objects</var>, </td>
+     *           <td></td>
+     *           <td>const cl_mem<var>*mem_objects</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -17465,8 +17470,6 @@ public final class CL
 
     /**
      * Can be used to query information about a CL/GL context.
-     *
-     * TODO: Add documentation
      */
     /*
     public static int clGetGLContextInfoKHR(cl_context_properties properties, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[])
@@ -17483,19 +17486,4 @@ public final class CL
     private CL()
     {}
 
-
-    /*
-     * XXX GL_INTEROPERABILITY - This function is ONLY for testing!
-     */
-    /*
-    public static void initGLSharedContextProperties(cl_context_properties properties)
-    {
-        long propertiesArray[] = createGLSharedContextPropertiesArrayNative();
-        for (int i=0; i<propertiesArray.length-1; i+=2)
-        {
-            properties.addProperty(propertiesArray[i+0], propertiesArray[i+1]);
-        }
-    }
-    private static native long[] createGLSharedContextPropertiesArrayNative();
-    */
 }

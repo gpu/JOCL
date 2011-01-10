@@ -27,24 +27,30 @@
 
 package org.jocl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Locale;
 
 /**
  * Utility class for detecting the operating system and architecture
- * types, and automatically loading the matching native library. <br />
+ * types, and automatically loading the matching native library
+ * as a resource or from a file. <br />
  * <br />
- * Adapted from http://javablog.co.uk/2007/05/19/making-jni-cross-platform/
- * <br />
- * Extended with http://lopica.sourceforge.net/os.html 
+ * The architecture and OS detection has been adapted from 
+ * http://javablog.co.uk/2007/05/19/making-jni-cross-platform/
+ * and extended with http://lopica.sourceforge.net/os.html 
  */
 final class LibUtils
 {
     /**
-     * Enumeration of common operating systems, independent of version or architecture. 
+     * Enumeration of common operating systems, independent of version 
+     * or architecture. 
      */
     public static enum OSType
     {
-        APPLE, LINUX, SUN, WINDOWS, UNKNOWN
+    	APPLE, LINUX, SUN, WINDOWS, UNKNOWN
     }
     
     /**
@@ -58,7 +64,10 @@ final class LibUtils
     /**
      * Loads the specified library. The full name of the library
      * is created by calling {@link LibUtils#createLibName(String)}
-     * with the given argument.
+     * with the given argument. The method will attempt to load
+     * the library as a as a resource (for usage within a JAR),
+     * and, if this fails, using the usual System.loadLibrary
+     * call.
      *    
      * @param baseName The base name of the library
      * @throws UnsatisfiedLinkError if the native library 
@@ -67,21 +76,120 @@ final class LibUtils
     public static void loadLibrary(String baseName)
     {
         String libName = LibUtils.createLibName(baseName);
+
+        Throwable throwable = null;
         try
         {
-            System.loadLibrary(libName);
+        	loadLibraryResource(libName);
+            return;
         }
         catch (Throwable t) 
         {
-            System.err.println("Error while loading native library \"" +
-            		libName + "\" with base name \""+baseName+"\"");
-            System.err.println("Operating system name: "+System.getProperty("os.name"));
-            System.err.println("Architecture         : "+System.getProperty("os.arch"));
-            System.err.println("Architecture bit size: "+System.getProperty("sun.arch.data.model"));
-            System.err.println("Stack trace:");
-            t.printStackTrace();
-            throw new UnsatisfiedLinkError("Could not load the native library");
+        	throwable = t;
         }
+        
+        try
+        {
+        	System.loadLibrary(libName);
+        	return;
+        }
+        catch (Throwable t)
+        {
+	        System.err.println("Error while loading native library \"" +
+	        		libName + "\" with base name \""+baseName+"\"");
+	        System.err.println("Operating system name: "+
+	        		System.getProperty("os.name"));
+	        System.err.println("Architecture         : "+
+	        		System.getProperty("os.arch"));
+	        System.err.println("Architecture bit size: "+
+	        		System.getProperty("sun.arch.data.model"));
+	        
+	        System.err.println(
+	            "Stack trace from the attempt to " +
+	            "load the library as a resource:");
+	        	throwable.printStackTrace();
+	        
+	        System.err.println(
+        		"Stack trace from the attempt to " +
+        		"load the library as a file:");
+	        t.printStackTrace();
+	        
+	        throw new UnsatisfiedLinkError(
+	        		"Could not load the native library");
+        }
+    }
+
+    /**
+     * Load the library with the given name from a resource. 
+     * The extension for the current OS will be appended.
+     * 
+     * @param libName The library name
+     * @throws Throwable If the library could not be loaded
+     */
+    private static void loadLibraryResource(String libName) throws Throwable
+    {
+    	String libExt = createLibExtension();
+    	String resourceName = "/lib/"+libName + "." + libExt;
+        InputStream inputStream = 
+        	LibUtils.class.getResourceAsStream(resourceName);
+        if (inputStream == null)
+        {
+        	throw new NullPointerException(
+        			"No resource found with name '"+resourceName+"'");
+        }
+        File tempFile = File.createTempFile("jocl-", ".tmp");
+        tempFile.deleteOnExit();
+        OutputStream outputStream = null;
+        try
+        {
+        	outputStream = new FileOutputStream(tempFile);
+	        byte[] buffer = new byte[8192];
+	        while (true)
+	        {
+	        	int read = inputStream.read(buffer);
+	        	if (read < 0)
+	        	{
+	        		break;
+	        	}
+	        	outputStream.write(buffer, 0, read);	
+	        }
+	        outputStream.flush();
+	        outputStream.close();
+	        outputStream = null;
+	        System.load(tempFile.toString());
+        }
+        finally 
+        {
+        	if (outputStream != null)
+        	{
+        		outputStream.close();
+        	}
+        }
+    }
+
+    
+    /**
+     * Returns the extension for dynamically linked libraries on the
+     * current OS. That is, returns "dynlib" on Apple, "so" on Linux
+     * and Sun, and "dll" on Windows.
+     * 
+     * @return The library extension
+     */
+    private static String createLibExtension()
+    {
+        OSType osType = calculateOS();
+    	switch (osType) 
+    	{
+			case APPLE:
+				return "dynlib";
+			case LINUX:
+				return "so";
+			case SUN:
+				return "so";
+			case WINDOWS:
+				return "dll";
+		}
+    	return "";
     }
     
     /**
@@ -106,7 +214,6 @@ final class LibUtils
         return libName;
     }
     
-    
     /**
      * Calculates the current OSType
      * 
@@ -114,8 +221,8 @@ final class LibUtils
      */
     public static OSType calculateOS()
     {
-        String osName = System.getProperty("os.name").toLowerCase();
-        assert osName != null;
+        String osName = System.getProperty("os.name");
+        osName = osName.toLowerCase(Locale.ENGLISH);
         if (osName.startsWith("mac os"))
         {
             return OSType.APPLE;
@@ -143,9 +250,11 @@ final class LibUtils
      */
     public static ARCHType calculateArch()
     {
-        String osArch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
-        assert osArch != null;
-        if (osArch.equals("i386") || osArch.equals("x86") || osArch.equals("i686"))
+        String osArch = System.getProperty("os.arch");
+        osArch = osArch.toLowerCase(Locale.ENGLISH);
+        if (osArch.equals("i386") || 
+            osArch.equals("x86")  || 
+            osArch.equals("i686"))
         {
             return ARCHType.X86; 
         }
