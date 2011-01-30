@@ -128,8 +128,10 @@ final class LibUtils
      */
     private static void loadLibraryResource(String libName) throws Throwable
     {
-    	String libExt = createLibExtension();
-    	String resourceName = "/lib/"+libName + "." + libExt;
+        String libPrefix = createLibPrefix();
+    	String libExtension = createLibExtension();
+    	String fullName = libPrefix + libName;
+        String resourceName = "/lib/" + fullName + "." + libExtension;
         InputStream inputStream = 
         	LibUtils.class.getResourceAsStream(resourceName);
         if (inputStream == null)
@@ -137,7 +139,7 @@ final class LibUtils
         	throw new NullPointerException(
         			"No resource found with name '"+resourceName+"'");
         }
-        File tempFile = File.createTempFile("jocl-", ".tmp");
+        File tempFile = File.createTempFile(fullName, "."+libExtension);
         tempFile.deleteOnExit();
         OutputStream outputStream = null;
         try
@@ -178,19 +180,42 @@ final class LibUtils
     private static String createLibExtension()
     {
         OSType osType = calculateOS();
-    	switch (osType) 
-    	{
-			case APPLE:
-				return "dynlib";
-			case LINUX:
-				return "so";
-			case SUN:
-				return "so";
-			case WINDOWS:
-				return "dll";
-		}
-    	return "";
+        switch (osType) 
+        {
+            case APPLE:
+                return "dynlib";
+            case LINUX:
+                return "so";
+            case SUN:
+                return "so";
+            case WINDOWS:
+                return "dll";
+        }
+        return "";
     }
+
+    /**
+     * Returns the prefix for dynamically linked libraries on the
+     * current OS. That is, returns "lib" on Apple, Linux and Sun, 
+     * and the empty String on Windows.
+     * 
+     * @return The library prefix
+     */
+    private static String createLibPrefix()
+    {
+        OSType osType = calculateOS();
+        switch (osType) 
+        {
+            case APPLE:
+            case LINUX:
+            case SUN:
+                return "lib";
+            case WINDOWS:
+                return "";
+        }
+        return "";
+    }
+    
     
     /**
      * Creates the name for the native library with the given base
