@@ -638,7 +638,7 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
                 return NULL;
             }
 
-            if (isCopy)
+            if (isCopy==JNI_TRUE)
             {
                 pointerData->memoryType = ARRAY_COPY;
             }
@@ -3998,6 +3998,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4026,8 +4027,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    int result = clEnqueueReadBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_read, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueReadBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_read, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
 	/* See notes about NON_BLOCKING_READ at end of file
@@ -4118,7 +4123,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
-
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4173,8 +4178,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    int result = clEnqueueReadBufferRect(nativeCommand_queue, nativeBuffer, nativeBlocking_read, nativeBuffer_offset, nativeHost_offset, nativeRegion, nativeBuffer_row_pitch, nativeBuffer_slice_pitch, nativeHost_row_pitch, nativeHost_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueReadBufferRect(nativeCommand_queue, nativeBuffer, nativeBlocking_read, nativeBuffer_offset, nativeHost_offset, nativeRegion, nativeBuffer_row_pitch, nativeBuffer_slice_pitch, nativeHost_row_pitch, nativeHost_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
 	/* See notes about NON_BLOCKING_READ at end of file
@@ -4233,6 +4242,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4263,9 +4273,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-    int result = clEnqueueWriteBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_write, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueWriteBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_write, nativeOffset, nativeCb, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     if (!releasePointerData(env, ptrPointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
@@ -4310,7 +4323,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
-
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4366,8 +4379,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
-
-    int result = clEnqueueWriteBufferRect(nativeCommand_queue, nativeBuffer, nativeBlocking_write, nativeBuffer_offset, nativeHost_offset, nativeRegion, nativeBuffer_row_pitch, nativeBuffer_slice_pitch, nativeHost_row_pitch, nativeHost_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
+	
+    int result = clEnqueueWriteBufferRect(nativeCommand_queue, nativeBuffer, nativeBlocking_write, nativeBuffer_offset, nativeHost_offset, nativeRegion, nativeBuffer_row_pitch, nativeBuffer_slice_pitch, nativeHost_row_pitch, nativeHost_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     delete[] nativeBuffer_offset;
     delete[] nativeHost_offset;
@@ -4406,6 +4423,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4432,10 +4450,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-
-    int result = clEnqueueCopyBuffer(nativeCommand_queue, nativeSrc_buffer, nativeDst_buffer, nativeSrc_offset, nativeDst_offset, nativeCb, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueCopyBuffer(nativeCommand_queue, nativeSrc_buffer, nativeDst_buffer, nativeSrc_offset, nativeDst_offset, nativeCb, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeEvent_wait_list;
@@ -4472,6 +4492,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4523,8 +4544,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    int result = clEnqueueCopyBufferRect(nativeCommand_queue, nativeSrc_buffer, nativeDst_buffer, nativeSrc_origin, nativeDst_origin, nativeRegion, nativeSrc_row_pitch, nativeSrc_slice_pitch, nativeDst_row_pitch, nativeDst_slice_pitch, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueCopyBufferRect(nativeCommand_queue, nativeSrc_buffer, nativeDst_buffer, nativeSrc_origin, nativeDst_origin, nativeRegion, nativeSrc_row_pitch, nativeSrc_slice_pitch, nativeDst_row_pitch, nativeDst_slice_pitch, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeSrc_origin;
@@ -4571,6 +4596,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4617,9 +4643,13 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
 
-    int result = clEnqueueReadImage(nativeCommand_queue, nativeImage, nativeBlocking_read, nativeOrigin, nativeRegion, nativeRow_pitch, nativeSlice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueReadImage(nativeCommand_queue, nativeImage, nativeBlocking_read, nativeOrigin, nativeRegion, nativeRow_pitch, nativeSlice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
 	// See notes about NON_BLOCKING_READ at end of file
 
@@ -4658,6 +4688,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4704,9 +4735,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-    int result = clEnqueueWriteImage(nativeCommand_queue, nativeImage, nativeBlocking_write, nativeOrigin, nativeRegion, nativeInput_row_pitch, nativeInput_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueWriteImage(nativeCommand_queue, nativeImage, nativeBlocking_write, nativeOrigin, nativeRegion, nativeInput_row_pitch, nativeInput_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeOrigin;
@@ -4741,6 +4775,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4788,10 +4823,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-
-    int result = clEnqueueCopyImage(nativeCommand_queue, nativeSrc_image, nativeDst_image, nativeSrc_origin, nativeDst_origin, nativeRegion, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueCopyImage(nativeCommand_queue, nativeSrc_image, nativeDst_image, nativeSrc_origin, nativeDst_origin, nativeRegion, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeSrc_origin;
@@ -4827,6 +4864,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4867,10 +4905,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-
-    int result = clEnqueueCopyImageToBuffer(nativeCommand_queue, nativeSrc_image, nativeDst_buffer, nativeSrc_origin, nativeRegion, nativeDst_offset, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueCopyImageToBuffer(nativeCommand_queue, nativeSrc_image, nativeDst_buffer, nativeSrc_origin, nativeRegion, nativeDst_offset, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeSrc_origin;
@@ -4904,6 +4944,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -4944,10 +4985,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-
-    int result = clEnqueueCopyBufferToImage(nativeCommand_queue, nativeSrc_buffer, nativeDst_image, nativeSrc_offset, nativeDst_origin, nativeRegion, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueCopyBufferToImage(nativeCommand_queue, nativeSrc_buffer, nativeDst_image, nativeSrc_offset, nativeDst_origin, nativeRegion, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeDst_origin;
@@ -4980,6 +5023,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
     cl_int nativeErrcode_ret = 0;
     void *nativeHostPointer = NULL;
 
@@ -5007,8 +5051,12 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
             return NULL;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    nativeHostPointer = clEnqueueMapBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_map, nativeMap_flags, nativeOffset, nativeCb, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent, &nativeErrcode_ret);
+    nativeHostPointer = clEnqueueMapBuffer(nativeCommand_queue, nativeBuffer, nativeBlocking_map, nativeMap_flags, nativeOffset, nativeCb, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer, &nativeErrcode_ret);
 
     // Write back native variable values and clean up
     delete[] nativeEvent_wait_list;
@@ -5045,6 +5093,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
     cl_int nativeErrcode_ret = 0;
     void *nativeHostPointer = NULL;
 
@@ -5086,8 +5135,12 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
             return NULL;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    nativeHostPointer = clEnqueueMapImage(nativeCommand_queue, nativeImage, nativeBlocking_map, nativeMap_flags, nativeOrigin, nativeRegion, &nativeImage_row_pitch, &nativeImage_slice_pitch, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent, &nativeErrcode_ret);
+    nativeHostPointer = clEnqueueMapImage(nativeCommand_queue, nativeImage, nativeBlocking_map, nativeMap_flags, nativeOrigin, nativeRegion, &nativeImage_row_pitch, &nativeImage_slice_pitch, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer, &nativeErrcode_ret);
 
     // Write back native variable values and clean up
     delete[] nativeOrigin;
@@ -5132,6 +5185,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueUnmapMemObjectNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -5155,8 +5209,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueUnmapMemObjectNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    int result = clEnqueueUnmapMemObject(nativeCommand_queue, nativeMemobj, nativeMapped_ptr, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueUnmapMemObject(nativeCommand_queue, nativeMemobj, nativeMapped_ptr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeEvent_wait_list;
@@ -5188,6 +5246,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -5232,8 +5291,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    int result = clEnqueueNDRangeKernel(nativeCommand_queue, nativeKernel, nativeWork_dim, nativeGlobal_work_offset, nativeGlobal_work_size, nativeLocal_work_size, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueNDRangeKernel(nativeCommand_queue, nativeKernel, nativeWork_dim, nativeGlobal_work_offset, nativeGlobal_work_size, nativeLocal_work_size, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeGlobal_work_offset;
@@ -5264,6 +5327,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -5283,9 +5347,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-    int result = clEnqueueTask(nativeCommand_queue, nativeKernel, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueTask(nativeCommand_queue, nativeKernel, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
     delete[] nativeEvent_wait_list;
@@ -5318,7 +5385,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
-
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -5373,14 +5440,22 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	//if (event != NULL) // Always use a non-NULL event here
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
 
     // TODO: The call currently has to be blocking,
     // to prevent the nativeArgs from being deleted
-    int result = clEnqueueNativeKernel(nativeCommand_queue, nativeUser_func, nativeArgs, nativeCb_args, nativeNum_mem_objects, nativeMem_list, (const void**)nativeArgs_mem_loc, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueNativeKernel(nativeCommand_queue, nativeUser_func, nativeArgs, nativeCb_args, nativeNum_mem_objects, nativeMem_list, (const void**)nativeArgs_mem_loc, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // TODO: Have to block in the current implementation
     clWaitForEvents(1, &nativeEvent);
+	if (event == NULL)
+	{
+		clReleaseEvent(nativeEvent);
+	}
 
     // Write back native variable values and clean up
     delete[] nativeMem_list;
@@ -5407,14 +5482,19 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerNative
     // Native variables declaration
     cl_command_queue nativeCommand_queue = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
     {
         nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-    int result = clEnqueueMarker(nativeCommand_queue, &nativeEvent);
+    int result = clEnqueueMarker(nativeCommand_queue, nativeEventPointer);
 
     // Write back native variable values and clean up
     setNativePointer(env, event, (jlong)nativeEvent);
@@ -5773,6 +5853,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -5797,11 +5878,15 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-    int result = clEnqueueAcquireGLObjects(nativeCommand_queue, nativeNum_objects, nativeMem_objects, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueAcquireGLObjects(nativeCommand_queue, nativeNum_objects, nativeMem_objects, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
+	delete[] nativeMem_objects;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 
@@ -5825,6 +5910,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
+	cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
     if (command_queue != NULL)
@@ -5849,11 +5935,15 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
+	if (event != NULL)
+	{
+		nativeEventPointer = &nativeEvent;
+	}
 
-
-    int result = clEnqueueReleaseGLObjects(nativeCommand_queue, nativeNum_objects, nativeMem_objects, nativeNum_events_in_wait_list, nativeEvent_wait_list, &nativeEvent);
+    int result = clEnqueueReleaseGLObjects(nativeCommand_queue, nativeNum_objects, nativeMem_objects, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
+	delete[] nativeMem_objects;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
 
@@ -6459,3 +6549,5 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoKHRNative
 //    not be detected without using event callbacks, which are only
 //    available in OpenCL 1.1. 
 // Also see the notes about NON_BLOCKING_READ in CL.java
+
+
