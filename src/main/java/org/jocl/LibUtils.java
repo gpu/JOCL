@@ -172,7 +172,7 @@ final class LibUtils
     
     /**
      * Returns the extension for dynamically linked libraries on the
-     * current OS. That is, returns "dynlib" on Apple, "so" on Linux
+     * current OS. That is, returns "jnilib" on Apple, "so" on Linux
      * and Sun, and "dll" on Windows.
      * 
      * @return The library extension
@@ -183,7 +183,7 @@ final class LibUtils
         switch (osType) 
         {
             case APPLE:
-                return "dynlib";
+                return "jnilib";
             case LINUX:
                 return "so";
             case SUN:
