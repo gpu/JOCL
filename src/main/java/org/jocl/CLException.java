@@ -43,6 +43,11 @@ public class CLException extends RuntimeException
     private static final long serialVersionUID = 1587809813906124159L;
 
     /**
+     * The status code from OpenCL
+     */
+    private final int status;
+    
+    /**
      * Creates a new CLException with the given error message.
      * 
      * @param message The error message for this CLException
@@ -50,6 +55,19 @@ public class CLException extends RuntimeException
     public CLException(String message)
     {
         super(message);
+        this.status = CL.CL_JOCL_INTERNAL_ERROR;
+    }
+
+    /**
+     * Creates a new CLException with the given error message.
+     * 
+     * @param message The error message for this CLException
+     * @param status The status code from OpenCL
+     */
+    public CLException(String message, int status)
+    {
+        super(message);
+        this.status = status;
     }
 
     /**
@@ -61,6 +79,31 @@ public class CLException extends RuntimeException
     public CLException(String message, Throwable cause)
     {
         super(message, cause);
+        this.status = CL.CL_JOCL_INTERNAL_ERROR;
+    }
+    
+    /**
+     * Creates a new CLException with the given error message.
+     * 
+     * @param message The error message for this CLException
+     * @param cause The throwable that caused this exception
+     * @param status The status code from OpenCL
+     */
+    public CLException(String message, Throwable cause, int status)
+    {
+        super(message, cause);
+        this.status = status;
+    }
+    
+    /**
+     * Returns the status code from OpenCL that caused this exception.
+     * For example, the value of {@value CL#CL_DEVICE_NOT_FOUND}
+     * 
+     * @return The OpenCL status code
+     */
+    public int getStatus()
+    {
+        return status;
     }
     
 } 

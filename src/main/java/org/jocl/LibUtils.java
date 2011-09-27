@@ -27,10 +27,7 @@
 
 package org.jocl;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Locale;
 
 /**
@@ -65,9 +62,9 @@ final class LibUtils
      * Loads the specified library. The full name of the library
      * is created by calling {@link LibUtils#createLibName(String)}
      * with the given argument. The method will attempt to load
-     * the library as a as a resource (for usage within a JAR),
-     * and, if this fails, using the usual System.loadLibrary
-     * call.
+     * the library using the usual System.loadLibrary call,
+     * and, if this fails, it will try to load it as a as a 
+     * resource (for usage within a JAR).
      *    
      * @param baseName The base name of the library
      * @throws UnsatisfiedLinkError if the native library 
@@ -80,7 +77,7 @@ final class LibUtils
         Throwable throwable = null;
         try
         {
-        	loadLibraryResource(libName);
+            System.loadLibrary(libName);
             return;
         }
         catch (Throwable t) 
@@ -90,32 +87,37 @@ final class LibUtils
         
         try
         {
-        	System.loadLibrary(libName);
+            loadLibraryResource(libName);
         	return;
         }
         catch (Throwable t)
         {
-	        System.err.println("Error while loading native library \"" +
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            
+            pw.println("Error while loading native library \"" +
 	        		libName + "\" with base name \""+baseName+"\"");
-	        System.err.println("Operating system name: "+
+            pw.println("Operating system name: "+
 	        		System.getProperty("os.name"));
-	        System.err.println("Architecture         : "+
+            pw.println("Architecture         : "+
 	        		System.getProperty("os.arch"));
-	        System.err.println("Architecture bit size: "+
+            pw.println("Architecture bit size: "+
 	        		System.getProperty("sun.arch.data.model"));
 	        
-	        System.err.println(
+            pw.println("---(start of nested stack traces)---");
+            pw.println(
 	            "Stack trace from the attempt to " +
-	            "load the library as a resource:");
-	        	throwable.printStackTrace();
+	            "load the library as a file:");
+	        throwable.printStackTrace(pw);
 	        
-	        System.err.println(
+	        pw.println(
         		"Stack trace from the attempt to " +
-        		"load the library as a file:");
-	        t.printStackTrace();
+        		"load the library as a resource:");
+	        t.printStackTrace(pw);
+            pw.println("---(end of nested stack traces)---");
 	        
-	        throw new UnsatisfiedLinkError(
-	        		"Could not load the native library");
+	        pw.close();
+	        throw new UnsatisfiedLinkError(sw.toString());
         }
     }
 
@@ -128,10 +130,28 @@ final class LibUtils
      */
     private static void loadLibraryResource(String libName) throws Throwable
     {
+        // Build the full name of the library 
         String libPrefix = createLibPrefix();
     	String libExtension = createLibExtension();
     	String fullName = libPrefix + libName;
-        String resourceName = "/lib/" + fullName + "." + libExtension;
+    	String fullNameWithExt = fullName + "." + libExtension;
+
+    	// If a temporary file with the resulting name
+    	// already exists, it can simply be loaded
+        String tempDirName = System.getProperty("java.io.tmpdir");
+        String tempFileName = tempDirName + File.separator + fullNameWithExt;
+        File tempFile = new File(tempFileName);
+        if (tempFile.exists())
+        {
+            //System.out.println("Loading from existing file: "+tempFile);
+            System.load(tempFile.toString());
+            return;
+        }
+    	
+        // No file with the resulting name exists yet. Try to write
+        // the library data from the JAR into the temporary file, 
+        // and load the newly created file.
+        String resourceName = "/lib/" + fullNameWithExt;
         InputStream inputStream = 
         	LibUtils.class.getResourceAsStream(resourceName);
         if (inputStream == null)
@@ -139,8 +159,6 @@ final class LibUtils
         	throw new NullPointerException(
         			"No resource found with name '"+resourceName+"'");
         }
-        File tempFile = File.createTempFile(fullName, "."+libExtension);
-        tempFile.deleteOnExit();
         OutputStream outputStream = null;
         try
         {
@@ -158,7 +176,9 @@ final class LibUtils
 	        outputStream.flush();
 	        outputStream.close();
 	        outputStream = null;
-	        System.load(tempFile.toString());
+	        
+            //System.out.println("Loading from newly created file: "+tempFile);
+            System.load(tempFile.toString());
         }
         finally 
         {
@@ -169,7 +189,7 @@ final class LibUtils
         }
     }
 
-    
+
     /**
      * Returns the extension for dynamically linked libraries on the
      * current OS. That is, returns "jnilib" on Apple, "so" on Linux

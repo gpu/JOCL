@@ -44,7 +44,7 @@ public final class CL
     // Initialization of the native library
     static
     {
-        LibUtils.loadLibrary("JOCL");
+        LibUtils.loadLibrary("JOCL_0_1_7");
     }
 
     // cl_platform.h constants
@@ -143,7 +143,8 @@ public final class CL
     public static final int CL_INVALID_GLOBAL_WORK_SIZE                 = -63;
     public static final int CL_JOCL_INTERNAL_ERROR                      = -64;
     public static final int CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR      = -1000;
-
+    public static final int CL_PLATFORM_NOT_FOUND_KHR                   = -1001;
+    
     // cl_bool
     public static final boolean CL_TRUE = true;
     public static final boolean CL_FALSE = false;
@@ -154,6 +155,8 @@ public final class CL
     public static final int CL_PLATFORM_NAME = 0x0902;
     public static final int CL_PLATFORM_VENDOR = 0x0903;
     public static final int CL_PLATFORM_EXTENSIONS = 0x0904;
+    // CL_EXT
+    public static final int CL_PLATFORM_ICD_SUFFIX_KHR = 0x0920;
 
     // cl_device_type - bitfield
     public static final long CL_DEVICE_TYPE_DEFAULT = (1 << 0);
@@ -224,7 +227,11 @@ public final class CL
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE        = 0x103B;
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF          = 0x103C;
     public static final int CL_DEVICE_OPENCL_C_VERSION                  = 0x103D;
-
+    
+    // CL_EXT
+    public static final int CL_DEVICE_DOUBLE_FP_CONFIG                  = 0x1032;
+    public static final int CL_DEVICE_HALF_FP_CONFIG                    = 0x1033;
+    
 
     // cl_device_address_info - bitfield
     public static final long CL_DEVICE_ADDRESS_32_BITS = (1 << 0);
@@ -559,7 +566,7 @@ public final class CL
     {
         if (exceptionsEnabled && result != CL_SUCCESS)
         {
-            throw new CLException(stringFor_errorCode(result));
+            throw new CLException(stringFor_errorCode(result), result);
         }
         return result;
     }
@@ -631,7 +638,8 @@ public final class CL
             case CL_INVALID_GLOBAL_WORK_SIZE: return "CL_INVALID_GLOBAL_WORK_SIZE";
             case CL_JOCL_INTERNAL_ERROR: return "CL_JOCL_INTERNAL_ERROR";
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
-
+            case CL_PLATFORM_NOT_FOUND_KHR: return "CL_PLATFORM_NOT_FOUND_KHR";
+            
             // Some OpenCL implementation return 1 for glBuildProgram
             // if the source code contains errors...
             case 1: return "Error in program source code";
@@ -654,6 +662,7 @@ public final class CL
             case CL_PLATFORM_NAME: return "CL_PLATFORM_NAME";
             case CL_PLATFORM_VENDOR: return "CL_PLATFORM_VENDOR";
             case CL_PLATFORM_EXTENSIONS: return "CL_PLATFORM_EXTENSIONS";
+            case CL_PLATFORM_ICD_SUFFIX_KHR: return "CL_PLATFORM_ICD_SUFFIX_KHR";
         }
         return "INVALID cl_platform_info: " + n;
     }
@@ -696,6 +705,8 @@ public final class CL
             case CL_DEVICE_MEM_BASE_ADDR_ALIGN: return "CL_DEVICE_MEM_BASE_ADDR_ALIGN";
             case CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE: return "CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE";
             case CL_DEVICE_SINGLE_FP_CONFIG: return "CL_DEVICE_SINGLE_FP_CONFIG";
+            case CL_DEVICE_DOUBLE_FP_CONFIG: return "CL_DEVICE_DOUBLE_FP_CONFIG";
+            case CL_DEVICE_HALF_FP_CONFIG: return "CL_DEVICE_HALF_FP_CONFIG";
             case CL_DEVICE_GLOBAL_MEM_CACHE_TYPE: return "CL_DEVICE_GLOBAL_MEM_CACHE_TYPE";
             case CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE: return "CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE";
             case CL_DEVICE_GLOBAL_MEM_CACHE_SIZE: return "CL_DEVICE_GLOBAL_MEM_CACHE_SIZE";
@@ -8137,11 +8148,11 @@ public final class CL
             {
                 if (result != 1 && result != CL_BUILD_PROGRAM_FAILURE)
                 {
-                    throw new CLException(stringFor_errorCode(result));
+                    throw new CLException(stringFor_errorCode(result), result);
                 }
                 else
                 {
-                    throw new CLException(stringFor_errorCode(result)+"\n"+obtainBuildLogs(program));
+                    throw new CLException(stringFor_errorCode(result)+"\n"+obtainBuildLogs(program), result);
                 }
             }
         }
