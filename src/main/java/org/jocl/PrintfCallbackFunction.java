@@ -28,25 +28,21 @@
 package org.jocl;
 
 /**
- * Java port of a cl_program.
+ * Emulation of a function pointer that may be passed to the
+ * {@link CL#clSetPrintfCallback(cl_context, PrintfCallbackFunction, Object)}
+ * method.
+ * 
+ * @see CL#clSetPrintfCallback(cl_context, PrintfCallbackFunction, Object)
  */
-public final class cl_program extends NativePointerObject
+public interface PrintfCallbackFunction 
 {
     /**
-     * Creates a new, uninitialized cl_program 
-     */
-    public cl_program()
-    {
-    }
-    
-    /**
-     * Returns a String representation of this object.
+     * The function that will be called
      * 
-     * @return A String representation of this object.
+     * @param context The context
+     * @param printf_data_len The length of the printf data
+     * @param printf_data_ptr The printf data
+     * @param user_data The user data
      */
-    @Override
-    public String toString()
-    {
-        return "cl_program[0x"+Long.toHexString(getNativePointer())+"]";
-    }
+    void function(cl_context context , int printf_data_len , String printf_data_ptr , Object user_data);        
 }

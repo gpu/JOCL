@@ -28,15 +28,32 @@
 package org.jocl;
 
 /**
- * Java port of a cl_program.
+ * Java port of cl_device_partition_property.
  */
-public final class cl_program extends NativePointerObject
+public final class cl_device_partition_property extends cl_abstract_properties
 {
     /**
-     * Creates a new, uninitialized cl_program 
+     * Creates new, empty cl_device_partition_property 
      */
-    public cl_program()
+    public cl_device_partition_property()
     {
+    }
+    
+    /**
+     * Add the specified property to these properties
+     * 
+     * @param id The property ID
+     * @param value The property value
+     */
+    public void addProperty(long id, cl_platform_id value)
+    {
+        addProperty(id, value.getNativePointer());
+    }
+    
+    @Override
+    protected String propertyString(long value)
+    {
+        return CL.stringFor_cl_device_partition_property((int)value);
     }
     
     /**
@@ -47,6 +64,10 @@ public final class cl_program extends NativePointerObject
     @Override
     public String toString()
     {
-        return "cl_program[0x"+Long.toHexString(getNativePointer())+"]";
+        StringBuilder result = new StringBuilder("cl_device_partition_property[");
+        result.append(buildString());
+        result.append("]");
+        return result.toString();
     }
+
 }

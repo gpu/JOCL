@@ -44,8 +44,18 @@ public final class CL
     // Initialization of the native library
     static
     {
-        LibUtils.loadLibrary("JOCL_0_1_7");
+        LibUtils.loadLibrary("JOCL_0_1_8");
     }
+    
+    /**
+     * Initialize the native library. That is, initialize the function
+     * pointers which will be used to call the OpenCL functions.
+     * 
+     * @param fullName The full, platform specific name of the 
+     * OpenCL implementation library (e.g. "OpenCL.dll")
+     * @return Whether the initialization succeeded.
+     */
+    static native boolean initNativeLibrary(String fullName);
 
     // cl_platform.h constants
     public static final int CL_CHAR_BIT         = 8;
@@ -106,7 +116,13 @@ public final class CL
     public static final int CL_MAP_FAILURE                              = -12;
     public static final int CL_MISALIGNED_SUB_BUFFER_OFFSET             = -13;
     public static final int CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST= -14;
-
+    // OPENCL_1_2
+    public static final int CL_COMPILE_PROGRAM_FAILURE                  = -15;
+    public static final int CL_LINKER_NOT_AVAILABLE                     = -16;
+    public static final int CL_LINK_PROGRAM_FAILURE                     = -17;
+    public static final int CL_DEVICE_PARTITION_FAILED                  = -18;
+    public static final int CL_KERNEL_ARG_INFO_NOT_AVAILABLE            = -19;
+    
     public static final int CL_INVALID_VALUE                            = -30;
     public static final int CL_INVALID_DEVICE_TYPE                      = -31;
     public static final int CL_INVALID_PLATFORM                         = -32;
@@ -141,14 +157,25 @@ public final class CL
     public static final int CL_INVALID_BUFFER_SIZE                      = -61;
     public static final int CL_INVALID_MIP_LEVEL                        = -62;
     public static final int CL_INVALID_GLOBAL_WORK_SIZE                 = -63;
-    public static final int CL_JOCL_INTERNAL_ERROR                      = -64;
+    // OPENCL_1_2
+    public static final int CL_INVALID_PROPERTY                         = -64;
+    public static final int CL_INVALID_IMAGE_DESCRIPTOR                 = -65;
+    public static final int CL_INVALID_COMPILER_OPTIONS                 = -66;
+    public static final int CL_INVALID_LINKER_OPTIONS                   = -67;
+    public static final int CL_INVALID_DEVICE_PARTITION_COUNT           = -68;
+    
+    public static final int CL_JOCL_INTERNAL_ERROR                      = -16384;
     public static final int CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR      = -1000;
     public static final int CL_PLATFORM_NOT_FOUND_KHR                   = -1001;
+    
     
     // cl_bool
     public static final boolean CL_TRUE = true;
     public static final boolean CL_FALSE = false;
-
+    // OPENCL_1_2
+    public static final boolean CL_BLOCKING = CL_TRUE;
+    public static final boolean CL_NON_BLOCKING = CL_FALSE;
+    
     // cl_platform_info
     public static final int CL_PLATFORM_PROFILE = 0x0900;
     public static final int CL_PLATFORM_VERSION = 0x0901;
@@ -164,6 +191,8 @@ public final class CL
     public static final long CL_DEVICE_TYPE_GPU = (1 << 2);
     public static final long CL_DEVICE_TYPE_ACCELERATOR = (1 << 3);
     public static final long CL_DEVICE_TYPE_ALL = 0xFFFFFFFF;
+    // OPENCL_1_2
+    public static final long CL_DEVICE_TYPE_CUSTOM = (1 << 4);    
 
     // cl_device_info
     public static final int CL_DEVICE_TYPE = 0x1000;
@@ -227,6 +256,19 @@ public final class CL
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE        = 0x103B;
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF          = 0x103C;
     public static final int CL_DEVICE_OPENCL_C_VERSION                  = 0x103D;
+    // OPENCL_1_2
+    public static final int CL_DEVICE_LINKER_AVAILABLE                  = 0x103E;
+    public static final int CL_DEVICE_BUILT_IN_KERNELS                  = 0x103F;
+    public static final int CL_DEVICE_IMAGE_MAX_BUFFER_SIZE             = 0x1040;
+    public static final int CL_DEVICE_IMAGE_MAX_ARRAY_SIZE              = 0x1041;
+    public static final int CL_DEVICE_PARENT_DEVICE                     = 0x1042;
+    public static final int CL_DEVICE_PARTITION_MAX_SUB_DEVICES         = 0x1043;
+    public static final int CL_DEVICE_PARTITION_PROPERTIES              = 0x1044;
+    public static final int CL_DEVICE_PARTITION_AFFINITY_DOMAIN         = 0x1045;
+    public static final int CL_DEVICE_PARTITION_TYPE                    = 0x1046;
+    public static final int CL_DEVICE_REFERENCE_COUNT                   = 0x1047;
+    public static final int CL_DEVICE_PREFERRED_INTEROP_USER_SYNC       = 0x1048;
+    public static final int CL_DEVICE_PRINTF_BUFFER_SIZE                = 0x1049;
     
     // CL_EXT
     public static final int CL_DEVICE_DOUBLE_FP_CONFIG                  = 0x1032;
@@ -245,7 +287,9 @@ public final class CL
     public static final long CL_FP_ROUND_TO_INF = (1 << 4);
     public static final long CL_FP_FMA = (1 << 5);
     public static final long CL_FP_SOFT_FLOAT = (1 << 6);
-
+    // OPENCL_1_2
+    public static final long CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT = (1 << 7);
+    
     // cl_device_mem_cache_type
     public static final int CL_NONE = 0x0;
     public static final int CL_READ_ONLY_CACHE = 0x1;
@@ -270,8 +314,26 @@ public final class CL
     public static final int CL_CONTEXT_NUM_DEVICES     = 0x1083;
 
     // cl_context_properties
-    public static final int CL_CONTEXT_PLATFORM        = 0x1084;
-
+    public static final int CL_CONTEXT_PLATFORM          = 0x1084;
+    // OPENCL_1_2
+    public static final int CL_CONTEXT_INTEROP_USER_SYNC = 0x1085;
+    
+    // OPENCL_1_2
+    /* cl_device_partition_property */
+    public static final int  CL_DEVICE_PARTITION_EQUALLY                = 0x1086;
+    public static final int  CL_DEVICE_PARTITION_BY_COUNTS              = 0x1087;
+    public static final int  CL_DEVICE_PARTITION_BY_COUNTS_LIST_END     = 0x0;
+    public static final int  CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN     = 0x1088;
+        
+    // OPENCL_1_2
+    /* cl_device_affinity_domain - bitfield */
+    public static final long CL_DEVICE_AFFINITY_DOMAIN_NUMA               = (1 << 0);
+    public static final long CL_DEVICE_AFFINITY_DOMAIN_L4_CACHE           = (1 << 1);
+    public static final long CL_DEVICE_AFFINITY_DOMAIN_L3_CACHE           = (1 << 2);
+    public static final long CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE           = (1 << 3);
+    public static final long CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE           = (1 << 4);
+    public static final long CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE = (1 << 5);
+    
     // cl_command_queue_info
     public static final int CL_QUEUE_CONTEXT = 0x1090;
     public static final int CL_QUEUE_DEVICE = 0x1091;
@@ -285,7 +347,16 @@ public final class CL
     public static final long CL_MEM_USE_HOST_PTR = (1 << 3);
     public static final long CL_MEM_ALLOC_HOST_PTR = (1 << 4);
     public static final long CL_MEM_COPY_HOST_PTR = (1 << 5);
-
+    // OPENCL_1_2
+    public static final long  CL_MEM_HOST_WRITE_ONLY =(1 << 7);
+    public static final long  CL_MEM_HOST_READ_ONLY = (1 << 8);
+    public static final long  CL_MEM_HOST_NO_ACCESS = (1 << 9);
+    
+    // OPENCL_1_2
+    /* cl_mem_migration_flags - bitfield */
+    public static final long  CL_MIGRATE_MEM_OBJECT_HOST              = (1 << 0);
+    public static final long  CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED = (1 << 1);
+    
     // cl_channel_order
     public static final int CL_R = 0x10B0;
     public static final int CL_A = 0x10B1;
@@ -323,6 +394,11 @@ public final class CL
     public static final int CL_MEM_OBJECT_BUFFER = 0x10F0;
     public static final int CL_MEM_OBJECT_IMAGE2D = 0x10F1;
     public static final int CL_MEM_OBJECT_IMAGE3D = 0x10F2;
+    // OPENCL_1_2
+    public static final int CL_MEM_OBJECT_IMAGE2D_ARRAY  = 0x10F3;
+    public static final int CL_MEM_OBJECT_IMAGE1D        = 0x10F4;
+    public static final int CL_MEM_OBJECT_IMAGE1D_ARRAY  = 0x10F5;
+    public static final int CL_MEM_OBJECT_IMAGE1D_BUFFER = 0x10F6;
 
     // cl_mem_info
     public static final int CL_MEM_TYPE = 0x1100;
@@ -344,7 +420,12 @@ public final class CL
     public static final int CL_IMAGE_WIDTH = 0x1114;
     public static final int CL_IMAGE_HEIGHT = 0x1115;
     public static final int CL_IMAGE_DEPTH = 0x1116;
-
+    // OPENCL_1_2
+    public static final int CL_IMAGE_ARRAY_SIZE     = 0x1117;
+    public static final int CL_IMAGE_BUFFER         = 0x1118;
+    public static final int CL_IMAGE_NUM_MIP_LEVELS = 0x1119;
+    public static final int CL_IMAGE_NUM_SAMPLES    = 0x111A;
+    
     // cl_addressing_mode
     public static final int CL_ADDRESS_NONE = 0x1130;
     public static final int CL_ADDRESS_CLAMP_TO_EDGE = 0x1131;
@@ -367,7 +448,9 @@ public final class CL
     // cl_map_flags - bitfield
     public static final long CL_MAP_READ = (1 << 0);
     public static final long CL_MAP_WRITE = (1 << 1);
-
+    // OPENCL_1_2
+    public static final long CL_MAP_WRITE_INVALIDATE_REGION = (1 << 2);
+    
     // cl_program_info
     public static final int CL_PROGRAM_REFERENCE_COUNT = 0x1160;
     public static final int CL_PROGRAM_CONTEXT = 0x1161;
@@ -376,12 +459,24 @@ public final class CL
     public static final int CL_PROGRAM_SOURCE = 0x1164;
     public static final int CL_PROGRAM_BINARY_SIZES = 0x1165;
     public static final int CL_PROGRAM_BINARIES = 0x1166;
-
+    // OPENCL_1_2
+    public static final int CL_PROGRAM_NUM_KERNELS  = 0x1167;
+    public static final int CL_PROGRAM_KERNEL_NAMES = 0x1168;
+    
     // cl_program_build_info
     public static final int CL_PROGRAM_BUILD_STATUS = 0x1181;
     public static final int CL_PROGRAM_BUILD_OPTIONS = 0x1182;
     public static final int CL_PROGRAM_BUILD_LOG = 0x1183;
-
+    // OPENCL_1_2
+    public static final int CL_PROGRAM_BINARY_TYPE = 0x1184;
+    
+    /* cl_program_binary_type */
+    // OPENCL_1_2
+    public static final int CL_PROGRAM_BINARY_TYPE_NONE            = 0x0;
+    public static final int CL_PROGRAM_BINARY_TYPE_COMPILED_OBJECT = 0x1;
+    public static final int CL_PROGRAM_BINARY_TYPE_LIBRARY         = 0x2;
+    public static final int CL_PROGRAM_BINARY_TYPE_EXECUTABLE      = 0x4;
+    
     // cl_build_status
     public static final int CL_BUILD_SUCCESS = 0;
     public static final int CL_BUILD_NONE = -1;
@@ -394,15 +489,50 @@ public final class CL
     public static final int CL_KERNEL_REFERENCE_COUNT = 0x1192;
     public static final int CL_KERNEL_CONTEXT = 0x1193;
     public static final int CL_KERNEL_PROGRAM = 0x1194;
+    // OPENCL_1_2
+    public static final int CL_KERNEL_ATTRIBUTES = 0x1195;
+    
+    /* cl_kernel_arg_info */
+    // OPENCL_1_2
+    public static final int CL_KERNEL_ARG_ADDRESS_QUALIFIER = 0x1196;
+    public static final int CL_KERNEL_ARG_ACCESS_QUALIFIER  = 0x1197;
+    public static final int CL_KERNEL_ARG_TYPE_NAME         = 0x1198;
+    public static final int CL_KERNEL_ARG_TYPE_QUALIFIER    = 0x1199;
+    public static final int CL_KERNEL_ARG_NAME              = 0x119A;
 
+    /* cl_kernel_arg_address_qualifier */
+    // OPENCL_1_2
+    public static final int CL_KERNEL_ARG_ADDRESS_GLOBAL    = 0x119B;
+    public static final int CL_KERNEL_ARG_ADDRESS_LOCAL     = 0x119C;
+    public static final int CL_KERNEL_ARG_ADDRESS_CONSTANT  = 0x119D;
+    public static final int CL_KERNEL_ARG_ADDRESS_PRIVATE   = 0x119E;
+
+    /* cl_kernel_arg_access_qualifier */
+    // OPENCL_1_2
+    public static final int CL_KERNEL_ARG_ACCESS_READ_ONLY  = 0x11A0;
+    public static final int CL_KERNEL_ARG_ACCESS_WRITE_ONLY = 0x11A1;
+    public static final int CL_KERNEL_ARG_ACCESS_READ_WRITE = 0x11A2;
+    public static final int CL_KERNEL_ARG_ACCESS_NONE       = 0x11A3;
+        
+    /* cl_kernel_arg_type_qualifer - bitfield */
+    // OPENCL_1_2
+    public static final long CL_KERNEL_ARG_TYPE_NONE      = 0;
+    public static final long CL_KERNEL_ARG_TYPE_CONST     = (1 << 0);
+    public static final long CL_KERNEL_ARG_TYPE_RESTRICT  = (1 << 1);
+    public static final long CL_KERNEL_ARG_TYPE_VOLATILE  = (1 << 2);
+    
+    
     // cl_kernel_work_group_info
     public static final int CL_KERNEL_WORK_GROUP_SIZE = 0x11B0;
     public static final int CL_KERNEL_COMPILE_WORK_GROUP_SIZE = 0x11B1;
     public static final int CL_KERNEL_LOCAL_MEM_SIZE = 0x11B2;
     // OPENCL_1_1
     public static final int CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE = 0x11B3;
-    public static final int CL_KERNEL_PRIVATE_MEM_SIZE                  = 0x11B4;
-
+    public static final int CL_KERNEL_PRIVATE_MEM_SIZE                   = 0x11B4;
+    // OPENCL_1_2
+    public static final int CL_KERNEL_GLOBAL_WORK_SIZE = 0x11B5;
+    
+    
     // cl_event_info
     public static final int CL_EVENT_COMMAND_QUEUE = 0x11D0;
     public static final int CL_EVENT_COMMAND_TYPE = 0x11D1;
@@ -434,7 +564,13 @@ public final class CL
     public static final int CL_COMMAND_WRITE_BUFFER_RECT                = 0x1202;
     public static final int CL_COMMAND_COPY_BUFFER_RECT                 = 0x1203;
     public static final int CL_COMMAND_USER                             = 0x1204;
-
+    // OPENCL_1_2
+    public static final int CL_COMMAND_BARRIER                          = 0x1205;
+    public static final int CL_COMMAND_MIGRATE_MEM_OBJECTS              = 0x1206;
+    public static final int CL_COMMAND_FILL_BUFFER                      = 0x1207;
+    public static final int CL_COMMAND_FILL_IMAGE                       = 0x1208;
+    
+    
     // command execution status
     public static final int CL_COMPLETE = 0x0;
     public static final int CL_RUNNING = 0x1;
@@ -456,7 +592,12 @@ public final class CL
     public static final int CL_GL_OBJECT_TEXTURE2D          = 0x2001;
     public static final int CL_GL_OBJECT_TEXTURE3D          = 0x2002;
     public static final int CL_GL_OBJECT_RENDERBUFFER       = 0x2003;
-
+    // OPENCL_1_2
+    public static final int  CL_GL_OBJECT_TEXTURE2D_ARRAY   = 0x200E;
+    public static final int  CL_GL_OBJECT_TEXTURE1D         = 0x200F;
+    public static final int  CL_GL_OBJECT_TEXTURE1D_ARRAY   = 0x2010;
+    public static final int  CL_GL_OBJECT_TEXTURE_BUFFER    = 0x2011;
+    
      // cl_gl_texture_info
     public static final int CL_GL_TEXTURE_TARGET            = 0x2004;
     public static final int CL_GL_MIPMAP_LEVEL              = 0x2005;
@@ -477,30 +618,6 @@ public final class CL
      * a result code that is not CL.CL_SUCCESS
      */
     private static boolean exceptionsEnabled = false;
-
-
-    /**
-     * The thread that frees aligned byte buffers which are no longer
-     * referenced
-     */
-    private static Thread memoryManagementThread = null;
-
-    /**
-     * A map from Weak references to aligned ByteBuffers that have been
-     * allocated with {@link CL#allocateAligned(int, int)} to
-     * pointers that contain the native memory address of the
-     * respective buffer.
-     */
-    private static Map<WeakReference<ByteBuffer>, Pointer> alignedByteBufferMap =
-        new HashMap<WeakReference<ByteBuffer>, Pointer>();
-
-    /**
-     * The reference queue for the weak references to aligned ByteBuffers
-     * that have been allocated with {@link CL#allocateAligned(int, int)}
-     * and which have detected to be unreachable by the garbage collector.
-     */
-    private static ReferenceQueue<ByteBuffer> alignedByteBufferReferenceQueue =
-        new ReferenceQueue<ByteBuffer>();
 
 
     /**
@@ -602,6 +719,11 @@ public final class CL
             case CL_MAP_FAILURE: return "CL_MAP_FAILURE";
             case CL_MISALIGNED_SUB_BUFFER_OFFSET: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
             case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+            case CL_COMPILE_PROGRAM_FAILURE: return "CL_COMPILE_PROGRAM_FAILURE";
+            case CL_LINKER_NOT_AVAILABLE: return "CL_LINKER_NOT_AVAILABLE";
+            case CL_LINK_PROGRAM_FAILURE: return "CL_LINK_PROGRAM_FAILURE";
+            case CL_DEVICE_PARTITION_FAILED: return "CL_DEVICE_PARTITION_FAILED";
+            case CL_KERNEL_ARG_INFO_NOT_AVAILABLE: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
             case CL_INVALID_VALUE: return "CL_INVALID_VALUE";
             case CL_INVALID_DEVICE_TYPE: return "CL_INVALID_DEVICE_TYPE";
             case CL_INVALID_PLATFORM: return "CL_INVALID_PLATFORM";
@@ -636,6 +758,11 @@ public final class CL
             case CL_INVALID_BUFFER_SIZE: return "CL_INVALID_BUFFER_SIZE";
             case CL_INVALID_MIP_LEVEL: return "CL_INVALID_MIP_LEVEL";
             case CL_INVALID_GLOBAL_WORK_SIZE: return "CL_INVALID_GLOBAL_WORK_SIZE";
+            case CL_INVALID_PROPERTY: return "CL_INVALID_PROPERTY";
+            case CL_INVALID_IMAGE_DESCRIPTOR: return "CL_INVALID_IMAGE_DESCRIPTOR";
+            case CL_INVALID_COMPILER_OPTIONS: return "CL_INVALID_COMPILER_OPTIONS";
+            case CL_INVALID_LINKER_OPTIONS: return "CL_INVALID_LINKER_OPTIONS";
+            case CL_INVALID_DEVICE_PARTITION_COUNT: return "CL_INVALID_DEVICE_PARTITION_COUNT";
             case CL_JOCL_INTERNAL_ERROR: return "CL_JOCL_INTERNAL_ERROR";
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
             case CL_PLATFORM_NOT_FOUND_KHR: return "CL_PLATFORM_NOT_FOUND_KHR";
@@ -739,6 +866,18 @@ public final class CL
             case CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE: return "CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE";
             case CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF: return "CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF";
             case CL_DEVICE_OPENCL_C_VERSION: return "CL_DEVICE_OPENCL_C_VERSION";
+            case CL_DEVICE_LINKER_AVAILABLE: return "CL_DEVICE_LINKER_AVAILABLE";
+            case CL_DEVICE_BUILT_IN_KERNELS: return "CL_DEVICE_BUILT_IN_KERNELS";
+            case CL_DEVICE_IMAGE_MAX_BUFFER_SIZE: return "CL_DEVICE_IMAGE_MAX_BUFFER_SIZE";
+            case CL_DEVICE_IMAGE_MAX_ARRAY_SIZE: return "CL_DEVICE_IMAGE_MAX_ARRAY_SIZE";
+            case CL_DEVICE_PARENT_DEVICE: return "CL_DEVICE_PARENT_DEVICE";
+            case CL_DEVICE_PARTITION_MAX_SUB_DEVICES: return "CL_DEVICE_PARTITION_MAX_SUB_DEVICES";
+            case CL_DEVICE_PARTITION_PROPERTIES: return "CL_DEVICE_PARTITION_PROPERTIES";
+            case CL_DEVICE_PARTITION_AFFINITY_DOMAIN: return "CL_DEVICE_PARTITION_AFFINITY_DOMAIN";
+            case CL_DEVICE_PARTITION_TYPE: return "CL_DEVICE_PARTITION_TYPE";
+            case CL_DEVICE_REFERENCE_COUNT: return "CL_DEVICE_REFERENCE_COUNT";
+            case CL_DEVICE_PREFERRED_INTEROP_USER_SYNC: return "CL_DEVICE_PREFERRED_INTEROP_USER_SYNC";
+            case CL_DEVICE_PRINTF_BUFFER_SIZE: return "CL_DEVICE_PRINTF_BUFFER_SIZE";
         }
         return "INVALID cl_device_info: " + n;
     }
@@ -805,6 +944,7 @@ public final class CL
         switch (n)
         {
             case CL_CONTEXT_PLATFORM: return "CL_CONTEXT_PLATFORM";
+            case CL_CONTEXT_INTEROP_USER_SYNC: return "CL_CONTEXT_INTEROP_USER_SYNC";
             case CL_GL_CONTEXT_KHR: return "CL_GL_CONTEXT_KHR";
             case CL_EGL_DISPLAY_KHR: return "CL_EGL_DISPLAY_KHR";
             case CL_GLX_DISPLAY_KHR: return "CL_GLX_DISPLAY_KHR";
@@ -815,6 +955,23 @@ public final class CL
     }
 
 
+    /**
+     * Returns the String identifying the given cl_device_partition_property
+     *
+     * @param n A cl_device_partition_property value
+     * @return The String for the given cl_device_partition_property
+     */
+    public static String stringFor_cl_device_partition_property(int n)
+    {
+        switch (n)
+        {
+            case CL_DEVICE_PARTITION_EQUALLY: return "CL_DEVICE_PARTITION_EQUALLY";
+            case CL_DEVICE_PARTITION_BY_COUNTS: return "CL_DEVICE_PARTITION_BY_COUNTS";
+            case CL_DEVICE_PARTITION_BY_COUNTS_LIST_END: return "CL_DEVICE_PARTITION_BY_COUNTS_LIST_END";
+            case CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN: return "CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN";
+        }
+        return "INVALID cl_device_partition_property: " + n;
+    }
 
     /**
      * Returns the String identifying the given cl_command_queue_info
@@ -903,6 +1060,10 @@ public final class CL
             case CL_MEM_OBJECT_BUFFER: return "CL_MEM_OBJECT_BUFFER";
             case CL_MEM_OBJECT_IMAGE2D: return "CL_MEM_OBJECT_IMAGE2D";
             case CL_MEM_OBJECT_IMAGE3D: return "CL_MEM_OBJECT_IMAGE3D";
+            case CL_MEM_OBJECT_IMAGE2D_ARRAY: return "CL_MEM_OBJECT_IMAGE2D_ARRAY";
+            case CL_MEM_OBJECT_IMAGE1D: return "CL_MEM_OBJECT_IMAGE1D";
+            case CL_MEM_OBJECT_IMAGE1D_ARRAY: return "CL_MEM_OBJECT_IMAGE1D_ARRAY";
+            case CL_MEM_OBJECT_IMAGE1D_BUFFER: return "CL_MEM_OBJECT_IMAGE1D_BUFFER";
         }
         return "INVALID cl_mem_object_type: " + n;
     }
@@ -948,6 +1109,10 @@ public final class CL
             case CL_IMAGE_WIDTH: return "CL_IMAGE_WIDTH";
             case CL_IMAGE_HEIGHT: return "CL_IMAGE_HEIGHT";
             case CL_IMAGE_DEPTH: return "CL_IMAGE_DEPTH";
+            case CL_IMAGE_ARRAY_SIZE: return "CL_IMAGE_ARRAY_SIZE";
+            case CL_IMAGE_BUFFER: return "CL_IMAGE_BUFFER";
+            case CL_IMAGE_NUM_MIP_LEVELS: return "CL_IMAGE_NUM_MIP_LEVELS";
+            case CL_IMAGE_NUM_SAMPLES: return "CL_IMAGE_NUM_SAMPLES";
         }
         return "INVALID cl_image_info: " + n;
     }
@@ -1023,6 +1188,8 @@ public final class CL
             case CL_PROGRAM_SOURCE: return "CL_PROGRAM_SOURCE";
             case CL_PROGRAM_BINARY_SIZES: return "CL_PROGRAM_BINARY_SIZES";
             case CL_PROGRAM_BINARIES: return "CL_PROGRAM_BINARIES";
+            case CL_PROGRAM_NUM_KERNELS: return "CL_PROGRAM_NUM_KERNELS";
+            case CL_PROGRAM_KERNEL_NAMES: return "CL_PROGRAM_KERNEL_NAMES";
         }
         return "INVALID cl_program_info: " + n;
     }
@@ -1040,9 +1207,29 @@ public final class CL
             case CL_PROGRAM_BUILD_STATUS: return "CL_PROGRAM_BUILD_STATUS";
             case CL_PROGRAM_BUILD_OPTIONS: return "CL_PROGRAM_BUILD_OPTIONS";
             case CL_PROGRAM_BUILD_LOG: return "CL_PROGRAM_BUILD_LOG";
+            case CL_PROGRAM_BINARY_TYPE: return "CL_PROGRAM_BINARY_TYPE";
         }
         return "INVALID cl_program_build_info: " + n;
     }
+
+    /**
+     * Returns the String identifying the given cl_program_binary_type
+     *
+     * @param n A cl_program_binary_type value
+     * @return The String for the given cl_program_binary_type
+     */
+    public static String stringFor_cl_program_binary_type(int n)
+    {
+        switch (n)
+        {
+            case CL_PROGRAM_BINARY_TYPE_NONE: return "CL_PROGRAM_BINARY_TYPE_NONE";
+            case CL_PROGRAM_BINARY_TYPE_COMPILED_OBJECT: return "CL_PROGRAM_BINARY_TYPE_COMPILED_OBJECT";
+            case CL_PROGRAM_BINARY_TYPE_LIBRARY: return "CL_PROGRAM_BINARY_TYPE_LIBRARY";
+            case CL_PROGRAM_BINARY_TYPE_EXECUTABLE: return "CL_PROGRAM_BINARY_TYPE_EXECUTABLE";
+        }
+        return "INVALID cl_program_binary_type: " + n;
+    }
+    
 
     /**
      * Returns the String identifying the given cl_build_status
@@ -1077,9 +1264,68 @@ public final class CL
             case CL_KERNEL_REFERENCE_COUNT: return "CL_KERNEL_REFERENCE_COUNT";
             case CL_KERNEL_CONTEXT: return "CL_KERNEL_CONTEXT";
             case CL_KERNEL_PROGRAM: return "CL_KERNEL_PROGRAM";
+            case CL_KERNEL_ATTRIBUTES: return "CL_KERNEL_ATTRIBUTES";
         }
         return "INVALID cl_kernel_info: " + n;
     }
+    
+
+    /**
+     * Returns the String identifying the given cl_kernel_arg_info
+     *
+     * @param n A cl_kernel_arg_info value
+     * @return The String for the given cl_kernel_arg_info
+     */
+    public static String stringFor_cl_kernel_arg_info(int n)
+    {
+        switch (n)
+        {
+            case CL_KERNEL_ARG_ADDRESS_QUALIFIER: return "CL_KERNEL_ARG_ADDRESS_QUALIFIER";
+            case CL_KERNEL_ARG_ACCESS_QUALIFIER: return "CL_KERNEL_ARG_ACCESS_QUALIFIER";
+            case CL_KERNEL_ARG_TYPE_NAME: return "CL_KERNEL_ARG_TYPE_NAME";
+            case CL_KERNEL_ARG_TYPE_QUALIFIER: return "CL_KERNEL_ARG_TYPE_QUALIFIER";
+            case CL_KERNEL_ARG_NAME: return "CL_KERNEL_ARG_NAME";
+        }
+        return "INVALID cl_kernel_arg_info: " + n;
+    }
+
+    /**
+     * Returns the String identifying the given cl_kernel_arg_address_qualifier
+     *
+     * @param n A cl_kernel_arg_address_qualifier value
+     * @return The String for the given cl_kernel_arg_address_qualifier
+     */
+    public static String stringFor_cl_kernel_arg_address_qualifier(int n)
+    {
+        switch (n)
+        {
+            case CL_KERNEL_ARG_ADDRESS_GLOBAL: return "CL_KERNEL_ARG_ADDRESS_GLOBAL";
+            case CL_KERNEL_ARG_ADDRESS_LOCAL: return "CL_KERNEL_ARG_ADDRESS_LOCAL";
+            case CL_KERNEL_ARG_ADDRESS_CONSTANT: return "CL_KERNEL_ARG_ADDRESS_CONSTANT";
+            case CL_KERNEL_ARG_ADDRESS_PRIVATE: return "CL_KERNEL_ARG_ADDRESS_PRIVATE";
+        }
+        return "INVALID cl_kernel_arg_address_qualifier: " + n;
+    }
+    
+
+    /**
+     * Returns the String identifying the given cl_kernel_arg_access_qualifier
+     *
+     * @param n A cl_kernel_arg_access_qualifier value
+     * @return The String for the given cl_kernel_arg_access_qualifier
+     */
+    public static String stringFor_cl_kernel_arg_access_qualifier(int n)
+    {
+        switch (n)
+        {
+            case CL_KERNEL_ARG_ACCESS_READ_ONLY: return "CL_KERNEL_ARG_ACCESS_READ_ONLY";
+            case CL_KERNEL_ARG_ACCESS_WRITE_ONLY: return "CL_KERNEL_ARG_ACCESS_WRITE_ONLY";
+            case CL_KERNEL_ARG_ACCESS_READ_WRITE: return "CL_KERNEL_ARG_ACCESS_READ_WRITE";
+            case CL_KERNEL_ARG_ACCESS_NONE: return "CL_KERNEL_ARG_ACCESS_NONE";
+        }
+        return "INVALID cl_kernel_arg_access_qualifier: " + n;
+    }
+    
 
     /**
      * Returns the String identifying the given cl_kernel_work_group_info
@@ -1096,6 +1342,7 @@ public final class CL
             case CL_KERNEL_LOCAL_MEM_SIZE: return "CL_KERNEL_LOCAL_MEM_SIZE";
             case CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE: return "CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE";
             case CL_KERNEL_PRIVATE_MEM_SIZE: return "CL_KERNEL_PRIVATE_MEM_SIZE";
+            case CL_KERNEL_GLOBAL_WORK_SIZE: return "CL_KERNEL_GLOBAL_WORK_SIZE";
         }
         return "INVALID cl_kernel_work_group_info: " + n;
     }
@@ -1150,6 +1397,10 @@ public final class CL
             case CL_COMMAND_WRITE_BUFFER_RECT: return "CL_COMMAND_WRITE_BUFFER_RECT";
             case CL_COMMAND_COPY_BUFFER_RECT: return "CL_COMMAND_COPY_BUFFER_RECT";
             case CL_COMMAND_USER: return "CL_COMMAND_USER";
+            case CL_COMMAND_BARRIER: return "CL_COMMAND_BARRIER";
+            case CL_COMMAND_MIGRATE_MEM_OBJECTS: return "CL_COMMAND_MIGRATE_MEM_OBJECTS";
+            case CL_COMMAND_FILL_BUFFER: return "CL_COMMAND_FILL_BUFFER";
+            case CL_COMMAND_FILL_IMAGE: return "CL_COMMAND_FILL_IMAGE";
         }
         return "INVALID cl_command_type: " + n;
     }
@@ -1206,6 +1457,10 @@ public final class CL
             case CL_GL_OBJECT_TEXTURE2D: return "CL_GL_OBJECT_TEXTURE2D";
             case CL_GL_OBJECT_TEXTURE3D: return "CL_GL_OBJECT_TEXTURE3D";
             case CL_GL_OBJECT_RENDERBUFFER: return "CL_GL_OBJECT_RENDERBUFFER";
+            case CL_GL_OBJECT_TEXTURE2D_ARRAY: return "CL_GL_OBJECT_TEXTURE2D_ARRAY";
+            case CL_GL_OBJECT_TEXTURE1D: return "CL_GL_OBJECT_TEXTURE1D";
+            case CL_GL_OBJECT_TEXTURE1D_ARRAY: return "CL_GL_OBJECT_TEXTURE1D_ARRAY";
+            case CL_GL_OBJECT_TEXTURE_BUFFER: return "CL_GL_OBJECT_TEXTURE_BUFFER";
         }
         return "INVALID cl_gl_object_type: " + n;
     }
@@ -1222,8 +1477,6 @@ public final class CL
         {
             case CL_GL_TEXTURE_TARGET: return "CL_GL_TEXTURE_TARGET";
             case CL_GL_MIPMAP_LEVEL: return "CL_GL_MIPMAP_LEVEL";
-            case CL_GL_OBJECT_TEXTURE3D: return "CL_GL_OBJECT_TEXTURE3D";
-            case CL_GL_OBJECT_RENDERBUFFER: return "CL_GL_OBJECT_RENDERBUFFER";
         }
         return "INVALID cl_gl_texture_info: " + n;
     }
@@ -1274,6 +1527,7 @@ public final class CL
         if ((n & CL_DEVICE_TYPE_CPU) != 0) result += "CL_DEVICE_TYPE_CPU ";
         if ((n & CL_DEVICE_TYPE_GPU) != 0) result += "CL_DEVICE_TYPE_GPU ";
         if ((n & CL_DEVICE_TYPE_ACCELERATOR) != 0) result += "CL_DEVICE_TYPE_ACCELERATOR ";
+        if ((n & CL_DEVICE_TYPE_CUSTOM) != 0) result += "CL_DEVICE_TYPE_CUSTOM ";
         return result;
     }
 
@@ -1317,6 +1571,7 @@ public final class CL
         if ((n & CL_FP_ROUND_TO_INF) != 0) result += "CL_FP_ROUND_TO_INF ";
         if ((n & CL_FP_FMA) != 0) result += "CL_FP_FMA ";
         if ((n & CL_FP_SOFT_FLOAT) != 0) result += "CL_FP_SOFT_FLOAT ";
+        if ((n & CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT) != 0) result += "CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT ";
         return result;
     }
 
@@ -1360,6 +1615,28 @@ public final class CL
 
 
     /**
+     * Returns the string describing the given cl_device_affinity_domain - bitfield
+     *
+     * @param n The cl_device_affinity_domain - bitfield
+     * @return The string describing the cl_device_affinity_domain - bitfield
+     */
+    public static String stringFor_cl_device_affinity_domain(long n)
+    {
+        if (n == 0)
+        {
+            return "(none)";
+        }
+        String result = "";
+        if ((n & CL_DEVICE_AFFINITY_DOMAIN_NUMA) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_NUMA ";
+        if ((n & CL_DEVICE_AFFINITY_DOMAIN_L4_CACHE) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_L4_CACHE ";
+        if ((n & CL_DEVICE_AFFINITY_DOMAIN_L3_CACHE) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_L3_CACHE ";
+        if ((n & CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE ";
+        if ((n & CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE ";
+        if ((n & CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE ";
+        return result;
+    }
+    
+    /**
      * Returns the string describing the given cl_mem_flags - bitfield
      *
      * @param n The cl_mem_flags - bitfield
@@ -1378,10 +1655,30 @@ public final class CL
         if ((n & CL_MEM_USE_HOST_PTR) != 0) result += "CL_MEM_USE_HOST_PTR ";
         if ((n & CL_MEM_ALLOC_HOST_PTR) != 0) result += "CL_MEM_ALLOC_HOST_PTR ";
         if ((n & CL_MEM_COPY_HOST_PTR) != 0) result += "CL_MEM_COPY_HOST_PTR ";
+        if ((n & CL_MEM_HOST_WRITE_ONLY) != 0) result += "CL_MEM_HOST_WRITE_ONLY ";
+        if ((n & CL_MEM_HOST_READ_ONLY) != 0) result += "CL_MEM_HOST_READ_ONLY ";
+        if ((n & CL_MEM_HOST_NO_ACCESS) != 0) result += "CL_MEM_HOST_NO_ACCESS ";
         return result;
     }
 
-
+    /**
+     * Returns the string describing the given cl_mem_migration_flags - bitfield
+     *
+     * @param n The cl_mem_migration_flags - bitfield
+     * @return The string describing the cl_mem_migration_flags - bitfield
+     */
+    public static String stringFor_cl_mem_migration_flags(long n)
+    {
+        if (n == 0)
+        {
+            return "(none)";
+        }
+        String result = "";
+        if ((n & CL_MIGRATE_MEM_OBJECT_HOST) != 0) result += "CL_MIGRATE_MEM_OBJECT_HOST ";
+        if ((n & CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED) != 0) result += "CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED ";
+        return result;
+    }
+    
     /**
      * Returns the string describing the given cl_map_flags - bitfield
      *
@@ -1397,10 +1694,30 @@ public final class CL
         String result = "";
         if ((n & CL_MAP_READ) != 0) result += "CL_MAP_READ ";
         if ((n & CL_MAP_WRITE) != 0) result += "CL_MAP_WRITE ";
+        if ((n & CL_MAP_WRITE_INVALIDATE_REGION) != 0) result += "CL_MAP_WRITE_INVALIDATE_REGION ";
         return result;
     }
 
+    /**
+     * Returns the string describing the given cl_kernel_arg_type_qualifer - bitfield
+     *
+     * @param n The cl_kernel_arg_type_qualifer - bitfield
+     * @return The string describing the cl_kernel_arg_type_qualifer - bitfield
+     */
+    public static String stringFor_cl_kernel_arg_type_qualifer(long n)
+    {
+        if (n == 0)
+        {
+            return "CL_KERNEL_ARG_TYPE_NONE";
+        }
+        String result = "";
+        if ((n & CL_KERNEL_ARG_TYPE_CONST) != 0) result += "CL_KERNEL_ARG_TYPE_CONST ";
+        if ((n & CL_KERNEL_ARG_TYPE_RESTRICT) != 0) result += "CL_KERNEL_ARG_TYPE_RESTRICT ";
+        if ((n & CL_KERNEL_ARG_TYPE_VOLATILE) != 0) result += "CL_KERNEL_ARG_TYPE_VOLATILE ";
+        return result;
+    }
 
+    
     /**
      * The log levels which may be used to control the internal
      * logging of the native JOCL library
@@ -1461,192 +1778,6 @@ public final class CL
     private static native void setLogLevelNative(int logLevel);
 
 
-    /**
-     * Creates an returns a new direct ByteBuffer with the given size,
-     * whose memory has the given alignment, in bytes. The memory
-     * associated with the returned buffer will be freed automatically
-     * soon after the ByteBuffer has been marked for garbage collection.
-     *
-     * @param size The size of the buffer
-     * @param alignment The alignment, in bytes
-     * @return A new direct ByteBuffer
-     */
-    public static synchronized ByteBuffer allocateAligned(int size, int alignment)
-    {
-        if (memoryManagementThread == null)
-        {
-            initMemoryManagementThread();
-        }
-
-        Pointer pointer = new Pointer();
-        ByteBuffer byteBuffer = allocateAlignedNative(size, alignment, pointer);
-        if (byteBuffer == null)
-        {
-            return null;
-        }
-        WeakReference<ByteBuffer> reference =
-            new WeakReference<ByteBuffer>(byteBuffer, alignedByteBufferReferenceQueue);
-        alignedByteBufferMap.put(reference, pointer);
-        return byteBuffer;
-    }
-    private static native ByteBuffer allocateAlignedNative(int size, int alignment, Pointer pointer);
-
-
-    /**
-     * This method may be used to manually free an aligned ByteBuffer which
-     * was allocated with {@link CL#allocateAligned(int, int)}.
-     *
-     * @param byteBuffer The byte buffer
-     */
-    // This is not required, and might be error-prone because of
-    // making the given Buffer invalid.
-    /*
-    private static synchronized void freeAligned(ByteBuffer byteBuffer)
-    {
-        if (byteBuffer == null)
-        {
-            return;
-        }
-        for (Map.Entry<WeakReference<ByteBuffer>, Pointer> entry : alignedByteBufferMap.entrySet())
-        {
-            WeakReference<ByteBuffer> reference = entry.getKey();
-            if (reference.get() == byteBuffer)
-            {
-                Pointer pointer = entry.getValue();
-                if (pointer != null)
-                {
-                    freeAlignedNative(pointer);
-                }
-                alignedByteBufferMap.remove(reference);
-                return;
-            }
-        }
-    }
-    */
-    private static native void freeAlignedNative(Pointer pointer);
-
-
-    /**
-     * Creates and starts the daemon thread which will fetch the
-     * references to ByteBuffers that have been marked for
-     * garbage collection from the alignedByteBufferReferenceQueue,
-     * and free the associated aligned native pointers.
-     */
-    private static void initMemoryManagementThread()
-    {
-        memoryManagementThread = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                while (true)
-                {
-                    try
-                    {
-                        Reference<? extends ByteBuffer> reference =
-                            alignedByteBufferReferenceQueue.remove();
-
-                        //System.out.println("Free, before  "+alignedByteBufferMap);
-
-                        Pointer pointer = alignedByteBufferMap.get(reference);
-                        freeAlignedNative(pointer);
-                        alignedByteBufferMap.remove(reference);
-
-                        //System.out.println("Freed, after  "+alignedByteBufferMap);
-
-                    }
-                    catch (InterruptedException e)
-                    {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-            }
-        }, "memoryManagementThread");
-        memoryManagementThread.setPriority(Thread.MIN_PRIORITY);
-        memoryManagementThread.setDaemon(true);
-        memoryManagementThread.start();
-    }
-
-
-
-    // NON_BLOCKING_READ
-    /*
-     * Implementation note concerning non-blocking reads:
-     *
-     * Currently, there is no proper way of synchronizing calls like a
-     * non-blocking clEnqueueReadBuffer/Image. The pointer data that is
-     * passed in may be associated with the respective event. An own
-     * thread may be spawned that only waits for the event, and
-     * releases the pointer data as soon as possible. In most cases
-     * this will work - namely, if the pointer data contained a direct
-     * buffer or an array that could be pinned on native side. But if
-     * the array was copied, as indicated by the MemoryType ARRAY_COPY
-     * in the JNI part, then there is no way to assert that the pointer
-     * data is actually released and written back before any other thread
-     * accesses the data on Java side.
-     *
-     * Possible solutions:
-     * - It might be possible to use a native kernel for writing back the
-     *   pointer data. This could, however, not be transparent for the user,
-     *   and most devices probably don't support native kernels at all.
-     * - The native implementation may check whether the pointer data
-     *   has been copied. In this case, it might throw an Exception.
-     *   But the behavior would then be completely unpredictable, since
-     *   the decision about copying or pinning is left to the VM.
-     * - The native implementation may check whether the pointer data
-     *   for a non-blocking call had been copied. It might then enforce
-     *   a blocking call to the actual CL function. But this would give
-     *   the user to feedback and no information why the call behaves
-     *   like a blocking call, although it was enqueued as non-blocking.
-     * - One of the two behaviors described above may be controlled via
-     *   additional (optional) parameters for the clEnqueueRead* methods.
-     *
-     * Current solution:
-     * - On Java side, it is made sure that for non-blocking read operations,
-     *   only Pointers that are pointing to direct buffers are used.
-     *   
-     *   
-     * The event callback mechanism which has been added in OpenCL 1.1
-     * offers a new option: When a non-blocking operation on an array
-     * is requested, the array can be obtained with the  
-     * Get<Type>ArrayElements method. The PointerData contains a 
-     * reference to this array (and its type). An event callback is
-     * registered for the read-operation event. The callback is
-     * responsible for releasing the PointerData, including the
-     * call to Release<Type>ArrayElements. However, this would 
-     * require ALL platforms to support at least OpenCL 1.1, which
-     * can currently not be assumed.
-     */
-    /*
-    private static void releasePendingPointerData(cl_event event)
-    {
-        System.out.println("Releasing pointer data for "+event);
-        releasePendingPointerDataNative(event);
-    }
-    private static native void releasePendingPointerDataNative(cl_event event);
-
-    private static Executor pendingPointerDataExecutor =
-        new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-        60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-        daemonThreadFactory);
-
-    private static void schedulePointerDataRelease(final cl_event event)
-    {
-        System.out.println("Scheduling release of pointer data for "+event);
-        Runnable runnable = new Runnable()
-        {
-            public void run()
-            {
-                clWaitForEvents(1, new cl_event[]{event});
-                releasePendingPointerData(event);
-            }
-        };
-        pendingPointerDataExecutor.execute(runnable);
-    }
-    //*/
-
-
-
 
 
     /*
@@ -1664,17 +1795,6 @@ public final class CL
      * operation. Thus, it keeps the reference alive and prevents the data
      * from being garbage collected until the write operation is finished.
      */
-    
-    /*
-     * TODO:
-     * Update for OpenCL 1.1: The event callback mechanism may offer
-     * some new options here. One option could be to register an
-     * event callback for the write command. A reference to the data 
-     * that is about to be written could be kept, and this reference 
-     * could be released as soon as the callback has been called. 
-     * These options have to be evaluated for future releases. 
-     */
-
     /**
      * Keep a reference to the given object, to prevent it from
      * being garbage collected, until waiting for the given
@@ -1710,79 +1830,6 @@ public final class CL
 
     }
 
-
-    /*
-     * Implementation note concerning non-blocking writes:
-     *
-     * One drawback of the current implementation of non-blocking writes
-     * using the scheduleReferenceRelease method could be that in case of
-     * a sequence of many small non-blocking write operations, a large
-     * number of threads could be created, although the threads are
-     * maintained using a cached thread pool. First tests have shown that
-     * this is not the case, but if this turns out to be a problem later,
-     * an alternative implementation might be used (see commented-out
-     * method "scheduleReferenceReleasePhantom" below): In this approach,
-     * phantom references to the data are kept. When the garbage
-     * collector finds out that the data is only reachable via this
-     * phantom reference, the reference is enqueued into a reference
-     * queue. A single thread is polling this queue, and if it finds
-     * the reference to some data, then it waits for the associated
-     * event to be completed. If the event already has completed, then
-     * the reference may be discarded and the data may be freed.
-     * Otherwise, the single thread will wait for the respective
-     * event, deferring the release of subsequently scheduled references
-     * until the pending write operation is finished.
-     */
-//   private static Map<PhantomReference<Object>, cl_event> dataReferenceMap =
-//       new HashMap<PhantomReference<Object>, cl_event>();
-//   private static ReferenceQueue<Object> dataReferenceQueue =
-//       new ReferenceQueue<Object>();
-//   private static Thread referenceManagementThread = null;
-//
-//   private static void scheduleReferenceReleasePhantom(final cl_event event, final Object object)
-//   {
-//       if (referenceManagementThread == null)
-//       {
-//           initReferenceManagementThread();
-//       }
-//       PhantomReference<Object> phantomReference =
-//           new PhantomReference<Object>(object, dataReferenceQueue);
-//       dataReferenceMap.put(phantomReference, event);
-//   }
-//
-//   private static void initReferenceManagementThread()
-//   {
-//       Thread referenceManagementThread = new Thread(new Runnable()
-//       {
-//           public void run()
-//           {
-//               while (true)
-//               {
-//                   try
-//                   {
-//                       Reference<? extends Object> reference =
-//                           dataReferenceQueue.remove();
-//
-//                       cl_event event = dataReferenceMap.get(reference);
-//
-//                       clWaitForEvents(1, new cl_event[]{event});
-//                       //scheduleReferenceRelease(event, reference);
-//
-//                       dataReferenceMap.remove(reference);
-//                   }
-//                   catch (InterruptedException e)
-//                   {
-//                       Thread.currentThread().interrupt();
-//                       break;
-//                   }
-//               }
-//           }
-//       }, "referenceManagementThread");
-//       referenceManagementThread.setPriority(Thread.MIN_PRIORITY);
-//       referenceManagementThread.setDaemon(true);
-//       referenceManagementThread.start();
-//
-//   }
 
 
 
@@ -2947,6 +2994,510 @@ public final class CL
 
     private static native int clGetDeviceInfoNative(cl_device_id device, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
 
+    
+    
+    /**
+     * <p>
+     * Creates an array of sub-devices that each reference a non-intersecting set of compute units within <code>in_device</code>.
+     *   </p>
+     * 
+     * <div title="clCreateSubDevices">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int <b>clCreateSubDevices</b>
+     *             (</code>
+     *           <td>
+     *             cl_device_id
+     *             <var>in_device</var>
+     *             , 
+     *           </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             cl_device_partition_property
+     *             <var>*properties</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>num_devices</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_device_id
+     *             <var>*out_devices</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint
+     *             <var>*num_devices_ret</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>in_device</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>The device to be partitioned.</p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>properties</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies how <code>in_device</code> is to be partition described
+     *             by a partition name and its corresponding value. Each partition name
+     *             is immediately followed by the corresponding desired value. The list is
+     *             terminated with 0. The list of supported partitioning schemes is described
+     *             in the table below. Only one of the listed partitioning schemes can be
+     *             specified in <code>properties</code>.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_device_partition_
+     *                     property enum (Partition value)
+     *                   </th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">CL_DEVICE_PARTITION_EQUALLY (unsigned int)</td>
+     *                   <td align="left">
+     *                     Split the aggregate device into as many smaller
+     *                     aggregate devices as can be created, each
+     *                     containing <em><code>n</code></em> compute
+     *                     units.  The value <em><code>n</code></em> is
+     *                     passed as the value accompanying this property. If
+     *                     <em><code>n</code></em> does not divide evenly into
+     *                     <code>CL_DEVICE_PARTITION_MAX_COMPUTE_UNITS</code>,
+     *                     then the remaining compute units are not used.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">CL_DEVICE_PARTITION_BY_COUNTS (unsigned int)</td>
+     *                   <td align="left">
+     *                     This property is followed by a
+     *                     <code>CL_DEVICE_PARTITION_BY_COUNTS_LIST_END</code>
+     *                     terminated list of compute unit counts. For
+     *                     each nonzero count <em><code>m</code></em>
+     *                     in the list, a sub-device is created with
+     *                     <em><code>m</code></em> compute units in it.
+     *                     <code>CL_DEVICE_PARTITION_BY_COUNTS_LIST_END</code>
+     *                     is defined to be 0.
+     *                     <p>
+     *                       The number of non-zero count
+     *                       entries in the list may not exceed
+     *                       <code>CL_DEVICE_PARTITION_MAX_SUB_DEVICES</code>.
+     *                     </p>
+     *                     <p>
+     *                       The total number of compute
+     *                       units specified may not exceed
+     *                       <code>CL_DEVICE_PARTITION_MAX_COMPUTE_UNITS</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">CL_DEVICE_PARTITION_BY_-
+     *                     AFFINITY_DOMAIN (cl_device_affinity_domain)
+     *                   </td>
+     *                   <td align="left">
+     *                     Split the device into smaller aggregate devices
+     *                     containing one or more compute units that all share
+     *                     part of a cache hierarchy. The value accompanying
+     *                     this property may be drawn from the following list:
+     *                     <p>
+     *                       <code>CL_DEVICE_AFFINITY_DOMAIN_NUMA</code>
+     *                       - Split the device into sub-devices comprised of
+     *                       compute units that share a NUMA node.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_DEVICE_AFFINITY_DOMAIN_L4_CACHE</code>
+     *                       - Split the device into sub-devices comprised of
+     *                       compute units that share a level 4 data cache.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_DEVICE_AFFINITY_DOMAIN_L3_CACHE</code>
+     *                       - Split the device into sub-devices comprised of
+     *                       compute units that share a level 3 data cache.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE</code>
+     *                       - Split the device into sub-devices comprised of
+     *                       compute units that share a level 2 data cache.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE</code>
+     *                       - Split the device into sub-devices comprised of
+     *                       compute units that share a level 1 data cache.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE</code>
+     *                       - Split the device along the next partitionable
+     *                       affinity domain. The implementation shall find the
+     *                       first level along which the device or sub-device
+     *                       may be further subdivided in the order NUMA,
+     *                       L4, L3, L2, L1, and partition the device into
+     *                       sub-devices comprised of compute units that share
+     *                       memory subsystems at this level.
+     *                     </p>
+     *                     <p>
+     *                       The user may determine what happened by calling
+     *                       <span><span>clGetDeviceInfo</span></span>
+     *                       (<code>CL_DEVICE_PARTITION_TYPE</code>)
+     *                       on the sub-devices.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>num_devices</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Size of memory pointed to by <code>out_devices</code> specified as
+     *             the number of <span>cl_device_id</span> entries.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>out_devices</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The buffer where the OpenCL sub-devices will be returned.  If
+     *             <code>out_devices</code> is NULL, this argument is ignored. If
+     *             <code>out_devices</code> is not NULL, <code>num_devices</code>
+     *             must be greater than or equal to the number of sub-devices that
+     *             <code>device</code> may be partitioned into according to the
+     *             partitioning scheme specified in <code>properties</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>num_devices_ret</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns the number of sub-devices that device may be
+     *             partitioned into according to the partitioning scheme specified in
+     *             <code>properties</code>.  If <code>num_devices_ret</code>
+     *             is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Creates an array of sub-devices that each reference a non-intersecting set of compute
+     *       units within <code>in_device</code>, according to a partition scheme given
+     *       by <code>properties</code>. The output sub-devices may be used in every way
+     *       that the root (or parent) device can be used, including creating contexts, building
+     *       programs, further calls to <code>clCreateSubDevices</code> and creating
+     *       command-queues. When a command-queue is created against a sub-device, the commands
+     *       enqueued on the queue are executed only on the sub-device.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the partition is created successfully.
+     *       Otherwise, it returns a null value with the following error values returned in
+     *       <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_DEVICE</span> if <code>in_device</code> is not valid.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if values specified in
+     *           <code>properties</code> are not valid or if values specified in
+     *           <code>properties</code> are valid but not supported by the device.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>out_devices</code> is not
+     *           NULL and <code>num_devices</code> is less than the number of sub-devices
+     *           created by the partition scheme.
+     *         </li>
+     *         <li><span>CL_DEVICE_PARTITION_FAILED</span> if the partition name is
+     *           supported by the implementation but <code>in_device</code> could not be
+     *           further partitioned.
+     *         </li>
+     *         <li><span>CL_INVALID_DEVICE_PARTITION_COUNT</span> if
+     *           the partition name specified in <code>properties</code> is
+     *           <code>CL_DEVICE_PARTITION_BY_COUNTS</code> and the number of sub-devices
+     *           requested exceeds <code>CL_DEVICE_PARTITION_MAX_SUB_DEVICES</code>
+     *           or the total number of compute units requested exceeds
+     *           <code>CL_DEVICE_PARTITION_MAX_COMPUTE_UNITS</code> for
+     *           <code>in_device</code>, or the number of compute units requested
+     *           for one or more sub-devices is less than zero or the number of sub-devices
+     *           requested exceeds <code>CL_DEVICE_PARTITION_MAX_COMPUTE_UNITS</code>
+     *           for <code>in_device</code>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div title="Example">
+     *     <h3>
+     *       Example
+     *     </h3>
+     *     <p>
+     *       A few examples that describe how to specify partition properties in
+     *       <code>properties</code> argument to <code>clCreateSubDevices</code>
+     *       are given below.
+     *     </p>
+     *     <p>
+     *       To partition a device containing 16 compute units into two sub-devices, each containing
+     *       8 compute units, pass the following in <code>properties</code>:
+     *     </p>
+     *     <div>
+     *       <table border="0">
+     *         <colgroup>
+     *           <col align="left" />
+     *         </colgroup>
+     *         <tbody>
+     *           <tr>
+     *             <td align="left">
+     *               { CL_DEVICE_PARTITION_EQUALLY, 8, 0 }
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *     <p>
+     *       To partition a device with four compute units into two sub-devices with one sub-device
+     *       containing 3 compute units and the other sub-device 1 compute unit, pass the following
+     *       in <code>properties</code> argument:
+     *     </p>
+     *     <div>
+     *       <table border="0">
+     *         <colgroup>
+     *           <col align="left" />
+     *         </colgroup>
+     *         <tbody>
+     *           <tr>
+     *             <td align="left">
+     *               { CL_DEVICE_PARTITION_BY_COUNTS,
+     *               3, 1, CL_DEVICE_PARTITION_BY_COUNTS_LIST_END, 0 }
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *     <p>
+     *       To split a device along the outermost cache line (if any), pass the following in
+     *       <code>properties</code> argument:
+     *     </p>
+     *     <div>
+     *       <table border="0">
+     *         <colgroup>
+     *           <col align="left" />
+     *         </colgroup>
+     *         <tbody>
+     *           <tr>
+     *             <td align="left">
+     *               { CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN,
+     *               CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE, 0 }
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clCreateSubDevices(cl_device_id in_device, cl_device_partition_property properties, int num_devices, cl_device_id out_devices[], int num_devices_ret[])
+    {
+        // OPENCL_1_2
+        return checkResult(clCreateSubDevicesNative(in_device, properties, num_devices, out_devices, num_devices_ret));
+    }
+    private static native int clCreateSubDevicesNative(cl_device_id in_device, cl_device_partition_property properties, int num_devices, cl_device_id out_devices[], int num_devices_ret[]);
+
+
+    /**
+     * <p>
+     *     Increments the <code>devices</code> reference count.
+     *   </p>
+     * 
+     * <div title="clRetainDevice">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clRetainDevice</b>
+     *             (</code>
+     *           <td>
+     *             cl_device_id
+     *             <var>device</var>
+     *             <code>)</code>
+     *           </td>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Increments the <code>device</code> reference count if
+     *       <code>device</code> is a valid sub-device created by a call to
+     *       <span><span>clCreateSubDevices</span></span>.
+     *       If <code>device</code> is a root level device i.e. a <span>cl_device_id</span>
+     *       returned by <span><span>clGetDeviceIDs</span></span>,
+     *       the <code>device</code> reference count remains unchanged.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function is executed successfully
+     *       or the device is a root-level device. Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_DEVICE</span> if <code>device</code> is not a valid
+     *           sub-device created by a call to
+     *           <span><span>clCreateSubDevices</span></span>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate resources required by the
+     *           OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate resources required by
+     *           the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clRetainDevice(cl_device_id device)
+    {
+        // OPENCL_1_2
+        return checkResult(clRetainDeviceNative(device));
+    }
+    private static native int clRetainDeviceNative(cl_device_id device);
+    
+        
+    /**
+     * <p>
+     *       Decrements the <code>device</code> reference count.
+     *   </p>
+     * 
+     * <div title="clReleaseDevice">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int <b>clReleaseDevice</b>
+     *             (</code>
+     *           <td>cl_device_id<var>device</var><code>)</code></td>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Decrements the <code>device</code> reference
+     *       count if device is a valid sub-device created by a call to
+     *       <span><span>clCreateSubDevices</span></span>.
+     *       If <code>device</code> is a root level device i.e. a <span>cl_device_id</span>
+     *       returned by <span><span>clGetDeviceIDs</span></span>,
+     *       the <code>device</code> reference count remains unchanged.
+     *     </p>
+     *     <p>
+     *       After the <code>device</code> reference count becomes zero and all the objects
+     *       attached to <code>device</code> (such as command-queues) are released, the
+     *       <code>device</code> object is deleted.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function is executed successfully.
+     *       Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_DEVICE</span> if <code>device</code>
+     *           is not a valid sub-device created by a call to
+     *           <span><span>clCreateSubDevices</span></span>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clReleaseDevice(cl_device_id device)
+    {
+        // OPENCL_1_2
+        return checkResult(clReleaseDeviceNative(device));
+    }
+    private static native int clReleaseDeviceNative(cl_device_id device);
+    
+    
     /**
      * <p>Creates an OpenCL context.</p>
      *
@@ -4904,6 +5455,35 @@ public final class CL
     private static native cl_mem clCreateBufferNative(cl_context context, long flags, long size, Pointer host_ptr, int errcode_ret[]);
 
 
+    /**
+     * @deprecated The buffer_create_info that has to be passed to this function
+     * is specific for the underlying architecture (32/64 bit). The preferred
+     * way of creating a sub-buffer is now via 
+     * {@link #clCreateSubBuffer(cl_mem, long, int, cl_buffer_region, int[])}
+     * @since OpenCL 1.1
+     */
+    public static cl_mem clCreateSubBuffer(cl_mem buffer, /*cl_mem_flags*/ long flags, /*cl_buffer_create_type*/ int buffer_create_type, Pointer buffer_create_info, int errcode_ret[])
+    {
+        // OPENCL_1_1
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateSubBufferNative(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_mem result = clCreateSubBufferNative(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
+            return result;
+        }
+    }
+
+    private static native cl_mem clCreateSubBufferNative(cl_mem buffer, long flags, int buffer_create_type, Pointer buffer_create_info, int errcode_ret[]);
+
 
     /**
      * <p>
@@ -5148,8 +5728,9 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
-    public static cl_mem clCreateSubBuffer(cl_mem buffer, /*cl_mem_flags*/ int flags, /*cl_buffer_create_type*/ int buffer_create_type, Pointer buffer_create_info, int errcode_ret[])
+    public static cl_mem clCreateSubBuffer(cl_mem buffer, /*cl_mem_flags*/ long flags, /*cl_buffer_create_type*/ int buffer_create_type, cl_buffer_region buffer_create_info, int errcode_ret[])
     {
         // OPENCL_1_1
         if (exceptionsEnabled)
@@ -5158,20 +5739,505 @@ public final class CL
             {
                 errcode_ret = new int[1];
             }
-            cl_mem result = clCreateSubBufferNative(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
+            cl_mem result = clCreateSubBuffer2Native(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
             checkResult(errcode_ret[0]);
             return result;
         }
         else
         {
-            cl_mem result = clCreateSubBufferNative(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
+            cl_mem result = clCreateSubBuffer2Native(buffer, flags, buffer_create_type, buffer_create_info, errcode_ret);
             return result;
         }
     }
-
-    private static native cl_mem clCreateSubBufferNative(cl_mem buffer, int flags, int buffer_create_type, Pointer buffer_create_info, int errcode_ret[]);
-
-
+    private static native cl_mem clCreateSubBuffer2Native(cl_mem buffer, /*cl_mem_flags*/ long flags, /*cl_buffer_create_type*/ int buffer_create_type, cl_buffer_region buffer_create_info, int errcode_ret[]);
+    
+    
+    
+    
+    /**
+     * <p>
+     *       Creates a 1D image, 1D image buffer, 1D image array, 2D image, 2D image array or 3D image object.
+     *   </p>
+     * 
+     * <div title="clCreateImage">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_mem <b>clCreateImage</b>
+     *             (</code>
+     *           <td>cl_context<var>context</var>, </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_mem_flags<var>flags</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_image_format<var>*image_format</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_image_desc<var>*image_desc</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>void<var>*host_ptr</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> context </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p> 
+     *             A valid OpenCL context on which the image object is to be created.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> flags </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A bit-field that is used to specify allocation
+     *             and usage information about the image memory object being created and is
+     *             described in the table below.
+     *           </p>
+     *           <p>
+     *             For all image types except <code>CL_MEM_OBJECT_IMAGE1D_BUFFER</code>,
+     *             if value specified for <code>flags</code> is 0, the default is used
+     *             which is <code>CL_MEM_READ_WRITE</code>.
+     *           </p>
+     *           <p>
+     *             For <code>CL_MEM_OBJECT_IMAGE1D_BUFFER</code> image type, if the
+     *             <code>CL_MEM_READ_WRITE</code>, <code>CL_MEM_READ_ONLY</code>
+     *             or <code>CL_MEM_WRITE_ONLY</code> values are not specified in
+     *             <code>flags</code>, they are inherited from the corresponding
+     *             memory access qualifers associated with <code>buffer</code>.
+     *             The <code>CL_MEM_USE_HOST_PTR</code>,
+     *             <code>CL_MEM_ALLOC_HOST_PTR</code> and
+     *             <code>CL_MEM_COPY_HOST_PTR</code> values cannot
+     *             be specified in <code>flags</code> but are inherited
+     *             from the corresponding memory access qualifiers associated with
+     *             <code>buffer</code>.  If <code>CL_MEM_COPY_HOST_PTR</code>
+     *             is specified in the memory access qualifier values associated with
+     *             <code>buffer</code> it does not imply any additional copies
+     *             when the sub-buffer is created from <code>buffer</code>.
+     *             If the <code>CL_MEM_HOST_WRITE_ONLY</code>,
+     *             <code>CL_MEM_HOST_READ_ONLY</code> or
+     *             <code>CL_MEM_HOST_NO_ACCESS</code> values are not specified in
+     *             <code>flags</code>, they are inherited from the corresponding memory
+     *             access qualifiers associated with <code>buffer</code>.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_mem_flags</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_READ_WRITE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This flag specifies that the memory object will be read and written by a kernel. This
+     *                     is the default.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_WRITE_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flags specifies that the memory object will be written but not read by
+     *                       a kernel.
+     *                     </p>
+     *                     <p>
+     *                       Reading from a buffer or image object created with
+     *                       <code>CL_MEM_WRITE_ONLY</code> inside a kernel is undefined.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_READ_WRITE</code> and <code>CL_MEM_WRITE_ONLY</code>
+     *                       are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_READ_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the memory object is a read-only memory object when
+     *                       used inside a kernel.
+     *                     </p>
+     *                     <p>
+     *                       Writing to a buffer or image object created with
+     *                       <code>CL_MEM_READ_ONLY</code> inside a kernel is undefined.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_READ_WRITE</code> or <code>CL_MEM_WRITE_ONLY</code>
+     *                       and <code>CL_MEM_READ_ONLY</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_USE_HOST_PTR</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag is valid only if <code>host_ptr</code> is not NULL. If
+     *                       specified, it indicates that the application wants the OpenCL implementation
+     *                       to use memory referenced by <code>host_ptr</code> as the storage bits
+     *                       for the memory object.
+     *                     </p>
+     *                     <p>
+     *                       OpenCL implementations are allowed to cache the buffer contents pointed to by
+     *                       <code>host_ptr</code> in device memory. This cached copy can be used when
+     *                       kernels are executed on a device.
+     *                     </p>
+     *                     <p>
+     *                       The result of OpenCL commands that operate on multiple buffer objects created with
+     *                       the same <code>host_ptr</code> or overlapping host regions is considered
+     *                       to be undefined.
+     *                     </p>
+     *                     <p>
+     *                       Refer to the <span><span>description
+     *                       of the alignment rules</span></span> for
+     *                       <code>host_ptr</code> for memory objects (buffer and images) created
+     *                       using <code>CL_MEM_USE_HOST_PTR</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_ALLOC_HOST_PTR</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the application wants the OpenCL implementation to
+     *                       allocate memory from host accessible memory.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_ALLOC_HOST_PTR</code> and
+     *                       <code>CL_MEM_USE_HOST_PTR</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_COPY_HOST_PTR</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag is valid only if <code>host_ptr</code> is not NULL. If specified,
+     *                       it indicates that the application wants the OpenCL implementation to allocate
+     *                       memory for the memory object and copy the data from memory referenced by
+     *                       <code>host_ptr</code>.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_COPY_HOST_PTR</code> and
+     *                       <code>CL_MEM_USE_HOST_PTR</code> are mutually exclusive.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_COPY_HOST_PTR</code> can be used with
+     *                       <code>CL_MEM_ALLOC_HOST_PTR</code> to initialize the contents of the
+     *                       <span>cl_mem</span> object allocated using host-accessible (e.g.  PCIe) memory.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_COPY_HOST_WRITE_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the host will only write to the memory object (using
+     *                       OpenCL APIs that enqueue a write or a map for write).  This can be used to optimize
+     *                       write access from the host (e.g. enable write combined allocations for memory
+     *                       objects for devices that communicate with the host over a system bus such as PCIe).
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_COPY_HOST_READ_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the host will only read the memory object (using OpenCL
+     *                       APIs that enqueue a read or a map for read).
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_HOST_WRITE_ONLY</code> and
+     *                       <code>CL_MEM_HOST_READ_ONLY</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_COPY_HOST_NO_ACCESS</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the host will not read or write the memory object.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_HOST_WRITE_ONLY</code> or
+     *                       <code>CL_MEM_HOST_READ_ONLY</code> and
+     *                       <code>CL_MEM_HOST_NO_ACCESS</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> image_format </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a structure that
+     *             describes format properties of the image to be allocated. See
+     *             <span><span>cl_image_format</span></span>
+     *             for a detailed description of the image format descriptor.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> image_desc </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a structure that
+     *             describes type and dimensions of the image to be allocated.  See
+     *             <span><span>imageDescriptor</span></span>
+     *             for more information.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> host_ptr </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to the image data that may already be allocated by the application.
+     *             Refer to table below for a description of how large the buffer that
+     *             <code>host_ptr</code> points to must be.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">Image Type</th>
+     *                   <th align="left">Size of buffer that <code>host_ptr</code> points to</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_OBJECT_IMAGE1D</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>≥ image_row_pitch</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_OBJECT_IMAGE1D_BUFFER</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>≥ image_row_pitch</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_OBJECT_IMAGE2D</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>≥ image_row_pitch * image_height</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_OBJECT_IMAGE3D</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>≥ image_slice_pitch * image_depth</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_OBJECT_IMAGE1D_ARRAY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>≥ image_slice_pitch * image_array_size</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_OBJECT_IMAGE2D_ARRAY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>≥ image_slice_pitch * image_array_size</code>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *           <p>
+     *             For a 3D image or 2D image array, the image data specified by
+     *             <code>host_ptr</code> is stored as a linear sequence of adjacent 2D
+     *             image slices or 2D images respectively. Each 2D image is a linear sequence
+     *             of  adjacent scanlines. Each scanline is a linear sequence of image elements.
+     *           </p>
+     *           <p>
+     *             For a 2D image, the image data specified by <code>host_ptr</code>
+     *             is stored as a linear sequence of adjacent scanlines. Each scanline is
+     *             a linear sequence of image elements.
+     *           </p>
+     *           <p>
+     *             For a 1D image array, the image data specified by <code>host_ptr</code>
+     *             is stored as a linear sequence of adjacent 1D images respectively. Each 1D
+     *             image or 1D image buffer is a single scanline which is a linear sequence
+     *             of adjacent elements.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> errcode_ret </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Will return an appropriate error code. If <code>errcode_ret</code>
+     *             is NULL, no error code is returned.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clCreateImage</code> returns a valid non-zero image object and
+     *       <code>errcode_ret</code> is set to <span>CL_SUCCESS</span> if the
+     *       image object is created successfully. Otherwise, it returns a NULL value with one of
+     *       the following error values returned in <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code> is not a valid context.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if values specified in <code>flags</code> are not valid.
+     *         </li>
+     *         <li><span>CL_INVALID_IMAGE_FORMAT_DESCRIPTOR</span> if values specified in
+     *           <code>image_format</code> are not valid or if <code>image_format</code>
+     *           is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_IMAGE_DESCRIPTOR</span> if values specified in
+     *           <code>image_desc</code> are not valid or if <code>image_desc</code>
+     *           is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_IMAGE_SIZE</span> if image dimensions specified
+     *           in <code>image_desc</code> exceed the minimum maximum image dimensions
+     *           described in the table of allowed values for <code>param_name</code>
+     *           for <span><span>clGetDeviceInfo</span></span>
+     *           for all devices in <code>context</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_HOST_PTR</span> if <code>host_ptr</code> in
+     *           <code>image_desc</code> is NULL and <code>CL_MEM_USE_HOST_PTR</code> or
+     *           <code>CL_MEM_COPY_HOST_PTR</code> are set in <code>flags</code> or if
+     *           <code>host_ptr</code> is not NULL but <code>CL_MEM_COPY_HOST_PTR</code>
+     *           or <code>CL_MEM_USE_HOST_PTR</code> are not set in <code>flags</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if a 1D image buffer is being created
+     *           and the buffer object was created with <code>CL_MEM_WRITE_ONLY</code>
+     *           and <code>flags</code> specifies <code>CL_MEM_READ_WRITE</code>
+     *           or <code>CL_MEM_READ_ONLY</code>, or if the buffer object was
+     *           created with <code>CL_MEM_READ_ONLY</code> and <code>flags</code> specifies
+     *           <code>CL_MEM_READ_WRITE</code> or <code>CL_MEM_WRITE_ONLY</code>, or
+     *           if <code>flags</code> specifies <code>CL_MEM_USE_HOST_PTR</code>
+     *           or <code>CL_MEM_ALLOC_HOST_PTR</code> or
+     *           <code>CL_MEM_COPY_HOST_PTR</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if a 1D image buffer is being created and
+     *           the buffer object was created with <code>CL_MEM_HOST_WRITE_ONLY</code>
+     *           and <code>flags</code> specifies <code>CL_MEM_HOST_READ_ONLY</code>,
+     *           or if the buffer object was created with <code>CL_MEM_HOST_READ_ONLY</code>
+     *           and <code>flags</code> specifies <code>CL_MEM_HOST_WRITE_ONLY</code>,
+     *           or if the buffer object was created with <code>CL_MEM_HOST_NO_ACCESS</code>
+     *           and <code>flags</code> specifies <code>CL_MEM_HOST_READ_ONLY</code>
+     *           or <code>CL_MEM_HOST_WRITE_ONLY</code>.
+     *         </li>
+     *         <li><span>CL_IMAGE_FORMAT_NOT_SUPPORTED</span> if the
+     *           <code>image_format</code> is not supported.
+     *         </li>
+     *         <li><span>CL_MEM_OBJECT_ALLOCATION_FAILURE</span> if there is a failure to
+     *           allocate memory for image object.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if there are
+     *           no devices in <code>context</code> that support
+     *           images (i.e. <code>CL_DEVICE_IMAGE_SUPPORT</code>
+     *           (specified in the table of OpenCL Device Queries for
+     *           <span><span>clGetDeviceInfo</span></span>)
+     *           is <code>CL_FALSE</code>).
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static cl_mem clCreateImage(cl_context context, long flags, cl_image_format image_format, cl_image_desc image_desc, Pointer host_ptr, int errcode_ret[])    
+    {
+        // OPENCL_1_2
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateImageNative(context, flags, image_format, image_desc, host_ptr, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_mem result = clCreateImageNative(context, flags, image_format, image_desc, host_ptr, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_mem clCreateImageNative(cl_context context, long flags, cl_image_format image_format, cl_image_desc image_desc, Pointer host_ptr, int errcode_ret[]);
 
 
     /**
@@ -5379,6 +6445,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 and replaced by {@link CL#clCreateImage(cl_context, long, cl_image_format, cl_image_desc, Pointer, int[])}
      */
     public static cl_mem clCreateImage2D(cl_context context, long flags, cl_image_format image_format[], long image_width, long image_height, long image_row_pitch, Pointer host_ptr, int errcode_ret[])
     {
@@ -5637,6 +6704,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 and replaced by {@link CL#clCreateImage(cl_context, long, cl_image_format, cl_image_desc, Pointer, int[])}
      */
     public static cl_mem clCreateImage3D(cl_context context, long flags, cl_image_format image_format[], long image_width, long image_height, long image_depth, long image_row_pitch, long image_slice_pitch, Pointer host_ptr, int errcode_ret[])
     {
@@ -6760,6 +7828,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
     public static int clSetMemObjectDestructorCallback(cl_mem memobj, MemObjectDestructorCallbackFunction pfn_notify, Object user_data)
     {
@@ -7645,6 +8714,150 @@ public final class CL
 
     private static native cl_program clCreateProgramWithBinaryNative(cl_context context, int num_devices, cl_device_id device_list[], long lengths[], byte binaries[][], int binary_status[], int errcode_ret[]);
 
+    
+    
+    /**
+     * <p>
+     *       Creates a program object for a context, and loads the information related to the built-in kernels
+     *       into a program object.
+     *   </p>
+     * 
+     * <div title="clCreateProgramWithBuiltInKernels">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_program <b>clCreateProgramWithBuiltInKernels</b>
+     *             (</code>
+     *           <td>cl_context<var>context</var>, </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint<var>num_devices</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_device_id<var>*device_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const char<var>*kernel_names</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> context </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a valid OpenCL context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> num_devices </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The number of devices listed in <code>device_list</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> device_list </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a list of devices that are in <code>context</code>.
+     *             <code>device_list</code> must be a non-NULL
+     *             value. The built-in kernels are loaded for devices specified in this list.
+     *           </p>
+     *           <p>
+     *             The devices associated with the program object will be the list of devices specified by
+     *             <code>device_list</code>.  The list of devices specified by
+     *             <code>device_list</code> must be devices associated with context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> kernel_names </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A semi-colon separated list of built-in kernel names.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns a valid non-zero program object and <code>errcode_ret</code> is set
+     *       to <span>CL_SUCCESS</span> if the program object is created successfully.
+     *       Otherwise, it returns a NULL value with one of the following error values returned
+     *       in <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code> is not
+     *           a valid context.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>device_list</code> is NULL
+     *           or <code>num_devices</code> is zero;
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>kernel_names</code> is NULL
+     *           or <code>kernel_names</code> contains a kernel name that is not supported
+     *           by any of the devices in <code>device_list</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_DEVICE</span> if devices listed in
+     *           <code>device_list</code> are not in the list of devices associated with
+     *           <code>context</code>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static cl_program clCreateProgramWithBuiltInKernels(cl_context  context, int num_devices, cl_device_id device_list[], String kernel_names, int errcode_ret[])
+    {
+        // OPENCL_1_2
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_program result = clCreateProgramWithBuiltInKernelsNative(context, num_devices, device_list, kernel_names, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_program result = clCreateProgramWithBuiltInKernelsNative(context, num_devices, device_list, kernel_names, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_program clCreateProgramWithBuiltInKernelsNative(cl_context  context, int num_devices, cl_device_id device_list[], String kernel_names, int errcode_ret[]);
+    
+    
     /**
      * <p>
      *     Increments the <code>program</code> reference count.
@@ -8187,10 +9400,1077 @@ public final class CL
         return sb.toString();
     }
 
-
-
     private static native int clBuildProgramNative(cl_program program, int num_devices, cl_device_id device_list[], String options, BuildProgramFunction pfn_notify, Object user_data);
 
+    
+    
+    
+    /**
+     * <p>
+     *       Compiles a programs source for all the devices or a specific device(s) in the OpenCL context
+     *           associated with <code>program</code>.
+     *   </p>
+     * 
+     * <div title="clCompileProgram">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clCompileProgram</b>
+     *             (</code>
+     *           <td>cl_program<var>program</var>, </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint<var>num_devices</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_device_id<var>*device_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const char<var>*options</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint<var>num_input_heaaders</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_program<var>*input_heaaders</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const char<var>**heaader_include_names</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>void<var>(CL_CALLBACK *pfn_notify)(
+     *             cl_program program,
+     *             void *user_data)</var>, 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>void<var>*user_data</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> program </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The program object that is the compilation target.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> device_list </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a list of devices associated with <code>program</code>. If
+     *             <code>device_list</code> is a NULL value, the compile is performed for
+     *             all devices associated with program.  If <code>device_list</code> is a
+     *             non-NULL value, the compile is performed for devices specified in this list.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> num_devices </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The number of devices listed in <code>device_list</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>options</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a null-terminated string of characters that describes the
+     *             compilation options to be used for building the program executable. The
+     *             list of supported options is as described below.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>num_input_headers</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the number of programs that describe headers in the array
+     *             referenced by <code>input_headers</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>input_headers</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             An array of program embedded headers created with
+     *             <span><span>clCreateProgramWithSource</span></span>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>header_include_names</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             An array that has a one to one correspondence
+     *             with <code>input_headers</code>.  Each entry in
+     *             <code>header_include_names</code> specifies the include name used by
+     *             source in <code>program</code> that comes from an embedded header.
+     *             The corresponding entry in <code>input_headers</code> identifies the
+     *             program object which contains the header source to be used. The embedded
+     *             headers are first searched before the headers in the list of directories
+     *             specified by the -I compile option (as described in section 5.6.4.1).
+     *             If multiple entries in <code>header_include_names</code> refer to
+     *             the same header name, the first one encountered will be used.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> pfn_notify </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A function pointer to a notification routine.  The notification routine
+     *             is a callback function that an application can register and which will
+     *             be called when the program executable has been built (successfully
+     *             or unsuccessfully).  If <code>pfn_notify</code> is not NULL,
+     *             <code>clCompileProgram</code> does not need to wait for the
+     *             compiler to complete and can return immediately once the compilation
+     *             can begin.  The compilation can begin if the context, program whose
+     *             sources are being compiled, list of devices, input headers, programs
+     *             that describe input headers and compiler options specified are all
+     *             valid and appropriate host and device resources needed to perform
+     *             the compile are available.  If <code>pfn_notify</code> is NULL,
+     *             <code>clCompileProgram</code> does not return until the compiler
+     *             has completed.  This callback function may be called asynchronously by
+     *             the OpenCL implementation.  It is the application's responsibility to
+     *             ensure that the callback function is thread-safe.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> user_data </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Passed as an argument when <code>pfn_notify</code> is
+     *             called. <code>user_data</code> can be NULL.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Compiles a program's source for all the devices or a specific device(s)
+     *       in the OpenCL context associated with <code>program</code>.  The
+     *       pre-processor runs before the program sources are compiled.  The compiled
+     *       binary is built for all devices associated with <code>program</code>
+     *       or the list of devices specified. The compiled binary can be queried using
+     *       <span><span>clGetProgramInfo</span></span>(<code>program</code>,
+     *       <code>CL_PROGRAM_BINARIES</code>, ...) and can be specified to
+     *       <span><span>clCreateProgramWithBinary</span></span>
+     *       to create a new program object.
+     *     </p>
+     *     <h4>Compiler Options</h4>
+     *     <p>
+     *       The compiler options are categorized as pre-processor options, options for math intrinsics,
+     *       options that control optimization and miscellaneous options. This specification defines
+     *       a standard set of options that must be supported by the OpenCL C compiler when building
+     *       program executables online or offline. These may be extended by a set of vendor- or
+     *       platform specific options.
+     *     </p>
+     *     <h4>Preprocessor Options</h4>
+     *     <p>
+     *       These options control the OpenCL C preprocessor which is run on each program source before
+     *       actual compilation.
+     *     </p>
+     *     <p>
+     *       -D options are processed in the order they are given in the options argument to
+     *       <code>clBuildProgram</code> or or <code>clCompileProgram</code>.
+     *     </p>
+     *     <div>
+     *       <dl>
+     *         <dt><span>-D name</span></dt>
+     *         <dd>
+     *           <p>
+     *             Predefine <code>name</code> as a macro, with definition 1.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-D name=definition</span></dt>
+     *         <dd>
+     *           <p>
+     *             The contents of <code>definition</code> are tokenized and processed as
+     *             if they appeared during translation phase three in a `#define' directive. In
+     *             particular, the definition will be truncated by embedded newline characters.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-I dir</span></dt>
+     *         <dd>
+     *           <p>
+     *             Add the directory <code>dir</code> to the list of directories to be
+     *             searched for header files.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <h4>Math Intrinsics Options</h4>
+     *     These options control compiler behavior regarding floating-point arithmetic. These options trade
+     *     off between speed and correctness.
+     *     <div>
+     *       <dl>
+     *         <dt><span>-cl-single-precision-constant</span></dt>
+     *         <dd>
+     *           <p>
+     *             Treat double precision floating-point constant as single precision constant.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-cl-denorms-are-zero</span></dt>
+     *         <dd>
+     *           <p>
+     *             This option controls how single precision and double precision denormalized
+     *             numbers are handled. If specified as a build option, the single precision
+     *             denormalized numbers may be flushed to zero; double precision denormalized
+     *             numbers may also be flushed to zero if the optional extension for double
+     *             precsion is supported.  This is intended to be a performance hint and the
+     *             OpenCL compiler can choose not to flush denorms to zero if the device supports
+     *             single precision (or double precision) denormalized numbers.
+     *           </p>
+     *           <p>
+     *             This option is ignored for single precision numbers if the
+     *             device does not support single precision denormalized numbers
+     *             i.e. <code>CL_FP_DENORM</code> bit is not set in
+     *             <code>CL_DEVICE_SINGLE_FP_CONFIG</code>.
+     *           </p>
+     *           <p>
+     *             This option is ignored for double precision numbers if the device
+     *             does not support double precision or if it does support double
+     *             precison but <code>CL_FP_DENORM</code> bit is not set in
+     *             <code>CL_DEVICE_DOUBLE_FP_CONFIG</code>.
+     *           </p>
+     *           <p>
+     *             This flag only applies for scalar and vector single precision floating-point
+     *             variables and computations on these floating-point variables inside a
+     *             program. It does not apply to reading from or writing to image objects.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-cl-fp32-correctly-rounded-divide-sqrt</span></dt>
+     *         <dd>
+     *           <p>
+     *             The -cl-fp32-correctly-rounded-divide-sqrt build option to
+     *             <code>clBuildProgram</code> or <code>clCompileProgram</code>
+     *             allows an application to specify that single precision floating-point divide
+     *             (x/y and 1/x) and sqrt used in the program source are correctly rounded.
+     *             If this build option is not specified, the minimum numerical accuracy of
+     *             single precision floating-point divide and sqrt are as defined in section
+     *             7.4 of the OpenCL specification.
+     *           </p>
+     *           <p>
+     *             This build option can only be specified if the
+     *             <code>CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT</code> is set
+     *             in <code>CL_DEVICE_SINGLE_FP_CONFIG</code> (as defined in
+     *             in the table of allowed values for <code>param_name</code> for
+     *             <span><span>clGetDeviceInfo</span></span>) for
+     *             devices that the program is being build.  <code>clBuildProgram</code>
+     *             or <code>clCompileProgram</code> will fail to compile the program for
+     *             a device if the -cl-fp32-correctly-rounded-divide-sqrt option is specified
+     *             and <code>CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT</code> is not set for
+     *             the device.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <h4>Optimization Options</h4>
+     *     <p>
+     *       These options control various sorts of optimizations. Turning on optimization flags
+     *       makes the compiler attempt to improve the performance and/or code size at the expense of
+     *       compilation time and possibly the ability to debug the program.
+     *     </p>
+     *     <div>
+     *       <dl>
+     *         <dt><span>-cl-opt-disable</span></dt>
+     *         <dd>
+     *           <p>
+     *             This option disables all optimizations. The default is optimizations are enabled.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <p>
+     *       The following options control compiler behavior regarding floating-point arithmetic. These
+     *       options trade off between performance and correctness and must be specifically enabled.
+     *       These options are not turned on by default since it can result in incorrect output for
+     *       programs which depend on an exact implementation of IEEE 754 rules/specifications for
+     *       math functions.
+     *     </p>
+     *     <div>
+     *       <dl>
+     *         <dt><span>-cl-mad-enable</span></dt>
+     *         <dd>
+     *           <p>
+     *             Allow <code>a * b + c</code> to be replaced by a <code>mad</code>. The
+     *             <code>mad</code> computes <code>a * b + c</code> with reduced accuracy. For
+     *             example, some OpenCL devices implement <code>mad</code> as truncate the result
+     *             of <code>a * b</code> before adding it to <code>c</code>.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-cl-no-signed-zeros</span></dt>
+     *         <dd>
+     *           <p>
+     *             Allow optimizations for floating-point arithmetic that ignore the signedness of
+     *             zero. IEEE 754 arithmetic specifies the distinct behavior of  <code>+0.0</code>
+     *             and <code>-0.0</code> values, which then prohibits simplification of expressions
+     *             such as <code>x+0.0</code> or <code>0.0*x</code> (even with -clfinite-math
+     *             only). This option implies that the sign of a zero result isn't significant.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-cl-unsafe-math-optimizations</span></dt>
+     *         <dd>
+     *           <p>
+     *             Allow optimizations for floating-point arithmetic that (a) assume that
+     *             arguments and results are valid, (b) may violate IEEE 754 standard and (c)
+     *             may violate the OpenCL numerical compliance requirements as defined in section
+     *             7.4 for single precision and double precision floating-point, and edge case
+     *             behavior in section 7.5.  This option includes the -cl-no-signed-zeros and
+     *             -cl-mad-enable options.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-cl-finite-math-only</span></dt>
+     *         <dd>
+     *           <p>
+     *             Allow optimizations for floating-point arithmetic that assume that arguments and
+     *             results are not NaNs or ∞. This option may violate the OpenCL
+     *             numerical compliance requirements defined in section 7.4 for single precision
+     *             and double precision floating point, and edge case behavior in section 7.5.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-cl-fast-relaxed-math</span></dt>
+     *         <dd>
+     *           <p>
+     *             Sets the optimization options -cl-finite-math-only and
+     *             -cl-unsafe-math-optimizations.  This allows optimizations for floating-point
+     *             arithmetic that may violate the IEEE 754 standard and the OpenCL numerical
+     *             compliance requirements defined in the specification in section 7.4 for
+     *             single-precision and double precision floating-point, and edge case
+     *             behavior in section 7.5. This option causes the preprocessor macro
+     *             <code>__FAST_RELAXED_MATH__</code> to be defined in the OpenCL program.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <h4>Options to Request or Suppress Warnings</h4>
+     *     Warnings are diagnostic messages that report constructions which are not inherently erroneous
+     *     but which are risky or suggest there may have been an error. The following languageindependent
+     *     options do not enable specific warnings but control the kinds of diagnostics
+     *     produced by the OpenCL compiler.
+     *     <div>
+     *       <dl>
+     *         <dt><span>-w</span></dt>
+     *         <dd>
+     *           <p>
+     *             Inhibit all warning messages.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-Werror</span></dt>
+     *         <dd>
+     *           <p>
+     *             Make all warnings into errors.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <h4>Options Controlling the OpenCL C Version</h4>
+     *     The following option controls the version of OpenCL C that the compiler accepts.
+     *     <div>
+     *       <dl>
+     *         <dt><span>-cl-std=</span></dt>
+     *         <dd>
+     *           <p>
+     *             Determine the OpenCL C language version to use. A value for this option must
+     *             be provided. Valid values are:
+     *           </p>
+     *           <p>
+     *             CL1.1 - Support all OpenCL C programs that use the OpenCL C language features
+     *             defined in section 6 of the OpenCL 1.1 specification.
+     *           </p>
+     *           <p>
+     *             CL1.2 - Support all OpenCL C programs that use the OpenCL C language features
+     *             defined in section 6 of the OpenCL 1.2 specification.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <p>
+     *       Calls to <code>clBuildProgram</code> or <code>clCompileProgram</code>
+     *       with the -cl-std=CL1.1 option will fail to compile the program for any devices
+     *       with <code>CL_DEVICE_OPENCL_C_VERSION</code> = OpenCL C 1.0.  Calls to
+     *       <code>clBuildProgram</code> or <code>clCompileProgram</code> with
+     *       the -cl-std=CL1.2 option will fail to compile the program for any devices with
+     *       <code>CL_DEVICE_OPENCL_C_VERSION</code> = OpenCL C 1.0 or OpenCL C 1.1.
+     *     </p>
+     *     <p>
+     *       If the -cl-std build option is not specified, the
+     *       <code>CL_DEVICE_OPENCL_C_VERSION</code> is used to select the version of OpenCL
+     *       C to be used when compiling the program for each device.
+     *     </p>
+     *     <h4>Options for Querying Kernel Argument Information</h4>
+     *     <div>
+     *       <dl>
+     *         <dt><span>-cl-kernel-arg-info</span></dt>
+     *         <dd>
+     *           <p>
+     *             This option allows the compiler to store information about the
+     *             arguments of a kernel(s) in the program executable.  The argument
+     *             information stored includes the argument name, its type,
+     *             the address and access qualifiers used.  Refer to description of
+     *             <span><span>clGetKernelArgInfo</span></span>
+     *             on how to query this information.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <h4>Linker Options</h4>
+     *     This specification defines a standard set of linker options that must be supported by the
+     *     OpenCL C compiler when linking compiled programs online or offline. These linker options
+     *     are categorized as library linking options and program linking options. These may be
+     *     extended by a set of vendor- or platform-specific options.
+     *     <h4>Library Linking Options</h4>
+     *     The following options can be specified when creating a library of compiled binaries.
+     *     <div>
+     *       <dl>
+     *         <dt><span>-create-library</span></dt>
+     *         <dd>
+     *           <p>
+     *             Create a library of compiled binaries specified
+     *             in <code>input_programs</code> argument to
+     *             <span><span>clLinkProgram</span></span>.
+     *           </p>
+     *         </dd>
+     *         <dt><span>-enable-link-options</span></dt>
+     *         <dd>
+     *           <p>
+     *             Allows the linker to modify the library behavior based on one or more link
+     *             options (described in Program Linking Options, below) when this library is
+     *             linked with a program executable. This option must be specified with the
+     *             -create-library option.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *     <h4>Program Linking Options</h4>
+     *     The following options can be specified when linking a program executable.
+     *     <div>
+     *       <ul type="disc">
+     *         <li> -cl-denorms-are-zero </li>
+     *         <li> -cl-no-signed-zeroes </li>
+     *         <li> -cl-unsafe-math-optimizations </li>
+     *         <li> -cl-finite-math-only </li>
+     *         <li> -cl-fast-relaxed-mat </li>
+     *       </ul>
+     *     </div>
+     *     The linker may apply these options to all compiled program objects specified to
+     *     <span><span>clLinkProgram</span></span>. The linker
+     *     may apply these options only to libraries which were created with the -enable-link-option.
+     *     <h4>Separate Compilation and Linking of Programs</h4>
+     *     <p>
+     *       OpenCL 1.2 extends how programs are compiled and linked to support the following:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li>
+     *           Separate compilation and link stages.  Program sources can be compiled to generate
+     *           a compiled binary object and linked in a separate stage with other compiled program
+     *           objects to the program exectuable.
+     *         </li>
+     *         <li>
+     *           Embedded headers.  In OpenCL 1.0 and 1.1, the -I build option could be used to
+     *           specify the list of directories to be searched for headers files that are included
+     *           by a program source(s).  OpenCL 1.2 extends this by allowing the header sources to
+     *           come from program objects instead of just header files.
+     *         </li>
+     *         <li>
+     *           Libraries.  The linker can be used to link compiled objects and libraries into a
+     *           program executable or to create a library of compiled binarie
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clCompileProgram</code> returns <span>CL_SUCCESS</span> if
+     *       the function is executed successfully. Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_PROGRAM</span> if <code>program</code> is not
+     *           a valid program object.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>device_list</code>
+     *           is NULL and <code>num_devices</code> is greater than zero, or if
+     *           <code>device_list</code> is not NULL and <code>num_devices</code>
+     *           is zero.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>num_input_headers</code> is
+     *           zero and <code>header_include_names</code> or <code>input_headers</code>
+     *           are not NULL or if <code>num_input_headers</code> is not zero and
+     *           <code>header_include_names</code> or <code>input_headers</code> are NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>pfn_notify</code> is NULL
+     *           but <code>user_data</code> is not NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_DEVICE</span> if OpenCL devices listed in
+     *           <code>device_list</code> are not in the list of devices associated with
+     *           <code>program</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_COMPILER_OPTIONS</span> if the compiler options
+     *           specified by <code>options</code> are invalid.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if the compilation or build of a program
+     *           executable for any of the devices listed in <code>device_list</code>
+     *           by a previous call to <code>clCompileProgram</code> or
+     *           <code>clBuildProgram</code> for <code>program</code> has not completed.
+     *         </li>
+     *         <li><span>CL_COMPILER_NOT_AVAILABLE</span> if a compiler is not
+     *           available i.e.  <code>CL_DEVICE_COMPILER_AVAILABLE</code> specified
+     *           in in the table of allowed values for <code>param_name</code> for
+     *           <span><span>clGetDeviceInfo</span></span>
+     *           is set to <code>CL_FALSE</code>.
+     *         </li>
+     *         <li><span>CL_COMPILE_PROGRAM_FAILURE</span> if there is a
+     *           failure to compile the program source.  This error will be returned if
+     *           <code>clCompileProgram</code> does not return until the compile has
+     *           completed.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if there are kernel objects attached
+     *           to <code>program</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if  program
+     *           has no source i.e. it has not been created with
+     *           <span><span>clCreateProgramWithSource</span></span>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div title="Example">
+     *     <h3>
+     *       Example
+     *     </h3>
+     *     <p>
+     *       For example, consider the following program source:
+     *     </p>
+     *     <div>
+     *       <table border="0">
+     *         <colgroup>
+     *           <col align="left" />
+     *         </colgroup>
+     *         <tbody>
+     *           <tr>
+     *             <td align="left">
+     *               #include &lt;foo.h&gt;
+     *               #include &lt;mydir/myinc.h&gt;
+     *               __kernel void
+     *               image_filter (int n, int m,
+     *               __constant float *filter_weights,
+     *               __read_only image2d_t src_image,
+     *               __write_only image2d_t dst_image)
+     *               {
+     *               ...
+     *               }
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *     <p>
+     *       This kernel includes two headers foo.h and mydir/myinc.h. The following describes
+     *       how these headers can be passed as embedded headers in program objects:
+     *     </p>
+     *     <div>
+     *       <table border="0">
+     *         <colgroup>
+     *           <col align="left" />
+     *         </colgroup>
+     *         <tbody>
+     *           <tr>
+     *             <td align="left">
+     *               cl_program foo_pg = clCreateProgramWithSource(context,
+     *               1, &amp;foo_header_src, NULL, &amp;err);
+     *               cl_program myinc_pg = clCreateProgramWithSource(context,
+     *               1, &amp;myinc_header_src, NULL, &amp;err);
+     *               // let's assume the program source described above is given
+     *               // by program_A and is loaded via clCreateProgramWithSource
+     *               cl_program input_headers[2] = { foo_pg, myinc_pg };
+     *               char * input_header_names[2] = { "foo.h", "mydir/myinc.h" };
+     *               clCompileProgram(program_A,
+     *               0, NULL, // num_devices &amp; device_list
+     *               NULL, // compile_options
+     *               2, // num_input_headers
+     *               input_headers,
+     *               input_header_names,
+     *               NULL, NULL); // pfn_notify &amp; user_data
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clCompileProgram(cl_program program, int num_devices, cl_device_id device_list[], String options, int num_input_headers, cl_program input_headers[], String header_include_names[], BuildProgramFunction pfn_notify, Object user_data)
+    {
+        // OPENCL_1_2
+        int result = clCompileProgramNative(program, num_devices, device_list, options, num_input_headers, input_headers, header_include_names, pfn_notify, user_data);
+        if (result != CL.CL_SUCCESS)
+        {
+            if (exceptionsEnabled)
+            {
+                if (result != 1 && result != CL_BUILD_PROGRAM_FAILURE)
+                {
+                    throw new CLException(stringFor_errorCode(result), result);
+                }
+                else
+                {
+                    throw new CLException(stringFor_errorCode(result)+"\n"+obtainBuildLogs(program), result);
+                }
+            }
+        }
+        return result;
+    }
+    private static native int clCompileProgramNative(cl_program program, int num_devices, cl_device_id device_list[], String options, int num_input_headers, cl_program input_headers[], String header_include_names[], BuildProgramFunction pfn_notify, Object user_data);
+
+    
+    
+    
+    /**
+     * <p>
+     *       Links a set of compiled program objects and libraries for all the devices or a specific device(s) in
+     *       the OpenCL context and creates an executable.
+     *   </p>
+     * 
+     * <div title="clLinkProgram">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_program
+     *             <b>clLinkProgram</b>
+     *             (</code>
+     *           <td>cl_context<var>context</var>, </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint<var>num_devices</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_device_id<var>*device_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const char<var>*options</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint<var>num_input_programs</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_program<var>*input_programs</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>void<var>(CL_CALLBACK *pfn_notify)
+     *             (cl_program program, void *user_data)</var>, 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>void<var>*user_data</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_int<var>*errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           context
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a valid OpenCL context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           device_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a list of devices that are in <code>context</code>.
+     *             If <code>device_list</code> is a NULL value, the link is performed
+     *             for all devices associated with <code>context</code> for which a
+     *             compiled object is available.  If <code>device_list</code> is a
+     *             non-NULL value, the compile is performed for devices specified in this
+     *             list for which a source has been loaded.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           num_devices
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The number of devices listed in <code>device_list</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           options
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a null-terminated string of characters that describes
+     *             the link options to be used for building the program executable. See
+     *             <span><span>clBuildProgram</span></span>
+     *             for a list of supported compiler and linker options.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           num_input_programs
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the number of programs in array referenced by <code>input_programs</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           input_programs
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             An array of program objects that are compiled binaries or libraries
+     *             that are to be linked to create the program executable.  For each device
+     *             in <code>device_list</code> or if <code>device_list</code>
+     *             is NULL the list of devices associated with <code>context</code>,
+     *             the following cases occur:
+     *           </p>
+     *           <div>
+     *             <ul type="disc">
+     *               <li>
+     *                 <p>
+     *                   All programs specified by <code>input_programs</code>
+     *                   contain a compiled binary or library for the device.  In this case,
+     *                   a link is performed to generate a program executable for this device.
+     *                 </p>
+     *               </li>
+     *               <li>
+     *                 <p>
+     *                   None of the programs contain a compiled binary or library for
+     *                   that device. In this case, no link is performed and there will
+     *                   be no program executable generated for this device.
+     *                 </p>
+     *               </li>
+     *               <li>
+     *                 <p>
+     *                   All other cases will return a
+     *                   <code>CL_INVALID_OPERATION</code> error.
+     *                 </p>
+     *               </li>
+     *             </ul>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           pfn_notify
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A function pointer to a notification routine.  The notification routine is a
+     *             callback function that an application can register and which will be called
+     *             when the program executable has been built (successfully or unsuccessfully).
+     *           </p>
+     *           <p>
+     *             If <code>pfn_notify</code> is not NULL,
+     *             <code>clLinkProgram</code> does not need to wait for the linker
+     *             to complete and can return immediately once the linking operation can
+     *             begin.  Once the linker has completed, the <code>pfn_notify</code>
+     *             callback function is called which returns the program object returned
+     *             by <code>clLinkProgram</code>. The application can query the link
+     *             status and log for this program object. This callback function may be called
+     *             asynchronously by the OpenCL implementation.  It is the application's
+     *             responsibility to ensure that the callback function is thread-safe.
+     *           </p>
+     *           <p>
+     *             If <code>pfn_notify</code> is NULL, <code>clLinkProgram</code>
+     *             does not return until the linker has completed.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           user_data
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Will be passed as an argument when <code>pfn_notify</code> is called.
+     *             <code>user_data</code> can be NULL.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       <code>clLinkProgram</code> creates a new program object which
+     *       contains this executable. The executable binary can be queried using
+     *       <span><span>clGetProgramInfo</span></span>(program,
+     *       <code>CL_PROGRAM_BINARIES</code>, ...) and can be specified to
+     *       <span><span>clCreateProgramWithBinary</span></span>
+     *       to create a new program object.
+     *     </p>
+     *     <p>
+     *       The devices associated with the returned program object will be the list of devices
+     *       specified by <code>device_list</code> or if <code>device_list</code>
+     *       is NULL it will be the list of devices associated with <code>context</code>.
+     *     </p>
+     *     <p>
+     *       The linking operation can begin if the context, list of devices, input programs and
+     *       linker options specified are all valid and appropriate host and device resources
+     *       needed to perform the link are available.  If the linking operation can begin,
+     *       <code>clLinkProgram</code> returns a valid non-zero program object.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       If <code>pfn_notify</code> is NULL, the <code>errcode_ret</code> will
+     *       be set to <code>CL_SUCCESS</code> if the link operation was successful and
+     *       <code>CL_LINK_FAILURE</code> if there is a failure to link the compiled
+     *       binaries and/or libraries.
+     *     </p>
+     *     <p>
+     *       If <code>pfn_notify</code> is not NULL, <code>clLinkProgram</code>
+     *       does not have to wait until the linker to complete and can return
+     *       <code>CL_SUCCESS</code> in <code>errcode_ret</code> if the linking
+     *       operation can begin.  The <code>pfn_notify</code> callback function will
+     *       return a <code>CL_SUCCESS</code> or <code>CL_LINK_FAILURE</code>
+     *       if the linking operation was  successful or not.
+     *     </p>
+     *     <p>
+     *       Otherwise <code>clLinkProgram</code> returns a NULL program object with an
+     *       appropriate error in <code>errcode_ret</code>.  The application should query
+     *       the linker status of this program object to check if the link was successful or not.
+     *       The list of errors that can be returned are:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code> is not a valid context.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>device_list</code>
+     *           is NULL and <code>num_devices</code> is greater than zero, or if
+     *           <code>device_list</code> is not NULL and <code>num_devices</code>
+     *           is zero.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>num_input_programs</code>
+     *           is zero and <code>input_programs</code> is NULL or if
+     *           <code>num_input_programs</code> is zero and <code>input_programs</code>
+     *           is not NULL or if <code>num_input_programs</code> is not zero and
+     *           <code>input_programs</code> is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_PROGRAM</span> if programs specified in
+     *           <code>input_programs</code> are not valid program objects.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>pfn_notify</code> is
+     *           NULL but user_data is not NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_DEVICE</span> if OpenCL devices listed in
+     *           <code>device_list</code> are not in the list of devices associated with
+     *           <code>context</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_LINKER_OPTIONS</span> if the linker options specified by
+     *           <code>options</code> are invalid
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if the compilation
+     *           or build of a program executable for any of the devices
+     *           listed in <code>device_list</code> by a previous call to
+     *           <span><span>clCompileProgram</span></span>
+     *           or <span><span>clBuildProgram</span></span>
+     *           for program has not completed.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if the rules for devices containing
+     *           compiled binaries or libraries as described in <code>input_programs</code>
+     *           argument above are not followed.
+     *         </li>
+     *         <li><span>CL_LINKER_NOT_AVAILABLE</span> if a linker is not
+     *           available i.e. <code>CL_DEVICE_LINKER_AVAILABLE</code> specified
+     *           in the table of allowed values for <code>param_name</code> for
+     *           <span><span>clGetDeviceInfo</span></span>
+     *           is set to <code>CL_FALSE</code>.
+     *         </li>
+     *         <li><span>CL_LINK_PROGRAM_FAILURE</span> if there is a failure to link the
+     *           compiled binaries and/or libraries.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static cl_program clLinkProgram(cl_context context, int num_devices, cl_device_id device_list[], String options, int num_input_programs, cl_program input_programs[], BuildProgramFunction pfn_notify, Object user_data, int errcode_ret[])
+    {
+        // OPENCL_1_2
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_program result = clLinkProgramNative(context, num_devices, device_list, options, num_input_programs, input_programs, pfn_notify, user_data, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_program result = clLinkProgramNative(context, num_devices, device_list, options, num_input_programs, input_programs, pfn_notify, user_data, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_program clLinkProgramNative(cl_context context, int num_devices, cl_device_id device_list[], String options, int num_input_programs, cl_program input_programs[], BuildProgramFunction pfn_notify, Object user_data, int errcode_ret[]);
+
+    
+    /**
+     * <p>
+     *       Allows the implementation to release the resources allocated by the OpenCL compiler for <>platform</code>.
+     *   </p>
+     * 
+     * <div title="clUnloadPlatformCompiler">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clUnloadPlatformCompiler</b>
+     *             (</code>
+     *           <td>cl_platform_id<var>platform</var><code>)</code></td>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       This is a hint from the application and does not guarantee
+     *       that the compiler will not be used in the future or that the
+     *       compiler will actually be unloaded by the implementation. Calls to
+     *       <span><span>clBuildProgram</span></span>,
+     *       <span><span>clCompileProgram</span></span>,
+     *       or <span><span>clLinkProgram</span></span> after
+     *       <code>clUnloadPlatformCompiler</code> will reload the compiler, if necessary,
+     *       to build the appropriate program executable.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clUnloadPlatformCompiler</code> returns <span>CL_SUCCESS</span>
+     *       if the function is executed successfully. Otherwise, it returns one of the following
+     *       errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_PLATFORM</span> if <code>platform</code> is not a valid platform.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clUnloadPlatformCompiler(cl_platform_id platform)
+    {
+        // OPENCL_1_2
+        return checkResult(clUnloadPlatformCompilerNative(platform));
+    }    
+    private static native int clUnloadPlatformCompilerNative(cl_platform_id platform);
+    
+    
     /**
      * <p>
      *       Allows the implementation to release the resources allocated by the OpenCL compiler.
@@ -8226,6 +10506,7 @@ public final class CL
      *     </p>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 
      */
     public static int clUnloadCompiler()
     {
@@ -9580,6 +11861,319 @@ public final class CL
 
     private static native int clGetKernelInfoNative(cl_kernel kernel, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
 
+    
+    
+    /**
+     * <p>
+     *       Returns information about the arguments of a kernel.
+     *   </p>
+     * 
+     * <div title="clGetKernelArgInfo">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clGetKernelArgInfo</b>
+     *             (</code>
+     *           <td>
+     *             cl_kernel
+     *             <var>kernel</var>
+     *             , 
+     *           </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>arg_indx</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_kernel_arg_info
+     *             <var>param_name</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             size_t
+     *             <var>param_value_size</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             void
+     *             <var>*param_value</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             size_t
+     *             <var>*param_value_size_ret</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> kernel </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the kernel object being queried.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> arg_indx </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The argument index. Arguments to the kernel are referred by indices that
+     *             go from 0 for the leftmost argument to <code>n</code> - 1, where
+     *             <code>n</code> is the total number of arguments declared by a kernel.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_name </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the argument information to query. The list of supported
+     *             <code>param_name</code> types and the information returned in
+     *             <code>param_value</code> by <code>clGetKernelArgInfo</code>
+     *             is described in the table below.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_value </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to memory where the appropriate result being queried is returned.
+     *             If <code>param_value</code> is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_value_size </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Used to specify the size in bytes of memory pointed to by <code>param_value</code>.
+     *             This size must be &gt; size of return type as described in the table below.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_kernel_arg_info</th>
+     *                   <th align="left">Return Type</th>
+     *                   <th align="left">Info. returned in <code>param_value</code></th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_ARG_ADDRESS_QUALIFIER</code>
+     *                   </td>
+     *                   <td align="left">cl_kernel_arg_-
+     *                     address_qualifier
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Returns the address qualifier specified for the argument given by <code>arg_indx</code>.
+     *                       This can be one of the following values:
+     *                     </p>
+     *                     <div>
+     *                       <p><br />
+     *                         <code>CL_KERNEL_ARG_ADDRESS_GLOBAL</code><br />
+     *                         <code>CL_KERNEL_ARG_ADDRESS_LOCAL</code><br />
+     *                         <code>CL_KERNEL_ARG_ADDRESS_CONSTANT</code><br />
+     *                         <code>CL_KERNEL_ARG_ADDRESS_PRIVATE</code><br />
+     *                         
+     *                       </p>
+     *                     </div>
+     *                     <p>
+     *                     </p>
+     *                     <p>
+     *                       If no address qualifier is specified, the default address
+     *                       qualifier which is <code>CL_KERNEL_ARG_ADDRESS_PRIVATE</code> is returned.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_ARG_ACCESS_QUALIFIER</code>
+     *                   </td>
+     *                   <td align="left">cl_kernel_arg_-
+     *                     access_qualifier
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Returns the access qualifier specified for the argument given by <code>arg_indx</code>.
+     *                       This can be one of the following values:
+     *                     </p>
+     *                     <div>
+     *                       <p><br />
+     *                         <code>CL_KERNEL_ARG_ACCESS_READ_ONLY</code><br />
+     *                         <code>CL_KERNEL_ARG_ACCESS_WRITE_ONLY</code><br />
+     *                         <code>CL_KERNEL_ARG_ACCESS_READ_WRITE</code><br />
+     *                         <code>CL_KERNEL_ARG_ACCESS_NONE</code><br />
+     *                         
+     *                       </p>
+     *                     </div>
+     *                     <p>
+     *                     </p>
+     *                     <p>
+     *                       If argument is not an image type,
+     *                       <code>CL_KERNEL_ARG_ACCESS_NONE</code> is
+     *                       returned. If argument is an image type, the access qualifier
+     *                       specified or the default access qualifier is returned.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_ARG_TYPE_NAME</code>
+     *                   </td>
+     *                   <td align="left">char[]</td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Returns the type name specified for the argument given
+     *                       by <code>arg_indx</code>.  The type name returned
+     *                       will be the argument type name as it was declared with any
+     *                       whitespace removed.  If argument type name is an unsigned
+     *                       scalar type (i.e. unsigned char, unsigned short, unsigned
+     *                       int, unsigned long), uchar, ushort, uint and ulong will
+     *                       be returned.  The argument type name returned does not
+     *                       include any type qualifiers.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_ARG_TYPE_QUALIFIER</code>
+     *                   </td>
+     *                   <td align="left">cl_kernel_arg-
+     *                     type_qualifier
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Returns the type qualifier specified for the argument
+     *                       given by <code>arg_indx</code>.  The returned value
+     *                       can be: <code>CL_KERNEL_ARG_TYPE_CONST</code>,
+     *                       <code>CL_KERNEL_ARG_TYPE_RESTRICT</code>,
+     *                       <code>CL_KERNEL_ARG_TYPE_VOLATILE</code>,
+     *                       a combination of the above enums or
+     *                       <code>CL_KERNEL_ARG_TYPE_NONE</code>.
+     *                     </p>
+     *                     <p>
+     *                       NOTE: <code>CL_KERNEL_ARG_TYPE_VOLATILE</code>
+     *                       is returned if the argument is a pointer and the pointer
+     *                       is declared with the volatile qualifier.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_ARG_NAME</code>
+     *                   </td>
+     *                   <td align="left">char[]</td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Returns the  name specified for the argument given by <code>arg_indx</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           param_value_size_ret
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns the actual size in bytes of data copied to <code>param_value</code>.
+     *             If <code>param_value_size_ret</code> is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Kernel argument information is only available if the program
+     *       object associated with <code>kernel</code> is created with
+     *       <span><span>clCreateProgramWithSource</span></span>
+     *       and the program executable is built with the -cl-kernel-arg-info
+     *       option specified in <code>options</code> argument to
+     *       <span><span>clBuildProgram</span></span> or
+     *       <span><span>clCompileProgram</span></span>.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function is executed successfully. Otherwise,
+     *       it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_ARG_INDEX</span> if <code>arg_indx</code>
+     *           is not a valid argument index.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>param_name</code>
+     *           is not valid, or if size in bytes specified by
+     *           <code>param_value_size</code> is &lt; size of return type as
+     *           described in the table above and <code>param_value</code> is not NULL
+     *         </li>
+     *         <li><span>CL_KERNEL_ARG_INFO_NOT_AVAILABLE</span> if the argument
+     *           information is not available for kernel.
+     *         </li>
+     *         <li><span>CL_INVALID_KERNEL</span> if <code>kernel</code>
+     *           is not a valid kernel object.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clGetKernelArgInfo(cl_kernel kernel, int arg_indx, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[])
+    {
+        // OPENCL_1_2
+        return checkResult(clGetKernelArgInfoNative(kernel, arg_indx, param_name, param_value_size, param_value, param_value_size_ret));
+    }
+    private static native int clGetKernelArgInfoNative(cl_kernel kernel, int arg_indx, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
+    
     /**
      * <p>
      *       Returns information about the kernel object that may be specific to a device.
@@ -10277,6 +12871,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
     public static cl_event clCreateUserEvent(cl_context context, int errcode_ret[])
     {
@@ -10583,6 +13178,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
     public static int clSetUserEventStatus(cl_event event, int execution_status)
     {
@@ -10786,6 +13382,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
     public static int clSetEventCallback(cl_event event, int command_exec_callback_type, EventCallbackFunction pfn_notify, Object user_data)
     {
@@ -11693,6 +14290,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
     public static int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long[] buffer_offset, long[] host_offset, long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
@@ -11960,7 +14558,7 @@ public final class CL
     {
         if (blocking_write)
         {
-        return checkResult(clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
+            return checkResult(clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
         }
         else
         {
@@ -12253,16 +14851,288 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
-    public static int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event)
+    public static int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event)
     {
         // OPENCL_1_1
-        return checkResult(clEnqueueWriteBufferRectNative(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+        return checkResult(clEnqueueWriteBufferRectNative(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
     }
 
-    private static native int clEnqueueWriteBufferRectNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event);
+    private static native int clEnqueueWriteBufferRectNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event);
 
 
+    
+    /**
+     * <p>
+     *       Enqueues a command to fill a buffer object with a pattern of a given pattern size.
+     *   </p>
+     * 
+     * <div title="clEnqueueFillBuffer">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clEnqueueFillBuffer</b>
+     *             (</code>
+     *           <td>
+     *             cl_command_queue
+     *             <var>command_queue</var>
+     *             , 
+     *           </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_mem
+     *             <var>buffer</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             void
+     *             <var>*pattern</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             size_t
+     *             <var>pattern_size</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             size_t
+     *             <var>offset</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             size_t
+     *             <var>size</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>num_events_in_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             cl_event
+     *             <var>*event_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_event
+     *             <var>*event</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Refers to the command-queue in which the fill command will be queued.
+     *             The OpenCL context associated with <code>command_queue</code>
+     *             and <code>buffer</code> must be the same.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> buffer </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid buffer object.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> pattern </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to the data pattern of size <code>pattern_size</code>
+     *             in bytes. <code>pattern</code> will be used to fill a region
+     *             in <code>buffer</code> starting at <code>offset</code>
+     *             and is <code>size</code> bytes in size. The data pattern
+     *             must be a scalar or vector integer or floating-point data type. For
+     *             example, if <code>buffer</code> is to be filled with a pattern of
+     *             <span>float4</span> values, then <code>pattern</code> will be a pointer
+     *             to a <span>cl_float4</span> value and <code>pattern_size</code>
+     *             will be <code>sizeof(cl_float4)</code>.  The maximum value of
+     *             <code>pattern_size</code> is the size of the largest integer
+     *             or floating-point vector data type supported by the OpenCL device.
+     *             The memory associated with <code>pattern</code> can be reused or
+     *             freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> offset </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The location in bytes of the region being filled in <code>buffer</code>
+     *             and must be a multiple of <code>pattern_size</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> size </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The size in bytes of region being filled in <code>buffer</code>
+     *             and must be a multiple of <code>pattern_size</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list
+     *           ,</code>
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before this particular
+     *             command can be executed. If <code>event_wait_list</code>
+     *             is NULL, then this particular command does not wait on any
+     *             event to complete. If <code>event_wait_list</code> is
+     *             NULL, <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular write
+     *             command and can be used to query or queue a wait for this particular
+     *             command to complete. <code>event</code> can be NULL in
+     *             which case it will not be possible for the application to query the
+     *             status of this command or queue a wait for this command to complete.
+     *             <span><span>clEnqueueBarrierWithWaitList</span></span>
+     *             can be used instead.  If the <code>event_wait_list</code>
+     *             and the <code>event</code> arguments are not NULL, the
+     *             <code>event</code> argument should not refer to an element of the
+     *             <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Enqueues a command to fill a buffer object with a pattern of a given pattern size. The
+     *       usage information which indicates whether the memory object can be read or written by
+     *       a kernel and/or the host and is given by the <span>cl_mem_flags</span> argument value
+     *       specified when buffer is created is ignored by <code>clEnqueueFillBuffer</code>.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clEnqueueFillBuffer</code> returns <span>CL_SUCCESS</span> if
+     *       the function is executed successfully. Otherwise, it returns one of the following errors.
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if the context associated with
+     *           <code>command_queue</code> and <code>buffer</code> are not the same
+     *           or if the context associated with <code>command_queue</code> and events in
+     *           <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_MEM_OBJECT</span> if <code>buffer</code> is not
+     *           a valid buffer object.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>offset</code> or
+     *           <code>offset</code> + <code>size</code> require accessing elements
+     *           outside the <code>buffer</code> buffer object respectively.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>pattern</code> is NULL
+     *           or if <code>pattern_size</code> is 0 or if <code>pattern_size</code>
+     *           is not one of {1, 2, 4, 8, 16, 32, 64, 128}.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>offset</code> and
+     *           <code>size</code> are not a multiple of <code>pattern_size</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_MISALIGNED_SUB_BUFFER_OFFSET</span> if <code>buffer</code>
+     *           is a sub-buffer object and offset specified when the sub-buffer object is created
+     *           is not aligned to <code>CL_DEVICE_MEM_BASE_ADDR_ALIGN</code> value for
+     *           device associated with <code>queue</code>.
+     *         </li>
+     *         <li><span>CL_MEM_OBJECT_ALLOCATION_FAILURE</span> if there is a failure to
+     *           allocate memory for data store associated with <code>buffer</code>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clEnqueueFillBuffer(cl_command_queue command_queue, cl_mem buffer, Pointer pattern, long pattern_size, long offset, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_1_2
+        return checkResult(clEnqueueFillBufferNative(command_queue, buffer, pattern, pattern_size, offset, size, num_events_in_wait_list, event_wait_list, event));
+    }    
+    private static native int clEnqueueFillBufferNative(cl_command_queue command_queue, cl_mem buffer, Pointer pattern, long pattern_size, long offset, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+    
     /**
      * <p>
      *       Enqueues a command to copy from one buffer object to another.
@@ -12690,6 +15560,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @since OpenCL 1.1
      */
     public static int clEnqueueCopyBufferRect(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, long[] src_origin, long[] dst_origin, long[] region, long src_row_pitch, long src_slice_pitch, long dst_row_pitch, long dst_slice_pitch, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event)
     {
@@ -13312,6 +16183,251 @@ public final class CL
 
     private static native int clEnqueueWriteImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_write, long origin[], long region[], long input_row_pitch, long input_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
+    
+    
+    /**
+     * <p>
+     *       Enqueues a command to fill an image object with a specified color.
+     *   </p>
+     * 
+     * <div title="clEnqueueFillImage">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clEnqueueFillImage</b>
+     *             (</code>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_mem<var>image</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const void<var>*fill_color</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const size_t<var>*origin</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const size_t<var>*region</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_uint<var>num_events_in_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const cl_event<var>*event_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_event<var>*event</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Refers to the command-queue in which the fill command will be queued.  The
+     *             OpenCL context associated with <code>command_queue</code> and image must be the same.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> image </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid image object.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> fill_color </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The fill color. The fill color is a four component RGBA floating-point color value if
+     *             the <code>image</code> channel data type is not an unnormalized
+     *             signed and unsigned integer type, is a four component signed integer value if
+     *             the <code>image</code> channel data type is an unnormalized signed integer
+     *             type and is a four component unsigned integer value if the <code>image</code>
+     *             channel data type is an unormalized unsigned integer type.  The fill color will be
+     *             converted to the appropriate image channel format and order associated with
+     *             <code>image</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> origin </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Defines the (<span><em>x, y, z</em></span>) offset in pixels in the 1D, 2D, or
+     *             3D image, the (<span><em>x, y</em></span>) offset and the image index in the
+     *             image array or the (x) offset and the image index in the 1D image array.  If
+     *             <code>image</code> is a 2D image object, <code>origin</code>[2]
+     *             must be 0. If <code>image</code> is a 1D image or 1D image buffer
+     *             object, <code>origin</code>[1] and <code>origin</code>[2]
+     *             must be 0. If <code>image</code> is a 1D image array object,
+     *             <code>origin</code>[2] must be 0.  If <code>image</code>
+     *             is a 1D image array object, <code>origin</code>[1] describes the
+     *             image index in the 1D image array. If <code>image</code> is a 2D
+     *             image array object, <code>origin</code>[2] describes the image
+     *             index in the 2D image array.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> region </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Defines the (<span><em>width, height, depth</em></span>) in pixels of the
+     *             1D, 2D or 3D rectangle, the (<span><em>width, height</em></span>) in pixels
+     *             of the 2D rectangle and the number of images of a 2D image array or the
+     *             (<span><em>width</em></span>) in pixels of the 1D rectangle and the number
+     *             of images of a 1D image array. If <code>image</code> is a 2D image
+     *             object, <code>region</code>[2] must be 1.  If <code>image</code>
+     *             is a 1D image or 1D image buffer object, <code>region</code>[1]
+     *             and <code>region</code>[2] must be 1.  If <code>image</code>
+     *             is a 1D image array object, <code>region</code>[2] must be 1.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list
+     *           ,</code>
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before this particular
+     *             command can be executed. If <code>event_wait_list</code>
+     *             is NULL, then this particular command does not wait on any
+     *             event to complete. If <code>event_wait_list</code> is
+     *             NULL, <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular write
+     *             command and can be used to query or queue a wait for this particular
+     *             command to complete. <code>event</code> can be NULL in
+     *             which case it will not be possible for the application to query the
+     *             status of this command or queue a wait for this command to complete.
+     *             <span><span>clEnqueueBarrierWithWaitList</span></span>
+     *             can be used instead.  If the <code>event_wait_list</code>
+     *             and the <code>event</code> arguments are not NULL, the
+     *             <code>event</code> argument should not refer to an element of the
+     *             <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       The usage information which indicates whether the memory object can be read or
+     *       written by a kernel and/or the host and is given by the <span>cl_mem_flags</span>
+     *       argument value specified when <code>image</code> is created is ignored by
+     *       <code>clEnqueueFillImage</code>.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clEnqueueFillImage</code> return <span>CL_SUCCESS</span> if the function is
+     *       executed successfully. Otherwise, it returns one of the following errors.
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if the context associated with
+     *           <code>command_queue</code> and <code>image</code> are not the
+     *           same or if the context associated with <code>command_queue</code>
+     *           and events in <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_MEM_OBJECT</span> if <code>image</code> is
+     *           not a valid image object.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>fill_color</code> is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if the region being written specified by
+     *           <code>origin</code> and <code>region</code> is out of bounds or if
+     *           <code>ptr</code> is a NULL value.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if values in <code>origin</code>
+     *           and <code>region</code> do not follow rules described in the argument
+     *           description for <code>origin</code> and <code>region</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_INVALID_IMAGE_SIZE</span> if image dimensions (image width,
+     *           height, specified or compute row and/or slice pitch) for <code>image</code>
+     *           are not supported by device associated with <code>queue</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_IMAGE_FORMAT</span> if image format (image channel
+     *           order and data type) for <code>image</code> are not supported by device
+     *           associated with <code>queue</code>.
+     *         </li>
+     *         <li><span>CL_MEM_OBJECT_ALLOCATION_FAILURE</span> if there is a failure to
+     *           allocate memory for data store associated with <code>image</code>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clEnqueueFillImage(cl_command_queue command_queue, cl_mem image, Pointer fill_color, long origin[], long region[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_1_2
+        return checkResult(clEnqueueFillImageNative(command_queue, image, fill_color, origin, region, num_events_in_wait_list, event_wait_list, event));
+    }    
+    private static native int clEnqueueFillImageNative(cl_command_queue command_queue, cl_mem image, Pointer fill_color, long origin[], long region[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+    
     /**
      * <p>
      *       Enqueues a command to copy image objects.
@@ -14765,6 +17881,305 @@ public final class CL
 
     private static native int clEnqueueUnmapMemObjectNative(cl_command_queue command_queue, cl_mem memobj, ByteBuffer mapped_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
+    
+    /**
+     * <p>
+     *       Enqueues a command to indicate which device a set of memory objects should be associated with.
+     *   </p>
+     * 
+     * <div title="clEnqueueMigrateMemObjects">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clEnqueueMigrateMemObjects </b>
+     *             (</code>
+     *           <td>
+     *             cl_command_queue
+     *             <var>command_queue</var>
+     *             , 
+     *           </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>num_mem_objects</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             cl_mem
+     *             <var>*mem_objects</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_mem_migration_flags
+     *             <var>flags</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>num_events_in_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             cl_event
+     *             <var>*event_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_event
+     *             <var>*event</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid command-queue. The specified set of memory objects in
+     *             <code>mem_objects</code> will be migrated to the OpenCL device
+     *             associated with <code>command_queue</code> or to the host if the
+     *             <code>CL_MIGRATE_MEM_OBJECT_HOST</code> has been specified.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> num_mem_objects </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The number of memory objects specified in <code>mem_objects</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> mem_objects </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a list of memory objects.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> flags </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A bit-field that is used to specify migration options. The table below
+     *             describes the possible values for flags.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_mem_migration flags</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MIGRATE_MEM_OBJECT_HOST</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This flag indicates that the specified set of memory objects
+     *                     are to be migrated to the host, regardless of the target
+     *                     command-queue.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MIGRATE_MEM_OBJECT_-
+     *                     CONTENT_UNDEFINED</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This flag indicates that the contents of the set of memory
+     *                     objects are undefined after migration.  The specified set
+     *                     of memory objects are migrated to the device associated with
+     *                     <code>command_queue</code> without incurring the overhead
+     *                     of migrating their contents.
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list, num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before this particular
+     *             command can be executed.  If <code>event_wait_list</code>
+     *             is NULL, then this particular command does not wait on any
+     *             event to complete.  If <code>event_wait_list</code> is
+     *             NULL, <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular command and
+     *             can be used to query or queue a wait for this particular command
+     *             to complete. <code>event</code> can be NULL in which case
+     *             it will not be possible for the application to query the status of
+     *             this command or queue a wait for this command to complete.  If the
+     *             <code>event_wait_list</code> and the <code>event</code>
+     *             arguments are not NULL, the <code>event</code> argument should not
+     *             refer to an element of the <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       This section describes a mechanism for assigning which device an OpenCL memory object
+     *       resides. A user may wish to have more explicit control over the location of their memory objects
+     *       on creation. This could be used to:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li>Ensure that an object is allocated on a specific device prior to usage.</li>
+     *         <li>Preemptively migrate an object from one device to another.</li>
+     *       </ul>
+     *     </div>
+     *     <p>
+     *     </p>
+     *     <p>
+     *       Typically, memory objects are implicitly migrated to a device
+     *       for which enqueued commands, using the memory object, are targeted.
+     *       <code>clEnqueueMigrateMemObjects</code> allows this migration to be explicitly
+     *       performed ahead of the dependent commands. This allows a user to preemptively change
+     *       the association of a memory object, through regular command queue scheduling, in
+     *       order to prepare for another upcoming command. This also permits an application to
+     *       overlap the placement of memory objects with other unrelated operations before
+     *       these memory objects are needed potentially hiding transfer latencies. Once
+     *       the event, returned from <code>clEnqueueMigrateMemObjects</code>,
+     *       has been marked <code>CL_COMPLETE</code> the memory objects specified
+     *       in <code>mem_objects</code> have been successfully migrated to the device
+     *       associated with <code>command_queue</code>.  The migrated memory object shall
+     *       remain resident on the device until another command is enqueued that either implicitly
+     *       or explicitly migrates it away.
+     *     </p>
+     *     <p>
+     *       <code>clEnqueueMigrateMemObjects</code> can also be used to direct the initial
+     *       placement of a memory object, after creation, possibly avoiding the initial overhead
+     *       of instantiating the object on the first enqueued command to use it.
+     *     </p>
+     *     <p>
+     *       The user is responsible for managing the event dependencies, associated with this
+     *       command, in order to avoid overlapping access to memory objects. Improperly specified
+     *       event dependencies passed to <code>clEnqueueMigrateMemObjects</code> could
+     *       result in undefined results.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clEnqueueMigrateMemObjects</code> returns <span>CL_SUCCESS</span>
+     *       if the function is executed successfully. Otherwise, it returns one of the following
+     *       errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid <code>command_queue</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if the context associated with
+     *           <code>command_queue</code> and memory objects in <code>memobj</code>
+     *           are not the same or if the context associated with <code>command_queue</code>
+     *           and events in <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_MEM_OBJECT</span> if any of the memory objects in
+     *           <code>mem_objs</code> is not a valid memory object.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>num_mem_objects</code>
+     *           is zero or if <code>mem_objects</code> is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>flags</code> is
+     *           not 0 or is not any of the values described in the table above.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_MEM_OBJECT_ALLOCATION_FAILURE</span> if there is a
+     *           failure to allocate memory for the specified set of memory objects in
+     *           <code>mem_objects</code>.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clEnqueueMigrateMemObjects(cl_command_queue command_queue, int num_mem_objects, cl_mem mem_objects[], long flags, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_1_2
+        return checkResult(clEnqueueMigrateMemObjectsNative(command_queue, num_mem_objects, mem_objects, flags, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueMigrateMemObjectsNative(cl_command_queue command_queue, int num_mem_objects, cl_mem mem_objects[], long flags, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+    
     /**
      * <p>
      *       Enqueues a command to execute a kernel on a device.
@@ -15467,6 +18882,349 @@ public final class CL
 
     private static native int clEnqueueNativeKernelNative(cl_command_queue command_queue, EnqueueNativeKernelFunction user_func, Object args, long cb_args, int num_mem_objects, cl_mem mem_list[], Pointer args_mem_loc[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
+    
+    
+    /**
+     * <p>
+     *       Enqueues a marker command which waits for either a list of events to complete,
+     *       or all previously enqueued commands to complete.
+     *   </p>
+     * 
+     * <div title="clEnqueueMarkerWithWaitList">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clEnqueueMarkerWithWaitList</b>
+     *             (</code>
+     *           <td>
+     *             cl_command_queue
+     *             <var>command_queue</var>
+     *             , 
+     *           </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>num_events_in_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             cl_event
+     *             <var>*event_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_event
+     *             <var>*event</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid command-queue.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list
+     *           </code>
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             These functions specify events that need to complete before this particular
+     *             command can be executed.
+     *           </p>
+     *           <p>
+     *             If <code>event_wait_list</code> is NULL,
+     *             <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points.  The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *           <p>
+     *             If <code>event_wait_list</code> is NULL, then this
+     *             particular command waits until all previous enqueued commands to
+     *             <code>command_queue</code> have completed.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular command.
+     *             Event objects are unique and can be used to identify this marker
+     *             command later on. <code>event</code> can be NULL in which case
+     *             it will not be possible for the application to query the status of
+     *             this command or queue a wait for this command to complete.  If the
+     *             <code>event_wait_list</code> and the <code>event</code>
+     *             arguments are not NULL, the <code>event</code> argument should not
+     *             refer to an element of the <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Description">
+     *     <h2>Description</h2>
+     *     <p>
+     *       Enqueues a marker command which waits for either a list of events to complete,
+     *       or if the list is empty it waits for all commands previously enqueued in
+     *       <code>command_queue</code> to complete before it completes. This command returns
+     *       an event which can be waited on, i.e. this event can be waited on to insure that all
+     *       events either in the <code>event_wait_list</code> or all previously enqueued
+     *       commands, queued before this command to <code>command_queue</code>, have completed.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function executed successfully,
+     *       or one of the errors below:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0, or <code>event_wait_list</code>
+     *           is not NULL and <code>num_events_in_wait_list</code> is 0, or if event
+     *           objects in <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clEnqueueMarkerWithWaitList(cl_command_queue command_queue, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_1_2
+        return checkResult(clEnqueueMarkerWithWaitListNative(command_queue, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueMarkerWithWaitListNative(cl_command_queue command_queue, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    
+    
+    
+    /**
+     * <p>
+     *      A synchronization point that enqueues a barrier operation.
+     *   </p>
+     * 
+     * <div title="clEnqueueBarrierWithWaitList">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <b>clEnqueueBarrierWithWaitList</b>
+     *             (</code>
+     *           <td>
+     *             cl_command_queue
+     *             <var>command_queue</var>
+     *             , 
+     *           </td>
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_uint
+     *             <var>num_events_in_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>const
+     *             cl_event
+     *             <var>*event_wait_list</var>
+     *             , 
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>
+     *             cl_event
+     *             <var>*event</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid command queue.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list
+     *           </code>,
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before this particular command can be executed.
+     *           </p>
+     *           <p>
+     *             If <code>event_wait_list</code> is NULL,
+     *             <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *           <p>
+     *             If <code>event_wait_list</code> is NULL, then this particular command
+     *             waits until all previous enqueued commands to command_queue have completed.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular command. Event
+     *             objects are unique and can be used to identify this barrier command
+     *             later on. <code>event</code> can be NULL in which case it
+     *             will not be possible for the application to query the status of
+     *             this command or queue a wait for this command to complete.  If the
+     *             <code>event_wait_list</code> and the <code>event</code>
+     *             arguments are not NULL, the <code>event</code> argument should not
+     *             refer to an element of the <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Notes">
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Enqueues a barrier command which waits for either a list of events to complete,
+     *       or if the list is empty it waits for all commands previously enqueued in
+     *       <code>command_queue</code> to complete before it completes. This command blocks
+     *       command execution, that is, any following commands enqueued after it do not execute
+     *       until it completes. This command returns an <code>event</code> which can be
+     *       waited on, i.e. this event can be waited on to insure that all events either in the
+     *       <code>event_wait_list</code> or all previously enqueued commands, queued before
+     *       this command to <code>command_queue</code>, have completed.
+     *     </p>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function was successfully executed.
+     *       Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     * @since OpenCL 1.2
+     */
+    public static int clEnqueueBarrierWithWaitList(cl_command_queue command_queue, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_1_2
+        return checkResult(clEnqueueBarrierWithWaitListNative(command_queue, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueBarrierWithWaitListNative(cl_command_queue command_queue, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+    
+    
+
+    /**
+     * TODO: Not documented in Khronos OpenCL registry
+     */
+    public static int clSetPrintfCallback(cl_context context, PrintfCallbackFunction pfn_notify, Object user_data) 
+    {
+        return checkResult(clSetPrintfCallbackNative(context, pfn_notify, user_data));
+    }
+    private static native int clSetPrintfCallbackNative(cl_context context, PrintfCallbackFunction pfn_notify, Object user_data); 
+
+
+
+    
+    
+    
     /**
      * <p>
      *       Enqueues a marker command.
@@ -15523,6 +19281,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 
      */
     public static int clEnqueueMarker(cl_command_queue command_queue, cl_event event)
     {
@@ -15740,6 +19499,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 
      */
     public static int clEnqueueWaitForEvents(cl_command_queue command_queue, int num_events, cl_event event_list[])
     {
@@ -15798,6 +19558,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 
      */
     public static int clEnqueueBarrier(cl_command_queue command_queue)
     {
@@ -15960,6 +19721,31 @@ public final class CL
 
     private static native cl_mem clCreateFromGLBufferNative(cl_context context, long flags, int bufobj, int errcode_ret[]);
 
+    
+    /**
+     * TODO: Not documented in Khronos OpenCL registry 
+     */
+    public static cl_mem clCreateFromGLTexture(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
+    {
+        // OPENCL_1_2
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreateFromGLTextureNative(context, flags, target, miplevel, texture, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_mem result = clCreateFromGLTextureNative(context, flags, target, miplevel, texture, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_mem clCreateFromGLTextureNative(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[]);
+    
     /**
      * <p>
      *       Creates an OpenCL 2D image object from an OpenGL 2D texture object, or a single face of an
@@ -16160,6 +19946,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 and replaced by {@link #clCreateFromGLTexture(cl_context, long, int, int, int, int[])
      */
     public static cl_mem clCreateFromGLTexture2D(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {
@@ -16385,6 +20172,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 1.2 and replaced by {@link #clCreateFromGLTexture(cl_context, long, int, int, int, int[])
      */
     public static cl_mem clCreateFromGLTexture3D(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {
@@ -17511,5 +21299,144 @@ public final class CL
      */
     private CL()
     {}
+    
+    
+    
+    //========================================================================
+    // These fields and methods will become obsolete in the next releases
+    /**
+     * The thread that frees aligned byte buffers which are no longer
+     * referenced
+     */
+    private static Thread memoryManagementThread = null;
 
+    /**
+     * A map from Weak references to aligned ByteBuffers that have been
+     * allocated with {@link CL#allocateAligned(int, int)} to
+     * pointers that contain the native memory address of the
+     * respective buffer.
+     */
+    private static Map<WeakReference<ByteBuffer>, Pointer> alignedByteBufferMap =
+        new HashMap<WeakReference<ByteBuffer>, Pointer>();
+
+    /**
+     * The reference queue for the weak references to aligned ByteBuffers
+     * that have been allocated with {@link CL#allocateAligned(int, int)}
+     * and which have detected to be unreachable by the garbage collector.
+     */
+    private static ReferenceQueue<ByteBuffer> alignedByteBufferReferenceQueue =
+        new ReferenceQueue<ByteBuffer>();
+    
+    
+    /**
+     * Creates and starts the daemon thread which will fetch the
+     * references to ByteBuffers that have been marked for
+     * garbage collection from the alignedByteBufferReferenceQueue,
+     * and free the associated aligned native pointers.
+     */
+    private static void initMemoryManagementThread()
+    {
+        memoryManagementThread = new Thread(new Runnable()
+        {
+            public void run()
+            {
+                while (true)
+                {
+                    try
+                    {
+                        Reference<? extends ByteBuffer> reference =
+                            alignedByteBufferReferenceQueue.remove();
+
+                        //System.out.println("Free, before  "+alignedByteBufferMap);
+
+                        Pointer pointer = alignedByteBufferMap.get(reference);
+                        freeAlignedNative(pointer);
+                        alignedByteBufferMap.remove(reference);
+
+                        //System.out.println("Freed, after  "+alignedByteBufferMap);
+
+                    }
+                    catch (InterruptedException e)
+                    {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
+        }, "memoryManagementThread");
+        memoryManagementThread.setPriority(Thread.MIN_PRIORITY);
+        memoryManagementThread.setDaemon(true);
+        memoryManagementThread.start();
+    }
+    
+    /**
+     * Creates an returns a new direct ByteBuffer with the given size,
+     * whose memory has the given alignment, in bytes. The memory
+     * associated with the returned buffer will be freed automatically
+     * soon after the ByteBuffer has been marked for garbage collection.
+     *
+     * @param size The size of the buffer
+     * @param alignment The alignment, in bytes
+     * @return A new direct ByteBuffer
+     * 
+     * @deprecated This method is not intended (and should not be required)
+     * for public use, and will be removed in future releases.
+     */
+    public static synchronized ByteBuffer allocateAligned(int size, int alignment)
+    {
+        if (memoryManagementThread == null)
+        {
+            initMemoryManagementThread();
+        }
+
+        Pointer pointer = new Pointer();
+        ByteBuffer byteBuffer = allocateAlignedNative(size, alignment, pointer);
+        if (byteBuffer == null)
+        {
+            return null;
+        }
+        WeakReference<ByteBuffer> reference =
+            new WeakReference<ByteBuffer>(byteBuffer, alignedByteBufferReferenceQueue);
+        alignedByteBufferMap.put(reference, pointer);
+        return byteBuffer;
+    }
+    private static native ByteBuffer allocateAlignedNative(int size, int alignment, Pointer pointer);
+    
+
+    /**
+     * This method may be used to manually free an aligned ByteBuffer which
+     * was allocated with {@link CL#allocateAligned(int, int)}.
+     *
+     * @param byteBuffer The byte buffer
+     */
+    // This is not required, and might be error-prone because of
+    // making the given Buffer invalid.
+    /*
+    private static synchronized void freeAligned(ByteBuffer byteBuffer)
+    {
+        if (byteBuffer == null)
+        {
+            return;
+        }
+        for (Map.Entry<WeakReference<ByteBuffer>, Pointer> entry : alignedByteBufferMap.entrySet())
+        {
+            WeakReference<ByteBuffer> reference = entry.getKey();
+            if (reference.get() == byteBuffer)
+            {
+                Pointer pointer = entry.getValue();
+                if (pointer != null)
+                {
+                    freeAlignedNative(pointer);
+                }
+                alignedByteBufferMap.remove(reference);
+                return;
+            }
+        }
+    }
+    */
+    private static native void freeAlignedNative(Pointer pointer);
+    
+    
+    
+    
 }

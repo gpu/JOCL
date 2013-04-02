@@ -25,28 +25,31 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.jocl;
+#ifndef JOCL_COMMON_HPP
+#define JOCL_COMMON_HPP
 
-/**
- * Java port of a cl_program.
- */
-public final class cl_program extends NativePointerObject
-{
-    /**
-     * Creates a new, uninitialized cl_program 
-     */
-    public cl_program()
-    {
-    }
-    
-    /**
-     * Returns a String representation of this object.
-     * 
-     * @return A String representation of this object.
-     */
-    @Override
-    public String toString()
-    {
-        return "cl_program[0x"+Long.toHexString(getNativePointer())+"]";
-    }
-}
+// The deprecated API is still available, although
+// it may or may not be supported
+#define CL_USE_DEPRECATED_OPENCL_1_0_APIS
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+
+#define CL_GL_INTEROP_ENABLED
+
+// CL includes
+#if defined(__APPLE__) || defined(__MACOSX)
+    #include <OpenCL/opencl.h>
+#else
+    #include <CL/opencl.h>
+    #ifdef _WIN32
+        #define WINDOWS_LEAN_AND_MEAN
+        #define NOMINMAX
+        // Disable "unreferenced formal parameter"
+        // warning (for the JNIEnv parameter)
+        #pragma warning (disable : 4100)
+        #include <windows.h>
+    #endif // _WIN32
+    #include <GL/gl.h>
+#endif // __APPLE__
+
+
+#endif // JOCL_COMMON_HPP

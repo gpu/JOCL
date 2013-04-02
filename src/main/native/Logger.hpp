@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2010 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -25,8 +25,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LOGGER
-#define LOGGER
+#ifndef LOGGER_HPP
+#define LOGGER_HPP
 
 #include <stdarg.h>
 #include <stdio.h>

@@ -25,28 +25,21 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.jocl;
+#ifndef FUNCTION_POINTER_UTILS_HPP
+#define FUNCTION_POINTER_UTILS_HPP
 
-/**
- * Java port of a cl_program.
- */
-public final class cl_program extends NativePointerObject
-{
-    /**
-     * Creates a new, uninitialized cl_program 
-     */
-    public cl_program()
-    {
-    }
-    
-    /**
-     * Returns a String representation of this object.
-     * 
-     * @return A String representation of this object.
-     */
-    @Override
-    public String toString()
-    {
-        return "cl_program[0x"+Long.toHexString(getNativePointer())+"]";
-    }
-}
+// Visual Studio <2010 is missing stdint.h,
+// but defines intptr_t in another file
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <stdint.h>
+#endif
+
+intptr_t obtainFunctionPointer(const char* name);
+bool loadImplementationLibrary(const char *libraryName);
+void initFunctionPointers();
+bool unloadImplementationLibrary();
+
+
+#endif // FUNCTION_POINTER_UTILS_HPP

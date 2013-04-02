@@ -60,7 +60,7 @@ HP_64 =	$(shell uname -m | grep 64)
 
 # Basic directory setup for SDK
 # (override directories only if they are not already defined)
-SRCDIR     ?= ./src/main/native/
+SRCDIR     ?= ./src/
 ROOTDIR    ?= .
 ROOTOBJDIR ?= ./obj
 LIBDIR     := ./lib/$(OSLOWER)
@@ -91,7 +91,7 @@ endif
 
 LIB_EXTENSION := 
 ifneq ($(DARWIN),)
-	LIB_EXTENSION := .jnilib
+	LIB_EXTENSION := .dylib
 else
 	LIB_EXTENSION := .so
 endif
@@ -100,7 +100,7 @@ DYNAMIC_LIB := $(DYNAMIC_LIB)$(LIB_EXTENSION)
 
 
 # Compilers
-CXX        := g++ -fPIC
+CXX        := g++
 CC         := gcc
 LINK       := g++ -fPIC
 
@@ -194,10 +194,20 @@ endif
 # Libs
 ifneq ($(DARWIN),)
    LIB       := -L${OCLLIBDIR} -L$(LIBDIR) -L$(SHAREDDIR)/lib/$(OSLOWER) 
-   LIB += -framework OpenCL -framework OpenGL ${OPENGLLIB} -framework AppKit ${ATF} ${LIB} 
+
+# TODO_1_2: Omitting the OpenCL library. Old line:
+#   LIB += -framework OpenCL -framework OpenGL ${OPENGLLIB} -framework AppKit ${ATF} ${LIB} 
+# TODO_1_2: Omitting the OpenCL library. New line:
+   LIB += -framework OpenGL ${OPENGLLIB} -framework AppKit ${ATF} ${LIB}    
+   
 else
    LIB       := ${USRLIBDIR} -L${OCLLIBDIR} -L$(LIBDIR) -L$(SHAREDDIR)/lib/$(OSLOWER) 
-   LIB += -lOpenCL ${OPENGLLIB} ${LIB} 
+
+# TODO_1_2: Omitting the OpenCL library. Old line:
+#   LIB += -lOpenCL ${OPENGLLIB} ${LIB} 
+# TODO_1_2: Omitting the OpenCL library. New line:
+   LIB +=  ${OPENGLLIB} ${LIB} 
+
 endif
 
 
@@ -207,7 +217,10 @@ endif
 # Target library configuration for JOCL
 TARGETDIR := $(LIBDIR)
 TARGET   := $(subst $(LIB_EXTENSION),$(LIBSUFFIX)$(LIB_EXTENSION),$(LIBDIR)/$(DYNAMIC_LIB))
-LINKLINE  = $(LINK) -o $(TARGET) --shared $(OBJS) $(LIB)
+# TODO_1_2: Adding -ldl linker flag. Old line:
+#LINKLINE  = $(LINK) -o $(TARGET) --shared $(OBJS) $(LIB)
+# TODO_1_2: Adding -ldl linker flag. New line:
+LINKLINE  = $(LINK) -o $(TARGET) --shared $(OBJS) -ldl $(LIB)
 
 
 # check if verbose 

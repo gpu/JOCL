@@ -6,33 +6,27 @@
 DYNAMIC_LIB_BASE_NAME	:= JOCL
 
 # C++ source files (compiled with c++)
-CCFILES		:= JOCL.cpp Logger.cpp
+CCFILES		:= JOCL.cpp Logger.cpp CLJNIUtils.cpp CLFunctions.cpp FunctionPointerUtils.cpp FunctionPointerUtils_Linux.cpp JNIUtils.cpp PointerUtils.cpp
 
 # Root directory of the OpenCL installation
-OCLROOTDIR    := /usr/local/ati-stream-sdk-v2.0-beta4-lnx32/
-#OCLROOTDIR    := /opt/cuda
-OCLLIBDIR     := $(OCLROOTDIR)/lib/x86
+OCLROOTDIR := /usr/local/ati-stream-sdk-v2.3-lnx32/
+
+#TODO_1_2: Omitting the library directory
+#OCLLIBDIR     := $(OCLROOTDIR)/lib/x86
+
 OCLINCDIR     := $(OCLROOTDIR)/include
 
-JDK_HOME      := /usr/java/jdk1.6.0_16
-#JDK_HOME      := $(JAVA_HOME)
 
 # JNI includes
-
-ifneq ($(DARWIN),)
-	JNI_INCLUDES	:= -I/System/Library/Frameworks/JavaVM.framework/Headers
-else
-	JNI_INCLUDES	:= -I$(JDK_HOME)/include -I$(JDK_HOME)/include/linux
-endif
+JNI_INCLUDES	:= -I/usr/java/jdk1.6.0_16/include -I/usr/java/jdk1.6.0_16/include/linux
+# For MacOS it seems to be something like that:
+#JNI_INCLUDES	:= -I/System/Library/Frameworks/JavaVM.framework/Headers
 
 # Seems to be only required for MacOS: This should
 # be the path to the directory containing "libGLEW.a"
-ifneq ($(DARWIN),)
-	# For example:
-	GL_LIB_PATH := "/Developer/GPU Computing/C/common/lib/darwin"
-else
-	JGL_LIB_PATH := 
-endif
+GL_LIB_PATH := 
+# For example:
+#GL_LIB_PATH := "/Developer/GPU Computing/C/common/lib/darwin"
 
 
 ################################################################################

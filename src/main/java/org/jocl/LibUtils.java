@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -78,6 +78,7 @@ final class LibUtils
         try
         {
             System.loadLibrary(libName);
+            initNativeLibrary();
             return;
         }
         catch (Throwable t) 
@@ -88,6 +89,7 @@ final class LibUtils
         try
         {
             loadLibraryResource(libName);
+            initNativeLibrary();
         	return;
         }
         catch (Throwable t)
@@ -120,6 +122,48 @@ final class LibUtils
 	        throw new UnsatisfiedLinkError(sw.toString());
         }
     }
+    
+    
+    /**
+     * Initialize the native library by passing the name of the OpenCL
+     * implementation to the {@link CL#initNativeLibrary(String)} 
+     * method.
+     * 
+     * @throws UnsatisfiedLinkError If the implementation library 
+     * could not be loaded.
+     */
+    private static void initNativeLibrary()
+    {
+        String implementationName = createImplementationName();
+        boolean initialized = 
+            CL.initNativeLibrary(implementationName);
+        if (!initialized)
+        {
+            throw new UnsatisfiedLinkError(
+                "Could not initialize native library. Implementation " +
+                "library '"+implementationName+"' could not be loaded");
+        }
+    }
+    
+    /**
+     * Create the name for the OpenCL implementation that will be passed 
+     * to the dlopen/LoadLibrary call on native side. For Windows and
+     * Linux, this will be the name of the OpenCL libary itself.
+     * For MacOS, it will be the path to the OpenCL framework.
+     * 
+     * @return The name of the implementation library
+     */
+    private static String createImplementationName()
+    {
+        OSType osType = calculateOS();
+        if (OSType.APPLE.equals(osType))
+        {
+            return "/System/Library/Frameworks/OpenCL.framework/" +
+            		"Versions/Current/OpenCL";
+        }
+        return createFullName("OpenCL");
+    }
+    
 
     /**
      * Load the library with the given name from a resource. 
@@ -131,10 +175,7 @@ final class LibUtils
     private static void loadLibraryResource(String libName) throws Throwable
     {
         // Build the full name of the library 
-        String libPrefix = createLibPrefix();
-    	String libExtension = createLibExtension();
-    	String fullName = libPrefix + libName;
-    	String fullNameWithExt = fullName + "." + libExtension;
+        String fullNameWithExt = createFullName(libName);
 
     	// If a temporary file with the resulting name
     	// already exists, it can simply be loaded
@@ -188,11 +229,31 @@ final class LibUtils
         	}
         }
     }
+    
+    
+    /**
+     * Create the full library file name, including the extension
+     * and prefix, for the given library name. For example, the
+     * name 'JOCL' will become <br />
+     * JOCL.dll on Windows <br />
+     * libJOCL.so on Linux <br />
+     * JOCL.dylib on MacOS <br />
+     * 
+     * @param libName The library name
+     * @return The full library name, with extension
+     */
+    private static String createFullName(String libName)
+    {
+        String libPrefix = createLibPrefix();
+        String libExtension = createLibExtension();
+        String fullName = libPrefix + libName + "." + libExtension;
+        return fullName;
+    }
 
 
     /**
      * Returns the extension for dynamically linked libraries on the
-     * current OS. That is, returns "jnilib" on Apple, "so" on Linux
+     * current OS. That is, returns "dylib" on Apple, "so" on Linux
      * and Sun, and "dll" on Windows.
      * 
      * @return The library extension
@@ -203,7 +264,7 @@ final class LibUtils
         switch (osType) 
         {
             case APPLE:
-                return "jnilib";
+                return "dylib";
             case LINUX:
                 return "so";
             case SUN:

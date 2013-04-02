@@ -71,9 +71,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OpenCL.lib"
 				OutputFile="$(ConfigurationName)/JOCL-windows-x86.dll"
-				AdditionalLibraryDirectories="$(CL_LIB_PATH)"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				OptimizeReferences="0"
 				EnableCOMDATFolding="1"
@@ -146,10 +145,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OpenCL.lib"
 				OutputFile="$(ConfigurationName)/JOCL-windows-x86.dll"
-				AdditionalLibraryDirectories="$(CL_LIB_PATH)"
-				GenerateDebugInformation="true"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="false"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -339,19 +337,71 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\main\native\JOCL.cpp"
+				RelativePath=".\src\CLFunctions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\main\native\JOCL.hpp"
+				RelativePath=".\src\CLFunctions.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\main\native\Logger.cpp"
+				RelativePath=".\src\CLJNIUtils.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\main\native\Logger.hpp"
+				RelativePath=".\src\CLJNIUtils.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FunctionPointerUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FunctionPointerUtils.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FunctionPointerUtils_Linux.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\FunctionPointerUtils_Win.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\JNIUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\JNIUtils.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\JOCL.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\JOCL.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\JOCLCommon.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Logger.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Logger.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\PointerUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\PointerUtils.hpp"
 				>
 			</File>
 		</Filter>

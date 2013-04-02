@@ -28,15 +28,38 @@
 package org.jocl;
 
 /**
- * Java port of a cl_program.
+ * Java port of a cl_buffer_region
  */
-public final class cl_program extends NativePointerObject
+public final class cl_buffer_region
 {
     /**
-     * Creates a new, uninitialized cl_program 
+     * The origin of the region, in bytes
      */
-    public cl_program()
+    public long origin;
+    
+    /**
+     * The size of the region, in bytes
+     */
+    public long size;
+
+    /**
+     * Creates a new, uninitialized cl_buffer_region 
+     */
+    public cl_buffer_region()
     {
+    }
+
+    /**
+     * Creates a new cl_buffer_region with the given
+     * origin and size
+     * 
+     * @param origin The origin, in bytes
+     * @param size The size, in bytes
+     */
+    public cl_buffer_region(long origin, long size)
+    {
+        this.origin = origin;
+        this.size = size;
     }
     
     /**
@@ -47,6 +70,10 @@ public final class cl_program extends NativePointerObject
     @Override
     public String toString()
     {
-        return "cl_program[0x"+Long.toHexString(getNativePointer())+"]";
+        return "cl_buffer_region["+
+            "origin="+origin+","+
+            "size="+size+
+            "]";
     }
+    
 }

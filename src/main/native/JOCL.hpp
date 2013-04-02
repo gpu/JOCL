@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2010 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -134,6 +134,16 @@ extern "C" {
 #define org_jocl_CL_CL_MISALIGNED_SUB_BUFFER_OFFSET -13L
 #undef org_jocl_CL_CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST
 #define org_jocl_CL_CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST -14L
+#undef org_jocl_CL_CL_COMPILE_PROGRAM_FAILURE
+#define org_jocl_CL_CL_COMPILE_PROGRAM_FAILURE -15L
+#undef org_jocl_CL_CL_LINKER_NOT_AVAILABLE
+#define org_jocl_CL_CL_LINKER_NOT_AVAILABLE -16L
+#undef org_jocl_CL_CL_LINK_PROGRAM_FAILURE
+#define org_jocl_CL_CL_LINK_PROGRAM_FAILURE -17L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_FAILED
+#define org_jocl_CL_CL_DEVICE_PARTITION_FAILED -18L
+#undef org_jocl_CL_CL_KERNEL_ARG_INFO_NOT_AVAILABLE
+#define org_jocl_CL_CL_KERNEL_ARG_INFO_NOT_AVAILABLE -19L
 #undef org_jocl_CL_CL_INVALID_VALUE
 #define org_jocl_CL_CL_INVALID_VALUE -30L
 #undef org_jocl_CL_CL_INVALID_DEVICE_TYPE
@@ -202,14 +212,30 @@ extern "C" {
 #define org_jocl_CL_CL_INVALID_MIP_LEVEL -62L
 #undef org_jocl_CL_CL_INVALID_GLOBAL_WORK_SIZE
 #define org_jocl_CL_CL_INVALID_GLOBAL_WORK_SIZE -63L
+#undef org_jocl_CL_CL_INVALID_PROPERTY
+#define org_jocl_CL_CL_INVALID_PROPERTY -64L
+#undef org_jocl_CL_CL_INVALID_IMAGE_DESCRIPTOR
+#define org_jocl_CL_CL_INVALID_IMAGE_DESCRIPTOR -65L
+#undef org_jocl_CL_CL_INVALID_COMPILER_OPTIONS
+#define org_jocl_CL_CL_INVALID_COMPILER_OPTIONS -66L
+#undef org_jocl_CL_CL_INVALID_LINKER_OPTIONS
+#define org_jocl_CL_CL_INVALID_LINKER_OPTIONS -67L
+#undef org_jocl_CL_CL_INVALID_DEVICE_PARTITION_COUNT
+#define org_jocl_CL_CL_INVALID_DEVICE_PARTITION_COUNT -68L
 #undef org_jocl_CL_CL_JOCL_INTERNAL_ERROR
-#define org_jocl_CL_CL_JOCL_INTERNAL_ERROR -64L
+#define org_jocl_CL_CL_JOCL_INTERNAL_ERROR -16384L
 #undef org_jocl_CL_CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR
 #define org_jocl_CL_CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR -1000L
+#undef org_jocl_CL_CL_PLATFORM_NOT_FOUND_KHR
+#define org_jocl_CL_CL_PLATFORM_NOT_FOUND_KHR -1001L
 #undef org_jocl_CL_CL_TRUE
 #define org_jocl_CL_CL_TRUE 1L
 #undef org_jocl_CL_CL_FALSE
 #define org_jocl_CL_CL_FALSE 0L
+#undef org_jocl_CL_CL_BLOCKING
+#define org_jocl_CL_CL_BLOCKING 1L
+#undef org_jocl_CL_CL_NON_BLOCKING
+#define org_jocl_CL_CL_NON_BLOCKING 0L
 #undef org_jocl_CL_CL_PLATFORM_PROFILE
 #define org_jocl_CL_CL_PLATFORM_PROFILE 2304L
 #undef org_jocl_CL_CL_PLATFORM_VERSION
@@ -220,6 +246,8 @@ extern "C" {
 #define org_jocl_CL_CL_PLATFORM_VENDOR 2307L
 #undef org_jocl_CL_CL_PLATFORM_EXTENSIONS
 #define org_jocl_CL_CL_PLATFORM_EXTENSIONS 2308L
+#undef org_jocl_CL_CL_PLATFORM_ICD_SUFFIX_KHR
+#define org_jocl_CL_CL_PLATFORM_ICD_SUFFIX_KHR 2336L
 #undef org_jocl_CL_CL_DEVICE_TYPE_DEFAULT
 #define org_jocl_CL_CL_DEVICE_TYPE_DEFAULT 1i64
 #undef org_jocl_CL_CL_DEVICE_TYPE_CPU
@@ -230,6 +258,8 @@ extern "C" {
 #define org_jocl_CL_CL_DEVICE_TYPE_ACCELERATOR 8i64
 #undef org_jocl_CL_CL_DEVICE_TYPE_ALL
 #define org_jocl_CL_CL_DEVICE_TYPE_ALL -1i64
+#undef org_jocl_CL_CL_DEVICE_TYPE_CUSTOM
+#define org_jocl_CL_CL_DEVICE_TYPE_CUSTOM 16i64
 #undef org_jocl_CL_CL_DEVICE_TYPE
 #define org_jocl_CL_CL_DEVICE_TYPE 4096L
 #undef org_jocl_CL_CL_DEVICE_VENDOR_ID
@@ -350,6 +380,34 @@ extern "C" {
 #define org_jocl_CL_CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF 4156L
 #undef org_jocl_CL_CL_DEVICE_OPENCL_C_VERSION
 #define org_jocl_CL_CL_DEVICE_OPENCL_C_VERSION 4157L
+#undef org_jocl_CL_CL_DEVICE_LINKER_AVAILABLE
+#define org_jocl_CL_CL_DEVICE_LINKER_AVAILABLE 4158L
+#undef org_jocl_CL_CL_DEVICE_BUILT_IN_KERNELS
+#define org_jocl_CL_CL_DEVICE_BUILT_IN_KERNELS 4159L
+#undef org_jocl_CL_CL_DEVICE_IMAGE_MAX_BUFFER_SIZE
+#define org_jocl_CL_CL_DEVICE_IMAGE_MAX_BUFFER_SIZE 4160L
+#undef org_jocl_CL_CL_DEVICE_IMAGE_MAX_ARRAY_SIZE
+#define org_jocl_CL_CL_DEVICE_IMAGE_MAX_ARRAY_SIZE 4161L
+#undef org_jocl_CL_CL_DEVICE_PARENT_DEVICE
+#define org_jocl_CL_CL_DEVICE_PARENT_DEVICE 4162L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_MAX_SUB_DEVICES
+#define org_jocl_CL_CL_DEVICE_PARTITION_MAX_SUB_DEVICES 4163L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_PROPERTIES
+#define org_jocl_CL_CL_DEVICE_PARTITION_PROPERTIES 4164L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_AFFINITY_DOMAIN
+#define org_jocl_CL_CL_DEVICE_PARTITION_AFFINITY_DOMAIN 4165L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_TYPE
+#define org_jocl_CL_CL_DEVICE_PARTITION_TYPE 4166L
+#undef org_jocl_CL_CL_DEVICE_REFERENCE_COUNT
+#define org_jocl_CL_CL_DEVICE_REFERENCE_COUNT 4167L
+#undef org_jocl_CL_CL_DEVICE_PREFERRED_INTEROP_USER_SYNC
+#define org_jocl_CL_CL_DEVICE_PREFERRED_INTEROP_USER_SYNC 4168L
+#undef org_jocl_CL_CL_DEVICE_PRINTF_BUFFER_SIZE
+#define org_jocl_CL_CL_DEVICE_PRINTF_BUFFER_SIZE 4169L
+#undef org_jocl_CL_CL_DEVICE_DOUBLE_FP_CONFIG
+#define org_jocl_CL_CL_DEVICE_DOUBLE_FP_CONFIG 4146L
+#undef org_jocl_CL_CL_DEVICE_HALF_FP_CONFIG
+#define org_jocl_CL_CL_DEVICE_HALF_FP_CONFIG 4147L
 #undef org_jocl_CL_CL_DEVICE_ADDRESS_32_BITS
 #define org_jocl_CL_CL_DEVICE_ADDRESS_32_BITS 1i64
 #undef org_jocl_CL_CL_DEVICE_ADDRESS_64_BITS
@@ -368,6 +426,8 @@ extern "C" {
 #define org_jocl_CL_CL_FP_FMA 32i64
 #undef org_jocl_CL_CL_FP_SOFT_FLOAT
 #define org_jocl_CL_CL_FP_SOFT_FLOAT 64i64
+#undef org_jocl_CL_CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT
+#define org_jocl_CL_CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT 128i64
 #undef org_jocl_CL_CL_NONE
 #define org_jocl_CL_CL_NONE 0L
 #undef org_jocl_CL_CL_READ_ONLY_CACHE
@@ -396,6 +456,28 @@ extern "C" {
 #define org_jocl_CL_CL_CONTEXT_NUM_DEVICES 4227L
 #undef org_jocl_CL_CL_CONTEXT_PLATFORM
 #define org_jocl_CL_CL_CONTEXT_PLATFORM 4228L
+#undef org_jocl_CL_CL_CONTEXT_INTEROP_USER_SYNC
+#define org_jocl_CL_CL_CONTEXT_INTEROP_USER_SYNC 4229L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_EQUALLY
+#define org_jocl_CL_CL_DEVICE_PARTITION_EQUALLY 4230L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_BY_COUNTS
+#define org_jocl_CL_CL_DEVICE_PARTITION_BY_COUNTS 4231L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_BY_COUNTS_LIST_END
+#define org_jocl_CL_CL_DEVICE_PARTITION_BY_COUNTS_LIST_END 0L
+#undef org_jocl_CL_CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN
+#define org_jocl_CL_CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN 4232L
+#undef org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_NUMA
+#define org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_NUMA 1i64
+#undef org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L4_CACHE
+#define org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L4_CACHE 2i64
+#undef org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L3_CACHE
+#define org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L3_CACHE 4i64
+#undef org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE
+#define org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE 8i64
+#undef org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE
+#define org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE 16i64
+#undef org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE
+#define org_jocl_CL_CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE 32i64
 #undef org_jocl_CL_CL_QUEUE_CONTEXT
 #define org_jocl_CL_CL_QUEUE_CONTEXT 4240L
 #undef org_jocl_CL_CL_QUEUE_DEVICE
@@ -416,6 +498,16 @@ extern "C" {
 #define org_jocl_CL_CL_MEM_ALLOC_HOST_PTR 16i64
 #undef org_jocl_CL_CL_MEM_COPY_HOST_PTR
 #define org_jocl_CL_CL_MEM_COPY_HOST_PTR 32i64
+#undef org_jocl_CL_CL_MEM_HOST_WRITE_ONLY
+#define org_jocl_CL_CL_MEM_HOST_WRITE_ONLY 128i64
+#undef org_jocl_CL_CL_MEM_HOST_READ_ONLY
+#define org_jocl_CL_CL_MEM_HOST_READ_ONLY 256i64
+#undef org_jocl_CL_CL_MEM_HOST_NO_ACCESS
+#define org_jocl_CL_CL_MEM_HOST_NO_ACCESS 512i64
+#undef org_jocl_CL_CL_MIGRATE_MEM_OBJECT_HOST
+#define org_jocl_CL_CL_MIGRATE_MEM_OBJECT_HOST 1i64
+#undef org_jocl_CL_CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED
+#define org_jocl_CL_CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED 2i64
 #undef org_jocl_CL_CL_R
 #define org_jocl_CL_CL_R 4272L
 #undef org_jocl_CL_CL_A
@@ -478,6 +570,14 @@ extern "C" {
 #define org_jocl_CL_CL_MEM_OBJECT_IMAGE2D 4337L
 #undef org_jocl_CL_CL_MEM_OBJECT_IMAGE3D
 #define org_jocl_CL_CL_MEM_OBJECT_IMAGE3D 4338L
+#undef org_jocl_CL_CL_MEM_OBJECT_IMAGE2D_ARRAY
+#define org_jocl_CL_CL_MEM_OBJECT_IMAGE2D_ARRAY 4339L
+#undef org_jocl_CL_CL_MEM_OBJECT_IMAGE1D
+#define org_jocl_CL_CL_MEM_OBJECT_IMAGE1D 4340L
+#undef org_jocl_CL_CL_MEM_OBJECT_IMAGE1D_ARRAY
+#define org_jocl_CL_CL_MEM_OBJECT_IMAGE1D_ARRAY 4341L
+#undef org_jocl_CL_CL_MEM_OBJECT_IMAGE1D_BUFFER
+#define org_jocl_CL_CL_MEM_OBJECT_IMAGE1D_BUFFER 4342L
 #undef org_jocl_CL_CL_MEM_TYPE
 #define org_jocl_CL_CL_MEM_TYPE 4352L
 #undef org_jocl_CL_CL_MEM_FLAGS
@@ -510,6 +610,14 @@ extern "C" {
 #define org_jocl_CL_CL_IMAGE_HEIGHT 4373L
 #undef org_jocl_CL_CL_IMAGE_DEPTH
 #define org_jocl_CL_CL_IMAGE_DEPTH 4374L
+#undef org_jocl_CL_CL_IMAGE_ARRAY_SIZE
+#define org_jocl_CL_CL_IMAGE_ARRAY_SIZE 4375L
+#undef org_jocl_CL_CL_IMAGE_BUFFER
+#define org_jocl_CL_CL_IMAGE_BUFFER 4376L
+#undef org_jocl_CL_CL_IMAGE_NUM_MIP_LEVELS
+#define org_jocl_CL_CL_IMAGE_NUM_MIP_LEVELS 4377L
+#undef org_jocl_CL_CL_IMAGE_NUM_SAMPLES
+#define org_jocl_CL_CL_IMAGE_NUM_SAMPLES 4378L
 #undef org_jocl_CL_CL_ADDRESS_NONE
 #define org_jocl_CL_CL_ADDRESS_NONE 4400L
 #undef org_jocl_CL_CL_ADDRESS_CLAMP_TO_EDGE
@@ -538,6 +646,8 @@ extern "C" {
 #define org_jocl_CL_CL_MAP_READ 1i64
 #undef org_jocl_CL_CL_MAP_WRITE
 #define org_jocl_CL_CL_MAP_WRITE 2i64
+#undef org_jocl_CL_CL_MAP_WRITE_INVALIDATE_REGION
+#define org_jocl_CL_CL_MAP_WRITE_INVALIDATE_REGION 4i64
 #undef org_jocl_CL_CL_PROGRAM_REFERENCE_COUNT
 #define org_jocl_CL_CL_PROGRAM_REFERENCE_COUNT 4448L
 #undef org_jocl_CL_CL_PROGRAM_CONTEXT
@@ -552,12 +662,26 @@ extern "C" {
 #define org_jocl_CL_CL_PROGRAM_BINARY_SIZES 4453L
 #undef org_jocl_CL_CL_PROGRAM_BINARIES
 #define org_jocl_CL_CL_PROGRAM_BINARIES 4454L
+#undef org_jocl_CL_CL_PROGRAM_NUM_KERNELS
+#define org_jocl_CL_CL_PROGRAM_NUM_KERNELS 4455L
+#undef org_jocl_CL_CL_PROGRAM_KERNEL_NAMES
+#define org_jocl_CL_CL_PROGRAM_KERNEL_NAMES 4456L
 #undef org_jocl_CL_CL_PROGRAM_BUILD_STATUS
 #define org_jocl_CL_CL_PROGRAM_BUILD_STATUS 4481L
 #undef org_jocl_CL_CL_PROGRAM_BUILD_OPTIONS
 #define org_jocl_CL_CL_PROGRAM_BUILD_OPTIONS 4482L
 #undef org_jocl_CL_CL_PROGRAM_BUILD_LOG
 #define org_jocl_CL_CL_PROGRAM_BUILD_LOG 4483L
+#undef org_jocl_CL_CL_PROGRAM_BINARY_TYPE
+#define org_jocl_CL_CL_PROGRAM_BINARY_TYPE 4484L
+#undef org_jocl_CL_CL_PROGRAM_BINARY_TYPE_NONE
+#define org_jocl_CL_CL_PROGRAM_BINARY_TYPE_NONE 0L
+#undef org_jocl_CL_CL_PROGRAM_BINARY_TYPE_COMPILED_OBJECT
+#define org_jocl_CL_CL_PROGRAM_BINARY_TYPE_COMPILED_OBJECT 1L
+#undef org_jocl_CL_CL_PROGRAM_BINARY_TYPE_LIBRARY
+#define org_jocl_CL_CL_PROGRAM_BINARY_TYPE_LIBRARY 2L
+#undef org_jocl_CL_CL_PROGRAM_BINARY_TYPE_EXECUTABLE
+#define org_jocl_CL_CL_PROGRAM_BINARY_TYPE_EXECUTABLE 4L
 #undef org_jocl_CL_CL_BUILD_SUCCESS
 #define org_jocl_CL_CL_BUILD_SUCCESS 0L
 #undef org_jocl_CL_CL_BUILD_NONE
@@ -576,6 +700,42 @@ extern "C" {
 #define org_jocl_CL_CL_KERNEL_CONTEXT 4499L
 #undef org_jocl_CL_CL_KERNEL_PROGRAM
 #define org_jocl_CL_CL_KERNEL_PROGRAM 4500L
+#undef org_jocl_CL_CL_KERNEL_ATTRIBUTES
+#define org_jocl_CL_CL_KERNEL_ATTRIBUTES 4501L
+#undef org_jocl_CL_CL_KERNEL_ARG_ADDRESS_QUALIFIER
+#define org_jocl_CL_CL_KERNEL_ARG_ADDRESS_QUALIFIER 4502L
+#undef org_jocl_CL_CL_KERNEL_ARG_ACCESS_QUALIFIER
+#define org_jocl_CL_CL_KERNEL_ARG_ACCESS_QUALIFIER 4503L
+#undef org_jocl_CL_CL_KERNEL_ARG_TYPE_NAME
+#define org_jocl_CL_CL_KERNEL_ARG_TYPE_NAME 4504L
+#undef org_jocl_CL_CL_KERNEL_ARG_TYPE_QUALIFIER
+#define org_jocl_CL_CL_KERNEL_ARG_TYPE_QUALIFIER 4505L
+#undef org_jocl_CL_CL_KERNEL_ARG_NAME
+#define org_jocl_CL_CL_KERNEL_ARG_NAME 4506L
+#undef org_jocl_CL_CL_KERNEL_ARG_ADDRESS_GLOBAL
+#define org_jocl_CL_CL_KERNEL_ARG_ADDRESS_GLOBAL 4507L
+#undef org_jocl_CL_CL_KERNEL_ARG_ADDRESS_LOCAL
+#define org_jocl_CL_CL_KERNEL_ARG_ADDRESS_LOCAL 4508L
+#undef org_jocl_CL_CL_KERNEL_ARG_ADDRESS_CONSTANT
+#define org_jocl_CL_CL_KERNEL_ARG_ADDRESS_CONSTANT 4509L
+#undef org_jocl_CL_CL_KERNEL_ARG_ADDRESS_PRIVATE
+#define org_jocl_CL_CL_KERNEL_ARG_ADDRESS_PRIVATE 4510L
+#undef org_jocl_CL_CL_KERNEL_ARG_ACCESS_READ_ONLY
+#define org_jocl_CL_CL_KERNEL_ARG_ACCESS_READ_ONLY 4512L
+#undef org_jocl_CL_CL_KERNEL_ARG_ACCESS_WRITE_ONLY
+#define org_jocl_CL_CL_KERNEL_ARG_ACCESS_WRITE_ONLY 4513L
+#undef org_jocl_CL_CL_KERNEL_ARG_ACCESS_READ_WRITE
+#define org_jocl_CL_CL_KERNEL_ARG_ACCESS_READ_WRITE 4514L
+#undef org_jocl_CL_CL_KERNEL_ARG_ACCESS_NONE
+#define org_jocl_CL_CL_KERNEL_ARG_ACCESS_NONE 4515L
+#undef org_jocl_CL_CL_KERNEL_ARG_TYPE_NONE
+#define org_jocl_CL_CL_KERNEL_ARG_TYPE_NONE 0i64
+#undef org_jocl_CL_CL_KERNEL_ARG_TYPE_CONST
+#define org_jocl_CL_CL_KERNEL_ARG_TYPE_CONST 1i64
+#undef org_jocl_CL_CL_KERNEL_ARG_TYPE_RESTRICT
+#define org_jocl_CL_CL_KERNEL_ARG_TYPE_RESTRICT 2i64
+#undef org_jocl_CL_CL_KERNEL_ARG_TYPE_VOLATILE
+#define org_jocl_CL_CL_KERNEL_ARG_TYPE_VOLATILE 4i64
 #undef org_jocl_CL_CL_KERNEL_WORK_GROUP_SIZE
 #define org_jocl_CL_CL_KERNEL_WORK_GROUP_SIZE 4528L
 #undef org_jocl_CL_CL_KERNEL_COMPILE_WORK_GROUP_SIZE
@@ -586,6 +746,8 @@ extern "C" {
 #define org_jocl_CL_CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE 4531L
 #undef org_jocl_CL_CL_KERNEL_PRIVATE_MEM_SIZE
 #define org_jocl_CL_CL_KERNEL_PRIVATE_MEM_SIZE 4532L
+#undef org_jocl_CL_CL_KERNEL_GLOBAL_WORK_SIZE
+#define org_jocl_CL_CL_KERNEL_GLOBAL_WORK_SIZE 4533L
 #undef org_jocl_CL_CL_EVENT_COMMAND_QUEUE
 #define org_jocl_CL_CL_EVENT_COMMAND_QUEUE 4560L
 #undef org_jocl_CL_CL_EVENT_COMMAND_TYPE
@@ -638,6 +800,14 @@ extern "C" {
 #define org_jocl_CL_CL_COMMAND_COPY_BUFFER_RECT 4611L
 #undef org_jocl_CL_CL_COMMAND_USER
 #define org_jocl_CL_CL_COMMAND_USER 4612L
+#undef org_jocl_CL_CL_COMMAND_BARRIER
+#define org_jocl_CL_CL_COMMAND_BARRIER 4613L
+#undef org_jocl_CL_CL_COMMAND_MIGRATE_MEM_OBJECTS
+#define org_jocl_CL_CL_COMMAND_MIGRATE_MEM_OBJECTS 4614L
+#undef org_jocl_CL_CL_COMMAND_FILL_BUFFER
+#define org_jocl_CL_CL_COMMAND_FILL_BUFFER 4615L
+#undef org_jocl_CL_CL_COMMAND_FILL_IMAGE
+#define org_jocl_CL_CL_COMMAND_FILL_IMAGE 4616L
 #undef org_jocl_CL_CL_COMPLETE
 #define org_jocl_CL_CL_COMPLETE 0L
 #undef org_jocl_CL_CL_RUNNING
@@ -664,6 +834,14 @@ extern "C" {
 #define org_jocl_CL_CL_GL_OBJECT_TEXTURE3D 8194L
 #undef org_jocl_CL_CL_GL_OBJECT_RENDERBUFFER
 #define org_jocl_CL_CL_GL_OBJECT_RENDERBUFFER 8195L
+#undef org_jocl_CL_CL_GL_OBJECT_TEXTURE2D_ARRAY
+#define org_jocl_CL_CL_GL_OBJECT_TEXTURE2D_ARRAY 8206L
+#undef org_jocl_CL_CL_GL_OBJECT_TEXTURE1D
+#define org_jocl_CL_CL_GL_OBJECT_TEXTURE1D 8207L
+#undef org_jocl_CL_CL_GL_OBJECT_TEXTURE1D_ARRAY
+#define org_jocl_CL_CL_GL_OBJECT_TEXTURE1D_ARRAY 8208L
+#undef org_jocl_CL_CL_GL_OBJECT_TEXTURE_BUFFER
+#define org_jocl_CL_CL_GL_OBJECT_TEXTURE_BUFFER 8209L
 #undef org_jocl_CL_CL_GL_TEXTURE_TARGET
 #define org_jocl_CL_CL_GL_TEXTURE_TARGET 8196L
 #undef org_jocl_CL_CL_GL_MIPMAP_LEVEL
@@ -684,27 +862,19 @@ extern "C" {
 #define org_jocl_CL_CL_CGL_SHAREGROUP_KHR 8204L
 /*
  * Class:     org_jocl_CL
+ * Method:    initNativeLibrary
+ * Signature: (Ljava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_jocl_CL_initNativeLibrary
+  (JNIEnv *, jclass, jstring);
+
+/*
+ * Class:     org_jocl_CL
  * Method:    setLogLevelNative
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_org_jocl_CL_setLogLevelNative
   (JNIEnv *, jclass, jint);
-
-/*
- * Class:     org_jocl_CL
- * Method:    allocateAlignedNative
- * Signature: (IILorg/jocl/Pointer;)Ljava/nio/ByteBuffer;
- */
-JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
-  (JNIEnv *, jclass, jint, jint, jobject);
-
-/*
- * Class:     org_jocl_CL
- * Method:    freeAlignedNative
- * Signature: (Lorg/jocl/Pointer;)V
- */
-JNIEXPORT void JNICALL Java_org_jocl_CL_freeAlignedNative
-  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     org_jocl_CL
@@ -737,6 +907,30 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceInfoNative
   (JNIEnv *, jclass, jobject, jint, jlong, jobject, jlongArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreateSubDevicesNative
+ * Signature: (Lorg/jocl/cl_device_id;Lorg/jocl/cl_device_partition_property;I[Lorg/jocl/cl_device_id;[I)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
+  (JNIEnv *, jclass, jobject, jobject, jint, jobjectArray, jintArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clRetainDeviceNative
+ * Signature: (Lorg/jocl/cl_device_id;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainDeviceNative
+  (JNIEnv *, jclass, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clReleaseDeviceNative
+ * Signature: (Lorg/jocl/cl_device_id;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseDeviceNative
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     org_jocl_CL
@@ -829,10 +1023,26 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateBufferNative
 /*
  * Class:     org_jocl_CL
  * Method:    clCreateSubBufferNative
- * Signature: (Lorg/jocl/cl_mem;IILorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
+ * Signature: (Lorg/jocl/cl_mem;JILorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBufferNative
-  (JNIEnv *, jclass, jobject, jint, jint, jobject, jintArray);
+  (JNIEnv *, jclass, jobject, jlong, jint, jobject, jintArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreateSubBuffer2Native
+ * Signature: (Lorg/jocl/cl_mem;JILorg/jocl/cl_buffer_region;[I)Lorg/jocl/cl_mem;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBuffer2Native
+  (JNIEnv *, jclass, jobject, jlong, jint, jobject, jintArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreateImageNative
+ * Signature: (Lorg/jocl/cl_context;JLorg/jocl/cl_image_format;Lorg/jocl/cl_image_desc;Lorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImageNative
+  (JNIEnv *, jclass, jobject, jlong, jobject, jobject, jobject, jintArray);
 
 /*
  * Class:     org_jocl_CL
@@ -948,6 +1158,14 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
 
 /*
  * Class:     org_jocl_CL
+ * Method:    clCreateProgramWithBuiltInKernelsNative
+ * Signature: (Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;Ljava/lang/String;[I)Lorg/jocl/cl_program;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBuiltInKernelsNative
+  (JNIEnv *, jclass, jobject, jint, jobjectArray, jstring, jintArray);
+
+/*
+ * Class:     org_jocl_CL
  * Method:    clRetainProgramNative
  * Signature: (Lorg/jocl/cl_program;)I
  */
@@ -969,6 +1187,30 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseProgramNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
   (JNIEnv *, jclass, jobject, jint, jobjectArray, jstring, jobject, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCompileProgramNative
+ * Signature: (Lorg/jocl/cl_program;I[Lorg/jocl/cl_device_id;Ljava/lang/String;I[Lorg/jocl/cl_program;[Ljava/lang/String;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
+  (JNIEnv *, jclass, jobject, jint, jobjectArray, jstring, jint, jobjectArray, jobjectArray, jobject, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clLinkProgramNative
+ * Signature: (Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;Ljava/lang/String;I[Lorg/jocl/cl_program;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_program;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
+  (JNIEnv *, jclass, jobject, jint, jobjectArray, jstring, jint, jobjectArray, jobject, jobject, jintArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clUnloadPlatformCompilerNative
+ * Signature: (Lorg/jocl/cl_platform_id;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clUnloadPlatformCompilerNative
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     org_jocl_CL
@@ -1041,6 +1283,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetKernelArgNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelInfoNative
   (JNIEnv *, jclass, jobject, jint, jlong, jobject, jlongArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clGetKernelArgInfoNative
+ * Signature: (Lorg/jocl/cl_kernel;IIJLorg/jocl/Pointer;[J)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelArgInfoNative
+  (JNIEnv *, jclass, jobject, jint, jint, jlong, jobject, jlongArray);
 
 /*
  * Class:     org_jocl_CL
@@ -1164,6 +1414,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
 
 /*
  * Class:     org_jocl_CL
+ * Method:    clEnqueueFillBufferNative
+ * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/Pointer;JJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillBufferNative
+  (JNIEnv *, jclass, jobject, jobject, jobject, jlong, jlong, jlong, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
  * Method:    clEnqueueCopyBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;JJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
@@ -1193,6 +1451,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
   (JNIEnv *, jclass, jobject, jobject, jboolean, jlongArray, jlongArray, jlong, jlong, jobject, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueFillImageNative
+ * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/Pointer;[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillImageNative
+  (JNIEnv *, jclass, jobject, jobject, jobject, jlongArray, jlongArray, jint, jobjectArray, jobject);
 
 /*
  * Class:     org_jocl_CL
@@ -1244,6 +1510,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueUnmapMemObjectNative
 
 /*
  * Class:     org_jocl_CL
+ * Method:    clEnqueueMigrateMemObjectsNative
+ * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_mem;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMigrateMemObjectsNative
+  (JNIEnv *, jclass, jobject, jint, jobjectArray, jlong, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
  * Method:    clEnqueueNDRangeKernelNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_kernel;I[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
@@ -1265,6 +1539,30 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
   (JNIEnv *, jclass, jobject, jobject, jobject, jlong, jint, jobjectArray, jobjectArray, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueMarkerWithWaitListNative
+ * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerWithWaitListNative
+  (JNIEnv *, jclass, jobject, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueBarrierWithWaitListNative
+ * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierWithWaitListNative
+  (JNIEnv *, jclass, jobject, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clSetPrintfCallbackNative
+ * Signature: (Lorg/jocl/cl_context;Lorg/jocl/PrintfCallbackFunction;Ljava/lang/Object;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetPrintfCallbackNative
+  (JNIEnv *, jclass, jobject, jobject, jobject);
 
 /*
  * Class:     org_jocl_CL
@@ -1297,6 +1595,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierNative
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLBufferNative
   (JNIEnv *, jclass, jobject, jlong, jint, jintArray);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreateFromGLTextureNative
+ * Signature: (Lorg/jocl/cl_context;JIII[I)Lorg/jocl/cl_mem;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTextureNative
+  (JNIEnv *, jclass, jobject, jlong, jint, jint, jint, jintArray);
 
 /*
  * Class:     org_jocl_CL
@@ -1353,6 +1659,22 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
   (JNIEnv *, jclass, jobject, jint, jobjectArray, jint, jobjectArray, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    allocateAlignedNative
+ * Signature: (IILorg/jocl/Pointer;)Ljava/nio/ByteBuffer;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
+  (JNIEnv *, jclass, jint, jint, jobject);
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    freeAlignedNative
+ * Signature: (Lorg/jocl/Pointer;)V
+ */
+JNIEXPORT void JNICALL Java_org_jocl_CL_freeAlignedNative
+  (JNIEnv *, jclass, jobject);
 
 #ifdef __cplusplus
 }

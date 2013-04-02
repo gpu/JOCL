@@ -87,6 +87,7 @@
                                     <includes>
                                         <include>*.dll</include>
                                         <include>*.jnilib</include>
+                                        <include>*.dylib</include>
                                         <include>*.so</include>
                                     </includes>
                                 </resource>
@@ -96,6 +97,7 @@
                                     <includes>
                                         <include>*.dll</include>
                                         <include>*.jnilib</include>
+                                        <include>*.dylib</include>
                                         <include>*.so</include>
                                     </includes>
                                 </resource>

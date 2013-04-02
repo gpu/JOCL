@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -121,9 +121,28 @@ public final class Pointer extends NativePointerObject
 
 
     /**
-     * Creates a new Pointer to the given Buffer. The buffer
-     * must not be null, and either be a direct buffer, or 
-     * have a backing array.  
+     * <b>NOTE:</b> This method does not take into account the position
+     * and array offset of the given buffer. In order to create a 
+     * pointer that takes the position and array offset into account, 
+     * use the {@link #toBuffer(Buffer)} method. <br />
+     * <br />
+     * 
+     * If the given buffer has a backing array, then the returned 
+     * pointer will in any case point to the start of the array, 
+     * even if the buffer has been created using the <code>slice</code> 
+     * method (like {@link ByteBuffer#slice()}). If the buffer is 
+     * direct, then this method will return a Pointer to the address 
+     * of the direct buffer. If the buffer has been created using the 
+     * <code>slice</code> method, then this will be the actual start 
+     * of the slice. Although this implies a different treatment of 
+     * direct- and non direct buffers, the method is kept for 
+     * backward compatibility. <br /> 
+     * <br />
+     * In both cases, for direct and array-based buffers, this method 
+     * does not take into account the position of the given buffer. <br />
+     * <br />   
+     * The buffer must not be null, and either be a direct buffer, or 
+     * have a backing array
      * 
      * @param buffer The buffer the pointer should point to 
      * @return The pointer
@@ -140,6 +159,266 @@ public final class Pointer extends NativePointerObject
         return new Pointer(buffer);
     }
 
+    /**
+     * Creates a new Pointer to the given buffer.<br /> 
+     * <br />
+     * Note that this method takes into account the array offset and position 
+     * of the given buffer, in contrast to the {@link #to(Buffer)} method.  
+     * 
+     * @param buffer The buffer
+     * @return The new pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    public static Pointer toBuffer(Buffer buffer)
+    {
+        if (buffer instanceof ByteBuffer) 
+        {
+            return computePointer((ByteBuffer)buffer);
+        }
+        if (buffer instanceof ShortBuffer) 
+        {
+            return computePointer((ShortBuffer)buffer);
+        }
+        if (buffer instanceof IntBuffer) 
+        {
+            return computePointer((IntBuffer)buffer);
+        }
+        if (buffer instanceof LongBuffer) 
+        {
+            return computePointer((LongBuffer)buffer);
+        }
+        if (buffer instanceof FloatBuffer) 
+        {
+            return computePointer((FloatBuffer)buffer);
+        }
+        if (buffer instanceof DoubleBuffer) 
+        {
+            return computePointer((DoubleBuffer)buffer);
+        }
+        throw new IllegalArgumentException(
+            "Unknown buffer type: "+buffer);
+        
+    }
+    
+    /**
+     * Creates a new Pointer to the given buffer, taking into
+     * account the position and array offset of the given buffer.
+     * 
+     * @param buffer The buffer
+     * @return The pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    private static Pointer computePointer(ByteBuffer buffer)
+    {
+        Pointer result = null;
+        if (buffer.isDirect())
+        {
+            int oldPosition = buffer.position();
+            buffer.position(0);
+            result = Pointer.to(buffer.slice()).withByteOffset(
+                oldPosition * Sizeof.cl_char);
+            buffer.position(oldPosition);
+        }
+        else if (buffer.hasArray())
+        {
+            ByteBuffer t = ByteBuffer.wrap(buffer.array());
+            int elementOffset = buffer.position() + buffer.arrayOffset();
+            result = Pointer.to(t).withByteOffset(
+                elementOffset * Sizeof.cl_char);
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                "Buffer may not be null and must have an array or be direct");
+        }
+        return result;
+    }
+
+    
+    /**
+     * Creates a new Pointer to the given buffer, taking into
+     * account the position and array offset of the given buffer.
+     * 
+     * @param buffer The buffer
+     * @return The pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    private static Pointer computePointer(ShortBuffer buffer)
+    {
+        Pointer result = null;
+        if (buffer.isDirect())
+        {
+            int oldPosition = buffer.position();
+            buffer.position(0);
+            result = Pointer.to(buffer.slice()).withByteOffset(
+                oldPosition * Sizeof.cl_short);
+            buffer.position(oldPosition);
+        }
+        else if (buffer.hasArray())
+        {
+            ShortBuffer t = ShortBuffer.wrap(buffer.array());
+            int elementOffset = buffer.position() + buffer.arrayOffset();
+            result = Pointer.to(t).withByteOffset(
+                elementOffset * Sizeof.cl_short);
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                "Buffer may not be null and must have an array or be direct");
+        }
+        return result;
+    }
+
+    
+    /**
+     * Creates a new Pointer to the given buffer, taking into
+     * account the position and array offset of the given buffer.
+     * 
+     * @param buffer The buffer
+     * @return The pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    private static Pointer computePointer(IntBuffer buffer)
+    {
+        Pointer result = null;
+        if (buffer.isDirect())
+        {
+            int oldPosition = buffer.position();
+            buffer.position(0);
+            result = Pointer.to(buffer.slice()).withByteOffset(
+                oldPosition * Sizeof.cl_int);
+            buffer.position(oldPosition);
+        }
+        else if (buffer.hasArray())
+        {
+            IntBuffer t = IntBuffer.wrap(buffer.array());
+            int elementOffset = buffer.position() + buffer.arrayOffset();
+            result = Pointer.to(t).withByteOffset(
+                elementOffset * Sizeof.cl_int);
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                "Buffer may not be null and must have an array or be direct");
+        }
+        return result;
+    }
+
+    
+    /**
+     * Creates a new Pointer to the given buffer, taking into
+     * account the position and array offset of the given buffer.
+     * 
+     * @param buffer The buffer
+     * @return The pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    private static Pointer computePointer(LongBuffer buffer)
+    {
+        Pointer result = null;
+        if (buffer.isDirect())
+        {
+            int oldPosition = buffer.position();
+            buffer.position(0);
+            result = Pointer.to(buffer.slice()).withByteOffset(
+                oldPosition * Sizeof.cl_long);
+            buffer.position(oldPosition);
+        }
+        else if (buffer.hasArray())
+        {
+            LongBuffer t = LongBuffer.wrap(buffer.array());
+            int elementOffset = buffer.position() + buffer.arrayOffset();
+            result = Pointer.to(t).withByteOffset(
+                elementOffset * Sizeof.cl_long);
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                "Buffer may not be null and must have an array or be direct");
+        }
+        return result;
+    }
+
+    
+    /**
+     * Creates a new Pointer to the given buffer, taking into
+     * account the position and array offset of the given buffer.
+     * 
+     * @param buffer The buffer
+     * @return The pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    private static Pointer computePointer(FloatBuffer buffer)
+    {
+        Pointer result = null;
+        if (buffer.isDirect())
+        {
+            int oldPosition = buffer.position();
+            buffer.position(0);
+            result = Pointer.to(buffer.slice()).withByteOffset(
+                oldPosition * Sizeof.cl_float);
+            buffer.position(oldPosition);
+        }
+        else if (buffer.hasArray())
+        {
+            FloatBuffer t = FloatBuffer.wrap(buffer.array());
+            int elementOffset = buffer.position() + buffer.arrayOffset();
+            result = Pointer.to(t).withByteOffset(
+                elementOffset * Sizeof.cl_float);
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                "Buffer may not be null and must have an array or be direct");
+        }
+        return result;
+    }
+
+    
+    /**
+     * Creates a new Pointer to the given buffer, taking into
+     * account the position and array offset of the given buffer.
+     * 
+     * @param buffer The buffer
+     * @return The pointer
+     * @throws IllegalArgumentException If the given buffer
+     * is null or is neither direct nor has a backing array
+     */
+    private static Pointer computePointer(DoubleBuffer buffer)
+    {
+        Pointer result = null;
+        if (buffer.isDirect())
+        {
+            int oldPosition = buffer.position();
+            buffer.position(0);
+            result = Pointer.to(buffer.slice()).withByteOffset(
+                oldPosition * Sizeof.cl_double);
+            buffer.position(oldPosition);
+        }
+        else if (buffer.hasArray())
+        {
+            DoubleBuffer t = DoubleBuffer.wrap(buffer.array());
+            int elementOffset = buffer.position() + buffer.arrayOffset();
+            result = Pointer.to(t).withByteOffset(
+                elementOffset * Sizeof.cl_double);
+        }
+        else
+        {
+            throw new IllegalArgumentException(
+                "Buffer may not be null and must have an array or be direct");
+        }
+        return result;
+    }
+
+    
+    
+    
     /**
      * Creates a new Pointer to the given Pointer. The pointer 
      * may not be null.

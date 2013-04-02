@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -27,40 +27,18 @@
 
 package org.jocl;
 
-import java.nio.LongBuffer;
-
-//TODO: This probably does not have to be a NativePointerObject
-
 /**
  * Java port of cl_context_properties.
  */
-public final class cl_context_properties extends NativePointerObject
+public final class cl_context_properties extends cl_abstract_properties
 {
     /**
      * Creates new, empty cl_context_properties 
      */
     public cl_context_properties()
     {
-        super(LongBuffer.wrap(new long[]{0}));
     }
     
-    /**
-     * Add the specified property to these properties
-     * 
-     * @param id The property ID
-     * @param value The property value
-     */
-    public void addProperty(long id, long value)
-    {
-        LongBuffer oldBuffer = (LongBuffer)getBuffer();
-        long newArray[] = new long[oldBuffer.capacity()+2];
-        oldBuffer.get(newArray, 0, oldBuffer.capacity());
-        newArray[oldBuffer.capacity()-1] = id;
-        newArray[oldBuffer.capacity()+0] = value;
-        newArray[oldBuffer.capacity()+1] = 0;
-        setBuffer(LongBuffer.wrap(newArray));
-    }
-
     /**
      * Add the specified property to these properties
      * 
@@ -72,6 +50,11 @@ public final class cl_context_properties extends NativePointerObject
         addProperty(id, value.getNativePointer());
     }
     
+    @Override
+    protected String propertyString(long value)
+    {
+        return CL.stringFor_cl_context_properties((int)value);
+    }
     
     /**
      * Returns a String representation of this object.
@@ -81,24 +64,10 @@ public final class cl_context_properties extends NativePointerObject
     @Override
     public String toString()
     {
-        //return "cl_context_properties[0x"+Long.toHexString(getNativePointer())+"]";
-        
         StringBuilder result = new StringBuilder("cl_context_properties[");
-        LongBuffer buffer = (LongBuffer)getBuffer();
-        int entries = buffer.capacity() / 2;
-        for (int i=0; i<entries; i++)
-        {
-            int n0 = (int)buffer.get(i*2+0);
-            int n1 = (int)buffer.get(i*2+1);
-            result.append(CL.stringFor_cl_context_properties(n0));
-            result.append("=");
-            result.append(String.valueOf(n1));
-            if (i<entries-1)
-            {
-                result.append(",");
-            }
-        }
+        result.append(buildString());
         result.append("]");
         return result.toString();
     }
+
 }
