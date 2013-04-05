@@ -43,13 +43,28 @@
     #ifdef _WIN32
         #define WINDOWS_LEAN_AND_MEAN
         #define NOMINMAX
-        // Disable "unreferenced formal parameter"
-        // warning (for the JNIEnv parameter)
-        #pragma warning (disable : 4100)
         #include <windows.h>
     #endif // _WIN32
     #include <GL/gl.h>
 #endif // __APPLE__
+
+// Prevent warning of "deprecated conversion from 
+// string constant to ‘char*’"
+#ifdef __GNUC__
+#  pragma GCC diagnostic ignored "-Wwrite-strings"
+#endif
+
+// Prevent "unused parameter" warning for Windows
+#ifdef _WIN32
+    #pragma warning (disable : 4100)
+#endif
+
+// Prevent "unused parameter" warning for GCC
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
 
 
 #endif // JOCL_COMMON_HPP

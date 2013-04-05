@@ -910,4 +910,4 @@ extern clCreateFromGLTexture2DFunctionPointerType clCreateFromGLTexture2DFP;
 extern clCreateFromGLTexture3DFunctionPointerType clCreateFromGLTexture3DFP;
 
 
-#endif CL_FUNCTIONS_HPP
+#endif

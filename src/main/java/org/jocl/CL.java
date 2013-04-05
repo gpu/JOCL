@@ -44,7 +44,7 @@ public final class CL
     // Initialization of the native library
     static
     {
-        LibUtils.loadLibrary("JOCL_0_1_8");
+        LibUtils.loadLibrary("JOCL_0_1_9");
     }
     
     /**
@@ -19946,7 +19946,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
-     * @deprecated As of OpenCL 1.2 and replaced by {@link #clCreateFromGLTexture(cl_context, long, int, int, int, int[])
+     * @deprecated As of OpenCL 1.2 and replaced by {@link #clCreateFromGLTexture(cl_context, long, int, int, int, int[])}
      */
     public static cl_mem clCreateFromGLTexture2D(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {
@@ -20172,7 +20172,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
-     * @deprecated As of OpenCL 1.2 and replaced by {@link #clCreateFromGLTexture(cl_context, long, int, int, int, int[])
+     * @deprecated As of OpenCL 1.2 and replaced by {@link #clCreateFromGLTexture(cl_context, long, int, int, int, int[])}
      */
     public static cl_mem clCreateFromGLTexture3D(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {

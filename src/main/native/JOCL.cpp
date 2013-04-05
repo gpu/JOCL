@@ -2,7 +2,7 @@
  * JOCL - Java bindings for OpenCL
  *
  * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -176,7 +176,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
 }
 
 /**
- * Called when the library is unloaded. 
+ * Called when the library is unloaded.
  */
 JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved)
 {
@@ -309,7 +309,7 @@ void CL_CALLBACK EnqueueNativeKernelFunction(void *argsInfo)
 
 
 /**
- * A pointer to this function will be passed to the clSetMemObjectDestructorCallback 
+ * A pointer to this function will be passed to the clSetMemObjectDestructorCallback
  * function if a Java callback object was given. The argsInfo is a pointer to a
  * CallbackInfo that was initialized and is associated with the respective
  * call to clSetMemObjectDestructorCallback.
@@ -352,7 +352,7 @@ void CL_CALLBACK MemObjectDestructorCallback(cl_mem memobj, void *user_dataInfo)
 
 
 /**
- * A pointer to this function will be passed to the clSetEventCallback 
+ * A pointer to this function will be passed to the clSetEventCallback
  * function if a Java callback object was given. The argsInfo is a pointer to a
  * CallbackInfo that was initialized and is associated with the respective
  * call to clSetEventCallback.
@@ -455,28 +455,28 @@ void CL_CALLBACK PrintfCallbackFunction(cl_context context, cl_uint printf_data_
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_org_jocl_CL_initNativeLibrary
-  (JNIEnv *env, jclass cls, jstring fullName)
+  (JNIEnv *env, jclass UNUSED(cls), jstring fullName)
 {
     Logger::log(LOG_TRACE, "Initializing JOCL native library\n");
 
-	char *fullNameNative = convertString(env, fullName);
-	if (fullNameNative == NULL)
-	{
-		return JNI_FALSE;
-	}
+    char *fullNameNative = convertString(env, fullName);
+    if (fullNameNative == NULL)
+    {
+        return JNI_FALSE;
+    }
 
-	Logger::log(LOG_DEBUGTRACE, "    Native library name: '%s'\n", fullNameNative);
-	bool loaded = loadImplementationLibrary(fullNameNative);
-	delete[] fullNameNative;
+    Logger::log(LOG_DEBUGTRACE, "    Native library name: '%s'\n", fullNameNative);
+    bool loaded = loadImplementationLibrary(fullNameNative);
+    delete[] fullNameNative;
 
-	if (loaded)
-	{
-	    Logger::log(LOG_DEBUGTRACE, "    Initializing function pointers\n");
-		initFunctionPointers();
-		return JNI_TRUE;
-	}
+    if (loaded)
+    {
+        Logger::log(LOG_DEBUGTRACE, "    Initializing function pointers\n");
+        initFunctionPointers();
+        return JNI_TRUE;
+    }
     Logger::log(LOG_DEBUGTRACE, "    Could not load native library\n");
-	return JNI_FALSE;
+    return JNI_FALSE;
 }
 
 
@@ -486,7 +486,7 @@ JNIEXPORT jboolean JNICALL Java_org_jocl_CL_initNativeLibrary
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_org_jocl_CL_setLogLevelNative
-  (JNIEnv *env, jclass cls, jint logLevel)
+  (JNIEnv *env, jclass UNUSED(cls), jint logLevel)
 {
     Logger::setLogLevel((LogLevel)logLevel);
 }
@@ -503,7 +503,7 @@ JNIEXPORT void JNICALL Java_org_jocl_CL_setLogLevelNative
  * Signature: (I[Lorg/jocl/cl_platform_id;[I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
-  (JNIEnv *env, jclass cls, jint num_entries, jobjectArray platforms, jintArray num_platforms)
+  (JNIEnv *env, jclass UNUSED(cls), jint num_entries, jobjectArray platforms, jintArray num_platforms)
 {
     Logger::log(LOG_TRACE, "Executing clGetPlatformIDs\n");
     if (clGetPlatformIDsFP == NULL)
@@ -577,7 +577,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
  * Signature: (Lorg/jocl/cl_platform_id;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformInfoNative
-  (JNIEnv *env, jclass cls, jobject platform, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject platform, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetPlatformInfo\n");
     if (clGetPlatformInfoFP == NULL)
@@ -626,7 +626,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformInfoNative
  * Signature: (Lorg/jocl/cl_platform_id;JI[Lorg/jocl/cl_device_id;[I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
-  (JNIEnv *env, jclass cls, jobject platform, jlong device_type, jint num_entries, jobjectArray devices, jintArray num_devices)
+  (JNIEnv *env, jclass UNUSED(cls), jobject platform, jlong device_type, jint num_entries, jobjectArray devices, jintArray num_devices)
 {
     Logger::log(LOG_TRACE, "Executing clGetDeviceIDs\n");
     if (clGetDeviceIDsFP == NULL)
@@ -702,7 +702,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
  * Signature: (Lorg/jocl/cl_device_id;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceInfoNative
-  (JNIEnv *env, jclass cls, jobject device, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject device, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetDeviceInfo\n");
     if (clGetDeviceInfoFP == NULL)
@@ -751,7 +751,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceInfoNative
  * Signature: (Lorg/jocl/cl_device_id;Lorg/jocl/cl_device_partition_property;I[Lorg/jocl/cl_device_id;[I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
-  (JNIEnv *env, jclass cls, jobject in_device, jobject properties, jint num_devices, jobjectArray out_devices, jintArray num_devices_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject in_device, jobject properties, jint num_devices, jobjectArray out_devices, jintArray num_devices_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateSubDevices\n");
     if (clCreateSubDevicesFP == NULL)
@@ -830,7 +830,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
  * Signature: (Lorg/jocl/cl_device_id;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainDeviceNative
-  (JNIEnv *env, jclass cls, jobject device)
+  (JNIEnv *env, jclass UNUSED(cls), jobject device)
 {
     Logger::log(LOG_TRACE, "Executing clRetainDevice\n");
     if (clRetainDeviceFP == NULL)
@@ -864,7 +864,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainDeviceNative
  * Signature: (Lorg/jocl/cl_device_id;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseDeviceNative
-  (JNIEnv *env, jclass cls, jobject device)
+  (JNIEnv *env, jclass UNUSED(cls), jobject device)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseDevice\n");
     if (clReleaseDeviceFP == NULL)
@@ -899,7 +899,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseDeviceNative
  * Signature: (Lorg/jocl/cl_context_properties;I[Lorg/jocl/cl_device_id;Lorg/jocl/CreateContextFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_context;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
-  (JNIEnv *env, jclass cls, jobject properties, jint num_devices, jobjectArray devices, jobject pfn_notify, jobject user_data, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject properties, jint num_devices, jobjectArray devices, jobject pfn_notify, jobject user_data, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateContext\n");
     if (clCreateContextFP == NULL)
@@ -1002,7 +1002,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
  * Signature: (Lorg/jocl/cl_context_properties;JLorg/jocl/CreateContextFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_context;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextFromTypeNative
-  (JNIEnv *env, jclass cls, jobject properties, jlong device_type, jobject pfn_notify, jobject user_data, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject properties, jlong device_type, jobject pfn_notify, jobject user_data, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateContextFromType\n");
     if (clCreateContextFromTypeFP == NULL)
@@ -1075,7 +1075,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextFromTypeNative
  * Signature: (Lorg/jocl/cl_context;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainContextNative
-  (JNIEnv *env, jclass cls, jobject context)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context)
 {
     Logger::log(LOG_TRACE, "Executing clRetainContext\n");
     if (clRetainContextFP == NULL)
@@ -1102,7 +1102,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainContextNative
  * Signature: (Lorg/jocl/cl_context;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseContextNative
-  (JNIEnv *env, jclass cls, jobject context)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseContext\n");
     if (clReleaseContextFP == NULL)
@@ -1131,7 +1131,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseContextNative
  * Signature: (Lorg/jocl/cl_context;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetContextInfoNative
-  (JNIEnv *env, jclass cls, jobject context, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetContextInfo\n");
     if (clGetContextInfoFP == NULL)
@@ -1180,7 +1180,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetContextInfoNative
  * Signature: (Lorg/jocl/cl_context;Lorg/jocl/cl_device_id;J[I)Lorg/jocl/cl_command_queue;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateCommandQueueNative
-  (JNIEnv *env, jclass cls, jobject context, jobject device, jlong properties, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jobject device, jlong properties, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateCommandQueue\n");
     if (clCreateCommandQueueFP == NULL)
@@ -1236,7 +1236,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateCommandQueueNative
  * Signature: (Lorg/jocl/cl_command_queue;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainCommandQueueNative
-  (JNIEnv *env, jclass cls, jobject command_queue)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue)
 {
     Logger::log(LOG_TRACE, "Executing clRetainCommandQueue\n");
     if (clRetainCommandQueueFP == NULL)
@@ -1263,7 +1263,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainCommandQueueNative
  * Signature: (Lorg/jocl/cl_command_queue;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseCommandQueueNative
-  (JNIEnv *env, jclass cls, jobject command_queue)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseCommandQueue\n");
     if (clReleaseCommandQueueFP == NULL)
@@ -1290,7 +1290,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseCommandQueueNative
  * Signature: (Lorg/jocl/cl_command_queue;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetCommandQueueInfoNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetCommandQueueInfo\n");
     if (clGetCommandQueueInfoFP == NULL)
@@ -1339,7 +1339,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetCommandQueueInfoNative
  * Signature: (Lorg/jocl/cl_command_queue;JZ[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetCommandQueuePropertyNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jlong properties, jboolean enable, jlongArray old_properties)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jlong properties, jboolean enable, jlongArray old_properties)
 {
     Logger::log(LOG_TRACE, "Executing clSetCommandQueueProperty\n");
     if (clSetCommandQueuePropertyFP == NULL)
@@ -1367,7 +1367,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetCommandQueuePropertyNative
     int result = CL_INVALID_OPERATION;
 #if defined(CL_VERSION_1_1)
     Logger::log(LOG_ERROR, "clSetCommandQueueProperty is no longer supported in OpenCL 1.1\n");
-#elif
+#else
     result = clSetCommandQueueProperty(nativeCommand_queue, nativeProperties, nativeEnable, &nativeOld_properties);
 #endif // defined(CL_VERSION_1_1)
 
@@ -1387,7 +1387,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetCommandQueuePropertyNative
  * Signature: (Lorg/jocl/cl_context;JJLorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateBufferNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jlong size, jobject host_ptr, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jlong size, jobject host_ptr, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateBuffer\n");
     if (clCreateBufferFP == NULL)
@@ -1459,7 +1459,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateBufferNative
  * Signature: (Lorg/jocl/cl_mem;JILorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBufferNative
-  (JNIEnv *env, jclass cls, jobject buffer, jlong flags, jint buffer_create_type, jobject buffer_create_info, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject buffer, jlong flags, jint buffer_create_type, jobject buffer_create_info, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateSubBuffer\n");
     if (clCreateSubBufferFP == NULL)
@@ -1526,7 +1526,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBufferNative
  * Signature: (Lorg/jocl/cl_mem;JILorg/jocl/cl_buffer_region;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBuffer2Native
-  (JNIEnv *env, jclass cls, jobject buffer, jlong flags, jint buffer_create_type, jobject buffer_create_info, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject buffer, jlong flags, jint buffer_create_type, jobject buffer_create_info, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateSubBuffer\n");
     if (clCreateSubBufferFP == NULL)
@@ -1593,7 +1593,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBuffer2Native
  * Signature: (Lorg/jocl/cl_context;JLorg/jocl/cl_image_format;Lorg/jocl/cl_image_desc;Lorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImageNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jobject image_format, jobject image_desc, jobject host_ptr, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jobject image_format, jobject image_desc, jobject host_ptr, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateImage\n");
     if (clCreateImageFP == NULL)
@@ -1665,7 +1665,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImageNative
  * Signature: (Lorg/jocl/cl_context;J[Lorg/jocl/cl_image_format;JJJLorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage2DNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jobjectArray image_format, jlong image_width, jlong image_height, jlong image_row_pitch, jobject host_ptr, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jobjectArray image_format, jlong image_width, jlong image_height, jlong image_row_pitch, jobject host_ptr, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateImage2D\n");
     if (clCreateImage2DFP == NULL)
@@ -1755,7 +1755,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage2DNative
  * Signature: (Lorg/jocl/cl_context;J[Lorg/jocl/cl_image_format;JJJJJLorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage3DNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jobjectArray image_format, jlong image_width, jlong image_height, jlong image_depth, jlong image_row_pitch, jlong image_slice_pitch, jobject host_ptr, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jobjectArray image_format, jlong image_width, jlong image_height, jlong image_depth, jlong image_row_pitch, jlong image_slice_pitch, jobject host_ptr, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateImage3D\n");
     if (clCreateImage3DFP == NULL)
@@ -1848,7 +1848,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage3DNative
  * Signature: (Lorg/jocl/cl_mem;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainMemObjectNative
-  (JNIEnv *env, jclass cls, jobject memobj)
+  (JNIEnv *env, jclass UNUSED(cls), jobject memobj)
 {
     Logger::log(LOG_TRACE, "Executing clRetainMemObject\n");
     if (clRetainMemObjectFP == NULL)
@@ -1875,7 +1875,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainMemObjectNative
  * Signature: (Lorg/jocl/cl_mem;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseMemObjectNative
-  (JNIEnv *env, jclass cls, jobject memobj)
+  (JNIEnv *env, jclass UNUSED(cls), jobject memobj)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseMemObject\n");
     if (clReleaseMemObjectFP == NULL)
@@ -1902,7 +1902,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseMemObjectNative
  * Signature: (Lorg/jocl/cl_context;JII[Lorg/jocl/cl_image_format;[I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jint image_type, jint num_entries, jobjectArray image_formats, jintArray num_image_formats)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint image_type, jint num_entries, jobjectArray image_formats, jintArray num_image_formats)
 {
     Logger::log(LOG_TRACE, "Executing clGetSupportedImageFormats\n");
     if (clGetSupportedImageFormatsFP == NULL)
@@ -1979,7 +1979,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
  * Signature: (Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetMemObjectInfoNative
-  (JNIEnv *env, jclass cls, jobject memobj, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject memobj, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetMemObjectInfo\n");
     if (clGetMemObjectInfoFP == NULL)
@@ -2028,7 +2028,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetMemObjectInfoNative
  * Signature: (Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetImageInfoNative
-  (JNIEnv *env, jclass cls, jobject image, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject image, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetImageInfo\n");
     if (clGetImageInfoFP == NULL)
@@ -2078,7 +2078,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetImageInfoNative
  * Signature: (Lorg/jocl/cl_mem;Lorg/jocl/MemObjectDestructorCallbackFunction;Ljava/lang/Object;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetMemObjectDestructorCallbackNative
-  (JNIEnv *env, jclass cls, jobject memobj, jobject pfn_notify, jobject user_data)
+  (JNIEnv *env, jclass UNUSED(cls), jobject memobj, jobject pfn_notify, jobject user_data)
 {
     Logger::log(LOG_TRACE, "Executing clSetMemObjectDestructorCallback\n");
     if (clSetMemObjectDestructorCallbackFP == NULL)
@@ -2123,7 +2123,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetMemObjectDestructorCallbackNative
  * Signature: (Lorg/jocl/cl_context;ZII[I)Lorg/jocl/cl_sampler;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSamplerNative
-  (JNIEnv *env, jclass cls, jobject context, jboolean normalized_coords, jint addressing_mode, jint filter_mode, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jboolean normalized_coords, jint addressing_mode, jint filter_mode, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateSampler\n");
     if (clCreateSamplerFP == NULL)
@@ -2180,7 +2180,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSamplerNative
  * Signature: (Lorg/jocl/cl_sampler;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainSamplerNative
-  (JNIEnv *env, jclass cls, jobject sampler)
+  (JNIEnv *env, jclass UNUSED(cls), jobject sampler)
 {
     Logger::log(LOG_TRACE, "Executing clRetainSampler\n");
     if (clRetainSamplerFP == NULL)
@@ -2207,7 +2207,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainSamplerNative
  * Signature: (Lorg/jocl/cl_sampler;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseSamplerNative
-  (JNIEnv *env, jclass cls, jobject sampler)
+  (JNIEnv *env, jclass UNUSED(cls), jobject sampler)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseSampler\n");
     if (clReleaseSamplerFP == NULL)
@@ -2234,7 +2234,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseSamplerNative
  * Signature: (Lorg/jocl/cl_sampler;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSamplerInfoNative
-  (JNIEnv *env, jclass cls, jobject sampler, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject sampler, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetSamplerInfo\n");
     if (clGetSamplerInfoFP == NULL)
@@ -2283,7 +2283,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSamplerInfoNative
  * Signature: (Lorg/jocl/cl_context;I[Ljava/lang/String;[J[I)Lorg/jocl/cl_program;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithSourceNative
-  (JNIEnv *env, jclass cls, jobject context, jint count, jobjectArray strings, jlongArray lengths, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jint count, jobjectArray strings, jlongArray lengths, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateProgramWithSource\n");
     if (clCreateProgramWithSourceFP == NULL)
@@ -2383,7 +2383,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithSourceNative
  * Signature: (Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;[J[[B[I[I)Lorg/jocl/cl_program;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
-  (JNIEnv *env, jclass cls, jobject context, jint num_devices, jobjectArray device_list, jlongArray lengths, jobjectArray binaries, jintArray binary_status, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jint num_devices, jobjectArray device_list, jlongArray lengths, jobjectArray binaries, jintArray binary_status, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateProgramWithBinary\n");
     if (clCreateProgramWithBinaryFP == NULL)
@@ -2507,7 +2507,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
  * Signature: (Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;Ljava/lang/String;[I)Lorg/jocl/cl_program;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBuiltInKernelsNative
-  (JNIEnv *env, jclass cls, jobject context, jint num_devices, jobjectArray device_list, jstring kernel_names, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jint num_devices, jobjectArray device_list, jstring kernel_names, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateProgramWithBuiltInKernels\n");
     if (clCreateProgramWithBuiltInKernelsFP == NULL)
@@ -2578,7 +2578,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBuiltInKernelsNati
  * Signature: (Lorg/jocl/cl_program;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainProgramNative
-  (JNIEnv *env, jclass cls, jobject program)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program)
 {
     Logger::log(LOG_TRACE, "Executing clRetainProgram\n");
     if (clRetainProgramFP == NULL)
@@ -2605,7 +2605,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainProgramNative
  * Signature: (Lorg/jocl/cl_program;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseProgramNative
-  (JNIEnv *env, jclass cls, jobject program)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseProgram\n");
     if (clReleaseProgramFP == NULL)
@@ -2632,7 +2632,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseProgramNative
  * Signature: (Lorg/jocl/cl_program;I[Lorg/jocl/cl_device_id;Ljava/lang/String;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
-  (JNIEnv *env, jclass cls, jobject program, jint num_devices, jobjectArray device_list, jstring options, jobject pfn_notify, jobject user_data)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program, jint num_devices, jobjectArray device_list, jstring options, jobject pfn_notify, jobject user_data)
 {
     Logger::log(LOG_TRACE, "Executing clBuildProgram\n");
     if (clBuildProgramFP == NULL)
@@ -2703,7 +2703,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
  * Signature: (Lorg/jocl/cl_program;I[Lorg/jocl/cl_device_id;Ljava/lang/String;I[Lorg/jocl/cl_program;[Ljava/lang/String;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
-  (JNIEnv *env, jclass cls, jobject program, jint num_devices, jobjectArray device_list, jstring options, jint num_input_headers, jobjectArray input_headers, jobjectArray header_include_names, jobject pfn_notify, jobject user_data)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program, jint num_devices, jobjectArray device_list, jstring options, jint num_input_headers, jobjectArray input_headers, jobjectArray header_include_names, jobject pfn_notify, jobject user_data)
 {
     Logger::log(LOG_TRACE, "Executing clCompileProgram\n");
     if (clCompileProgramFP == NULL)
@@ -2820,7 +2820,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
  * Signature: (Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;Ljava/lang/String;I[Lorg/jocl/cl_program;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_program;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
-  (JNIEnv *env, jclass cls, jobject context, jint num_devices, jobjectArray devices_list, jstring options, jint num_input_programs, jobjectArray input_programs, jobject pfn_notify, jobject user_data, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jint num_devices, jobjectArray devices_list, jstring options, jint num_input_programs, jobjectArray input_programs, jobject pfn_notify, jobject user_data, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clLinkProgram\n");
     if (clLinkProgramFP == NULL)
@@ -2833,13 +2833,13 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
     // Native variables declaration
     cl_context nativeContext = NULL;
     cl_uint nativeNum_devices = 0;
-    cl_device_id *nativeDevice_list = NULL;
+    cl_device_id *nativeDevices_list = NULL;
     const char *nativeOptions = NULL;
     cl_uint nativeNum_input_programs;
     cl_program *nativeInput_programs = NULL;
     BuildProgramFunctionPointer nativePfn_notify = NULL;
     void *nativeUser_data = NULL;
-    cl_int nativeErrcode_ret; 
+    cl_int nativeErrcode_ret;
     cl_program nativeProgram = NULL;
 
     // Obtain native variable values
@@ -2848,10 +2848,10 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
         nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
     }
     nativeNum_devices = (cl_uint)num_devices;
-    if (input_programs != NULL)
+    if (devices_list != NULL)
     {
-        nativeInput_programs = createProgramList(env, input_programs, num_input_programs);
-        if (nativeInput_programs == NULL)
+        nativeDevices_list = createDeviceList(env, devices_list, num_devices);
+        if (nativeDevices_list == NULL)
         {
             return NULL;
         }
@@ -2884,10 +2884,10 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
         nativeUser_data = (void*)callbackInfo;
     }
 
-    nativeProgram = (clLinkProgramFP)(nativeContext, nativeNum_devices, nativeDevice_list, nativeOptions, nativeNum_input_programs, nativeInput_programs, nativePfn_notify, nativeUser_data, &nativeErrcode_ret);
+    nativeProgram = (clLinkProgramFP)(nativeContext, nativeNum_devices, nativeDevices_list, nativeOptions, nativeNum_input_programs, nativeInput_programs, nativePfn_notify, nativeUser_data, &nativeErrcode_ret);
 
     // Write back native variable values and clean up
-    delete[] nativeDevice_list;
+    delete[] nativeDevices_list;
     delete[] nativeOptions;
     delete[] nativeInput_programs;
     if (!set(env, errcode_ret, 0, nativeErrcode_ret)) return NULL;
@@ -2920,7 +2920,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
  * Signature: (Lorg/jocl/cl_platform_id;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clUnloadPlatformCompilerNative
-  (JNIEnv *env, jclass cls, jobject platform)
+  (JNIEnv *env, jclass UNUSED(cls), jobject platform)
 {
     Logger::log(LOG_TRACE, "Executing clUnloadPlatformCompiler\n");
     if (clUnloadPlatformCompilerFP == NULL)
@@ -2951,7 +2951,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clUnloadPlatformCompilerNative
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clUnloadCompilerNative
-  (JNIEnv *env, jclass cls)
+  (JNIEnv *env, jclass UNUSED(cls))
 {
     Logger::log(LOG_TRACE, "Executing clUnloadCompiler\n");
     if (clUnloadCompilerFP == NULL)
@@ -2974,7 +2974,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clUnloadCompilerNative
  * Signature: (Lorg/jocl/cl_program;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetProgramInfoNative
-  (JNIEnv *env, jclass cls, jobject program, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetProgramInfo\n");
     if (clGetProgramInfoFP == NULL)
@@ -3023,7 +3023,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetProgramInfoNative
  * Signature: (Lorg/jocl/cl_program;Lorg/jocl/cl_device_id;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetProgramBuildInfoNative
-  (JNIEnv *env, jclass cls, jobject program, jobject device, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program, jobject device, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetProgramBuildInfo\n");
     if (clGetProgramBuildInfoFP == NULL)
@@ -3077,7 +3077,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetProgramBuildInfoNative
  * Signature: (Lorg/jocl/cl_program;Ljava/lang/String;[I)Lorg/jocl/cl_kernel;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateKernelNative
-  (JNIEnv *env, jclass cls, jobject program, jstring kernel_name, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program, jstring kernel_name, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateKernel\n");
     if (clCreateKernelFP == NULL)
@@ -3137,7 +3137,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateKernelNative
  * Signature: (Lorg/jocl/cl_program;I[Lorg/jocl/cl_kernel;[I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
-  (JNIEnv *env, jclass cls, jobject program, jint num_kernels, jobjectArray kernels, jintArray num_kernels_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject program, jint num_kernels, jobjectArray kernels, jintArray num_kernels_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateKernelsInProgram\n");
     if (clCreateKernelsInProgramFP == NULL)
@@ -3209,7 +3209,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
  * Signature: (Lorg/jocl/cl_kernel;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainKernelNative
-  (JNIEnv *env, jclass cls, jobject kernel)
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel)
 {
     Logger::log(LOG_TRACE, "Executing clRetainKernel\n");
     if (clRetainKernelFP == NULL)
@@ -3236,7 +3236,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainKernelNative
  * Signature: (Lorg/jocl/cl_kernel;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseKernelNative
-  (JNIEnv *env, jclass cls, jobject kernel)
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseKernel\n");
     if (clReleaseKernelFP == NULL)
@@ -3263,7 +3263,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseKernelNative
  * Signature: (Lorg/jocl/cl_kernel;IJLorg/jocl/Pointer;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetKernelArgNative
-  (JNIEnv *env, jclass cls, jobject kernel, jint arg_index, jlong arg_size, jobject arg_value)
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel, jint arg_index, jlong arg_size, jobject arg_value)
 {
     Logger::log(LOG_TRACE, "Executing clSetKernelArg\n");
     if (clSetKernelArgFP == NULL)
@@ -3310,7 +3310,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetKernelArgNative
  * Signature: (Lorg/jocl/cl_kernel;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelInfoNative
-  (JNIEnv *env, jclass cls, jobject kernel, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetKernelInfo\n");
     if (clGetKernelInfoFP == NULL)
@@ -3358,7 +3358,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelInfoNative
  * Signature: (Lorg/jocl/cl_kernel;IIJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelArgInfoNative
-  (JNIEnv *env, jclass cls, jobject kernel, jint arg_idx, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel, jint arg_idx, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetKernelArgInfo\n");
     if (clGetKernelArgInfoFP == NULL)
@@ -3410,7 +3410,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelArgInfoNative
  * Signature: (Lorg/jocl/cl_kernel;Lorg/jocl/cl_device_id;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelWorkGroupInfoNative
-  (JNIEnv *env, jclass cls, jobject kernel, jobject device, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel, jobject device, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetKernelWorkGroupInfo\n");
     if (clGetKernelWorkGroupInfoFP == NULL)
@@ -3464,7 +3464,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetKernelWorkGroupInfoNative
  * Signature: (I[Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clWaitForEventsNative
-  (JNIEnv *env, jclass cls, jint num_events, jobjectArray event_list)
+  (JNIEnv *env, jclass UNUSED(cls), jint num_events, jobjectArray event_list)
 {
     Logger::log(LOG_TRACE, "Executing clWaitForEvents\n");
     if (clWaitForEventsFP == NULL)
@@ -3490,7 +3490,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clWaitForEventsNative
     }
 
 
-    int result = result = (clWaitForEventsFP)(nativeNum_events, nativeEvent_list);
+    int result = (clWaitForEventsFP)(nativeNum_events, nativeEvent_list);
 
     // Write back native variable values and clean up
     delete[] nativeEvent_list;
@@ -3507,7 +3507,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clWaitForEventsNative
  * Signature: (Lorg/jocl/cl_event;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetEventInfoNative
-  (JNIEnv *env, jclass cls, jobject event, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetEventInfo\n");
     if (clGetEventInfoFP == NULL)
@@ -3557,7 +3557,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetEventInfoNative
  * Signature: (Lorg/jocl/cl_context;[I)Lorg/jocl/cl_event;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateUserEventNative
-  (JNIEnv *env, jclass cls, jobject context, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateUserEvent\n");
     if (clCreateUserEventFP == NULL)
@@ -3604,7 +3604,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateUserEventNative
  * Signature: (Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainEventNative
-  (JNIEnv *env, jclass cls, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clRetainEvent\n");
     if (clRetainEventFP == NULL)
@@ -3631,7 +3631,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clRetainEventNative
  * Signature: (Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseEventNative
-  (JNIEnv *env, jclass cls, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clReleaseEvent\n");
     if (clReleaseEventFP == NULL)
@@ -3658,7 +3658,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clReleaseEventNative
  * Signature: (Lorg/jocl/cl_event;I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetUserEventStatusNative
-  (JNIEnv *env, jclass cls, jobject event, jint execution_status)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event, jint execution_status)
 {
     Logger::log(LOG_TRACE, "Executing clSetUserEventStatus\n");
     if (clSetUserEventStatusFP == NULL)
@@ -3694,7 +3694,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetUserEventStatusNative
  * Signature: (Lorg/jocl/cl_event;ILorg/jocl/EventCallbackFunction;Ljava/lang/Object;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetEventCallbackNative
-  (JNIEnv *env, jclass cls, jobject event, jint command_exec_callback_type, jobject pfn_notify, jobject user_data)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event, jint command_exec_callback_type, jobject pfn_notify, jobject user_data)
 {
     Logger::log(LOG_TRACE, "Executing clSetEventCallback\n");
     if (clSetEventCallbackFP == NULL)
@@ -3746,7 +3746,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetEventCallbackNative
  * Signature: (Lorg/jocl/cl_event;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetEventProfilingInfoNative
-  (JNIEnv *env, jclass cls, jobject event, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetEventProfilingInfo\n");
     if (clGetEventProfilingInfoFP == NULL)
@@ -3795,7 +3795,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetEventProfilingInfoNative
  * Signature: (Lorg/jocl/cl_command_queue;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clFlushNative
-  (JNIEnv *env, jclass cls, jobject command_queue)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue)
 {
     Logger::log(LOG_TRACE, "Executing clFlush\n");
     if (clFlushFP == NULL)
@@ -3822,7 +3822,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clFlushNative
  * Signature: (Lorg/jocl/cl_command_queue;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clFinishNative
-  (JNIEnv *env, jclass cls, jobject command_queue)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue)
 {
     Logger::log(LOG_TRACE, "Executing clFinish\n");
     if (clFinishFP == NULL)
@@ -3853,7 +3853,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clFinishNative
 // This is usually asserted on Java side.
 //
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jboolean blocking_read, jlong offset, jlong cb, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject buffer, jboolean blocking_read, jlong offset, jlong cb, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueReadBuffer\n");
     if (clEnqueueReadBufferFP == NULL)
@@ -3942,7 +3942,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
 //
 // See notes about NON_BLOCKING_READ at end of file
 JNIEXPORT void JNICALL Java_org_jocl_CL_releasePendingPointerDataNative
-  (JNIEnv *env, jclass cls, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject event)
 {
 /*
     Logger::log(LOG_ERROR, "Executing releasePendingPointerData\n");
@@ -3985,7 +3985,7 @@ JNIEXPORT void JNICALL Java_org_jocl_CL_releasePendingPointerDataNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[J[JJJJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jboolean blocking_read, jlongArray buffer_offset, jlongArray host_offset, jlongArray region, jlong buffer_row_pitch, jlong buffer_slice_pitch, jlong host_row_pitch, jlong host_slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject buffer, jboolean blocking_read, jlongArray buffer_offset, jlongArray host_offset, jlongArray region, jlong buffer_row_pitch, jlong buffer_slice_pitch, jlong host_row_pitch, jlong host_slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueReadBufferRect\n");
     if (clEnqueueReadBufferRectFP == NULL)
@@ -4115,7 +4115,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jboolean blocking_write, jlong offset, jlong cb, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject buffer, jboolean blocking_write, jlong offset, jlong cb, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueWriteBuffer\n");
     if (clEnqueueWriteBufferFP == NULL)
@@ -4194,7 +4194,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[J[JJJJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jboolean blocking_write, jlongArray buffer_offset, jlongArray host_offset, jlongArray region, jlong buffer_row_pitch, jlong buffer_slice_pitch, jlong host_row_pitch, jlong host_slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject buffer, jboolean blocking_write, jlongArray buffer_offset, jlongArray host_offset, jlongArray region, jlong buffer_row_pitch, jlong buffer_slice_pitch, jlong host_row_pitch, jlong host_slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueWriteBufferRect\n");
     if (clEnqueueWriteBufferRectFP == NULL)
@@ -4279,7 +4279,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
     {
         nativeEventPointer = &nativeEvent;
     }
-    
+
     int result = (clEnqueueWriteBufferRectFP)(nativeCommand_queue, nativeBuffer, nativeBlocking_write, nativeBuffer_offset, nativeHost_offset, nativeRegion, nativeBuffer_row_pitch, nativeBuffer_slice_pitch, nativeHost_row_pitch, nativeHost_slice_pitch, nativePtr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
@@ -4304,7 +4304,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/Pointer;JJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillBufferNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jobject pattern, jlong pattern_size, jlong offset, jlong size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject buffer, jobject pattern, jlong pattern_size, jlong offset, jlong size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueFillBuffer\n");
     if (clEnqueueFillBufferFP == NULL)
@@ -4357,7 +4357,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillBufferNative
     {
         nativeEventPointer = &nativeEvent;
     }
-    
+
     int result = (clEnqueueFillBufferFP)(nativeCommand_queue, nativeBuffer, nativePattern, nativePattern_size, nativeOffset, nativeSize, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
     // Write back native variable values and clean up
@@ -4379,7 +4379,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;JJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject src_buffer, jobject dst_buffer, jlong src_offset, jlong dst_offset, jlong cb, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject src_buffer, jobject dst_buffer, jlong src_offset, jlong dst_offset, jlong cb, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueCopyBuffer\n");
     if (clEnqueueCopyBufferFP == NULL)
@@ -4450,7 +4450,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;[J[J[JJJJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject src_buffer, jobject dst_buffer, jlongArray src_origin, jlongArray dst_origin, jlongArray region, jlong src_row_pitch, jlong src_slice_pitch, jlong dst_row_pitch, jlong dst_slice_pitch, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject src_buffer, jobject dst_buffer, jlongArray src_origin, jlongArray dst_origin, jlongArray region, jlong src_row_pitch, jlong src_slice_pitch, jlong dst_row_pitch, jlong dst_slice_pitch, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueCopyBufferRect\n");
     if (clEnqueueCopyBufferRectFP == NULL)
@@ -4562,7 +4562,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[JJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject image, jboolean blocking_read, jlongArray origin, jlongArray region, jlong row_pitch, jlong slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject image, jboolean blocking_read, jlongArray origin, jlongArray region, jlong row_pitch, jlong slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueReadImage\n");
     if (clEnqueueReadImageFP == NULL)
@@ -4660,7 +4660,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[JJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject image, jboolean blocking_write, jlongArray origin, jlongArray region, jlong input_row_pitch, jlong input_slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject image, jboolean blocking_write, jlongArray origin, jlongArray region, jlong input_row_pitch, jlong input_slice_pitch, jobject ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueWriteImage\n");
     if (clEnqueueWriteImageFP == NULL)
@@ -4756,7 +4756,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/Pointer;[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillImageNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject image, jobject fill_color, jlongArray origin, jlongArray region, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject image, jobject fill_color, jlongArray origin, jlongArray region, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueFillImage\n");
     if (clEnqueueFillImageFP == NULL)
@@ -4845,7 +4845,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillImageNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject src_image, jobject dst_image, jlongArray src_origin, jlongArray dst_origin, jlongArray region, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject src_image, jobject dst_image, jlongArray src_origin, jlongArray dst_origin, jlongArray region, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueCopyImage\n");
     if (clEnqueueCopyImageFP == NULL)
@@ -4940,7 +4940,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;[J[JJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject src_image, jobject dst_buffer, jlongArray src_origin, jlongArray region, jlong dst_offset, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject src_image, jobject dst_buffer, jlongArray src_origin, jlongArray region, jlong dst_offset, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueCopyImageToBuffer\n");
     if (clEnqueueCopyImageToBufferFP == NULL)
@@ -5026,7 +5026,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject src_buffer, jobject dst_image, jlong src_offset, jlongArray dst_origin, jlongArray region, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject src_buffer, jobject dst_image, jlong src_offset, jlongArray dst_origin, jlongArray region, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueCopyBufferToImage\n");
     if (clEnqueueCopyBufferToImageFP == NULL)
@@ -5111,7 +5111,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;[I)Ljava/nio/ByteBuffer;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject buffer, jboolean blocking_map, jlong map_flags, jlong offset, jlong cb, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject buffer, jboolean blocking_map, jlong map_flags, jlong offset, jlong cb, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueMapBuffer\n");
     if (clEnqueueMapBufferFP == NULL)
@@ -5185,7 +5185,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJ[J[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;[I)Ljava/nio/ByteBuffer;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject image, jboolean blocking_map, jlong map_flags, jlongArray origin, jlongArray region, jlongArray image_row_pitch, jlongArray image_slice_pitch, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject image, jboolean blocking_map, jlong map_flags, jlongArray origin, jlongArray region, jlongArray image_row_pitch, jlongArray image_slice_pitch, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueMapImage\n");
     if (clEnqueueMapImageFP == NULL)
@@ -5288,7 +5288,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Ljava/nio/ByteBuffer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueUnmapMemObjectNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject memobj, jobject mapped_ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject memobj, jobject mapped_ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueUnmapMemObject\n");
     if (clEnqueueUnmapMemObjectFP == NULL)
@@ -5353,7 +5353,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueUnmapMemObjectNative
  * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_mem;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMigrateMemObjectsNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint num_mem_objects, jobjectArray mem_objects, jlong flags, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_mem_objects, jobjectArray mem_objects, jlong flags, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueMigrateMemObjects\n");
     if (clEnqueueMigrateMemObjectsFP == NULL)
@@ -5422,7 +5422,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMigrateMemObjectsNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_kernel;I[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject kernel, jint work_dim, jlongArray global_work_offset, jlongArray global_work_size, jlongArray local_work_size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject kernel, jint work_dim, jlongArray global_work_offset, jlongArray global_work_size, jlongArray local_work_size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueNDRangeKernel\n");
     if (clEnqueueNDRangeKernelFP == NULL)
@@ -5513,7 +5513,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_kernel;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject kernel, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject kernel, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueTask\n");
     if (clEnqueueTaskFP == NULL)
@@ -5572,7 +5572,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/EnqueueNativeKernelFunction;Ljava/lang/Object;JI[Lorg/jocl/cl_mem;[Lorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject user_func, jobject args, jlong cb_args, jint num_mem_objects, jobjectArray mem_list, jobjectArray args_mem_loc, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject user_func, jobject args, jlong cb_args, jint num_mem_objects, jobjectArray mem_list, jobjectArray args_mem_loc, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueNativeKernel\n");
     if (clEnqueueNativeKernelFP == NULL)
@@ -5685,7 +5685,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
  * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerWithWaitListNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueMarkerWithWaitList\n");
     if (clEnqueueMarkerWithWaitListFP == NULL)
@@ -5744,7 +5744,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerWithWaitListNative
  * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierWithWaitListNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueBarrierWithWaitList\n");
     if (clEnqueueBarrierWithWaitListFP == NULL)
@@ -5802,7 +5802,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierWithWaitListNative
  * Signature: (Lorg/jocl/cl_context;Lorg/jocl/PrintfCallbackFunction;Ljava/lang/Object;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetPrintfCallbackNative
-  (JNIEnv *env, jclass cls, jobject context, jobject pfn_notify, jobject user_data)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jobject pfn_notify, jobject user_data)
 {
     Logger::log(LOG_TRACE, "Executing clSetPrintfCallback\n");
     if (clSetPrintfCallbackFP == NULL)
@@ -5846,7 +5846,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetPrintfCallbackNative
  * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueMarker\n");
     if (clEnqueueMarkerFP == NULL)
@@ -5888,7 +5888,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerNative
  * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWaitForEventsNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint num_events, jobjectArray event_list)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_events, jobjectArray event_list)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueWaitForEvents\n");
     if (clEnqueueWaitForEventsFP == NULL)
@@ -5936,7 +5936,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWaitForEventsNative
  * Signature: (Lorg/jocl/cl_command_queue;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierNative
-  (JNIEnv *env, jclass cls, jobject command_queue)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueBarrier\n");
     if (clEnqueueBarrierFP == NULL)
@@ -5967,7 +5967,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierNative
  * Signature: (Lorg/jocl/cl_context;JI[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLBufferNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jint bufobj, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint bufobj, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateFromGLBuffer\n");
     if (clCreateFromGLBufferFP == NULL)
@@ -6021,7 +6021,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLBufferNative
  * Signature: (Lorg/jocl/cl_context;JIII[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTextureNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jint target, jint miplevel, jint texture, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint target, jint miplevel, jint texture, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateFromGLTexture\n");
     if (clCreateFromGLTextureFP == NULL)
@@ -6080,7 +6080,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTextureNative
  * Signature: (Lorg/jocl/cl_context;JIII[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTexture2DNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jint texture_target, jint miplevel, jint texture, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint texture_target, jint miplevel, jint texture, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateFromGLTexture2D\n");
     if (clCreateFromGLTexture2DFP == NULL)
@@ -6137,7 +6137,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTexture2DNative
  * Signature: (Lorg/jocl/cl_context;JIII[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTexture3DNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jint texture_target, jint miplevel, jint texture, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint texture_target, jint miplevel, jint texture, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateFromGLTexture3D\n");
     if (clCreateFromGLTexture3DFP == NULL)
@@ -6192,7 +6192,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLTexture3DNative
  * Signature: (Lorg/jocl/cl_context;JI[I)Lorg/jocl/cl_mem;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLRenderbufferNative
-  (JNIEnv *env, jclass cls, jobject context, jlong flags, jint renderbuffer, jintArray errcode_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint renderbuffer, jintArray errcode_ret)
 {
     Logger::log(LOG_TRACE, "Executing clCreateFromGLRenderbuffer\n");
     if (clCreateFromGLRenderbufferFP == NULL)
@@ -6244,7 +6244,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateFromGLRenderbufferNative
  * Signature: (Lorg/jocl/cl_mem;[I[I)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLObjectInfoNative
-  (JNIEnv *env, jclass cls, jobject memobj, jintArray gl_object_type, jintArray gl_object_name)
+  (JNIEnv *env, jclass UNUSED(cls), jobject memobj, jintArray gl_object_type, jintArray gl_object_name)
 {
     Logger::log(LOG_TRACE, "Executing clGetGLObjectInfo\n");
     if (clGetGLObjectInfoFP == NULL)
@@ -6280,7 +6280,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLObjectInfoNative
  * Signature: (Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLTextureInfoNative
-  (JNIEnv *env, jclass cls, jobject memobj, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject memobj, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetGLTextureInfo\n");
     if (clGetGLTextureInfoFP == NULL)
@@ -6327,7 +6327,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLTextureInfoNative
  * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_mem;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint num_objects, jobjectArray mem_objects, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_objects, jobjectArray mem_objects, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueAcquireGLObjects\n");
     if (clEnqueueAcquireGLObjectsFP == NULL)
@@ -6390,7 +6390,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
  * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_mem;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
-  (JNIEnv *env, jclass cls, jobject command_queue, jint num_objects, jobjectArray mem_objects, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_objects, jobjectArray mem_objects, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
 {
     Logger::log(LOG_TRACE, "Executing clEnqueueReleaseGLObjects\n");
     if (clEnqueueReleaseGLObjectsFP == NULL)
@@ -7101,7 +7101,7 @@ void registerAllNatives(JNIEnv *env, jclass cls)
  * Signature: (IILorg/jocl/Pointer;)Ljava/nio/ByteBuffer;
  */
 JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
-  (JNIEnv *env, jclass cls, jint size, jint alignment, jobject pointer)
+  (JNIEnv *env, jclass UNUSED(cls), jint size, jint alignment, jobject pointer)
 {
     void *memory = malloc(size + (alignment-1) + sizeof(void*));
     if (memory == NULL)
@@ -7129,7 +7129,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
  * Signature: (Lorg/jocl/Pointer;)V
  */
 JNIEXPORT void JNICALL Java_org_jocl_CL_freeAlignedNative
-  (JNIEnv *env, jclass cls, jobject pointer)
+  (JNIEnv *env, jclass UNUSED(cls), jobject pointer)
 {
     void *alignedMemory = (void*)env->GetLongField(pointer, NativePointerObject_nativePointer);
     free( ((void**)alignedMemory)[-1] );
@@ -7146,7 +7146,7 @@ JNIEXPORT void JNICALL Java_org_jocl_CL_freeAlignedNative
  */
 /*
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoKHRNative
-  (JNIEnv *env, jclass cls, jobject properties, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+  (JNIEnv *env, jclass UNUSED(cls), jobject properties, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
 {
     Logger::log(LOG_TRACE, "Executing clGetGLContextInfoKHR\n");
     if (clGetGLContextInfoKHRFP == NULL)
@@ -7195,17 +7195,17 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoKHRNative
 // Notes about NON_BLOCKING_READ:
 // When a non-blocking read operation is enqueued, there are two options:
 // 1. The memory may be read into a direct buffer
-//    In this case, there is not really a problem, because 
-//    the address of this buffer, which is obtained with 
+//    In this case, there is not really a problem, because
+//    the address of this buffer, which is obtained with
 //    GetDirectBufferAddress, will be vaild until the
 //    buffer is garbage collected
 // 2. The memory may be read into an array
 //    In this case, the releasePointerData function will possibly have
 //    to write back the data into the Java array (namely, if the array
-//    could not be pinned). This means that the function should not 
+//    could not be pinned). This means that the function should not
 //    be called before the read operation has finished. But this can
 //    not be detected without using event callbacks, which are only
-//    available in OpenCL 1.1. 
+//    available in OpenCL 1.1.
 // Also see the notes about NON_BLOCKING_READ in CL.java
 
 

@@ -32,7 +32,7 @@ package org.jocl;
  * {@link CL#clSetMemObjectDestructorCallback(cl_mem, MemObjectDestructorCallbackFunction, Object) 
  * clSetMemObjectDestructorCallback} method.
  *
- * @see CL#clSetMemObjectDestructorCallback(cl_mem, MemObjectDestructorFunction, Object)
+ * @see CL#clSetMemObjectDestructorCallback(cl_mem, MemObjectDestructorCallbackFunction, Object)
  */
 public interface MemObjectDestructorCallbackFunction
 {

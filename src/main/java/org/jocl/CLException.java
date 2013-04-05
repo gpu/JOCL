@@ -97,7 +97,7 @@ public class CLException extends RuntimeException
     
     /**
      * Returns the status code from OpenCL that caused this exception.
-     * For example, the value of {@value CL#CL_DEVICE_NOT_FOUND}
+     * For example, the value of {@link CL#CL_INVALID_DEVICE}
      * 
      * @return The OpenCL status code
      */

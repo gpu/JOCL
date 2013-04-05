@@ -32,7 +32,7 @@ package org.jocl;
  * {@link CL#clSetEventCallback(cl_event, int, EventCallbackFunction, Object)
  * clSetEventCallback} method.
  * 
- * @see CL#clSetEventCallback(cl_event, int, EventFunction, Object)
+ * @see CL#clSetEventCallback(cl_event, int, EventCallbackFunction, Object)
  */
 public interface EventCallbackFunction
 {
