@@ -2048,15 +2048,15 @@ public final class CL
      *           <td>
      *             <code>cl_int <strong>clGetPlatformIDs</strong>(</code>
      *           </td>
-     *           <td>cl_uint <var>num_entries</var>, </td>
+     *           <td>cl_uint <var>num_entries</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_platform_id <var>*platforms</var>, </td>
+     *           <td> </td>
+     *           <td>cl_platform_id <var>*platforms</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>*num_platforms</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_uint <var>*num_platforms</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -5007,19 +5007,19 @@ public final class CL
      *           <td>
      *             <code>cl_command_queue <strong>clCreateCommandQueueWithProperties</strong>(</code>
      *           </td>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context <var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_device_id <var>device</var>, </td>
+     *           <td> </td>
+     *           <td>cl_device_id <var>device</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_queue_properties <var>*properties</var>, </td>
+     *           <td> </td>
+     *           <td>const cl_queue_properties <var>*properties</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6824,27 +6824,27 @@ public final class CL
      *             cl_mem <strong>clCreatePipe</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context <var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td> </td>
+     *           <td>cl_mem_flags <var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>pipe_packet_size</var>, </td>
+     *           <td> </td>
+     *           <td>cl_uint <var>pipe_packet_size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>pipe_max_packets</var>, </td>
+     *           <td> </td>
+     *           <td>cl_uint <var>pipe_max_packets</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_pipe_properties <var>* properties</var>, </td>
+     *           <td> </td>
+     *           <td>const cl_pipe_properties <var>* properties</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8610,39 +8610,39 @@ public final class CL
      *           </td>
      *           <td>
      *             cl_mem
-     *              <var>pipe</var>
+     *              <var>pipe</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_pipe_info
-     *              <var>param_name</var>
+     *              <var>param_name</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             size_t
-     *              <var>param_value_size</var>
+     *              <var>param_value_size</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             void
-     *              <var>*param_value</var>
+     *              <var>*param_value</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             size_t
-     *              <var>*param_value_size_ret</var>
+     *              <var>*param_value_size_ret</var>
      *             <code>)</code>
      *           </td>
      *         </tr>
@@ -8992,19 +8992,19 @@ public final class CL
      *             void <strong> * clSVMAlloc</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context <var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_svm_mem_flags <var>flags</var>, </td>
+     *           <td> </td>
+     *           <td>cl_svm_mem_flags <var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>size</var>, </td>
+     *           <td> </td>
+     *           <td>size_t <var>size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>unsigned int <var>alignment</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>unsigned int <var>alignment</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9293,11 +9293,11 @@ public final class CL
      *             </strong>
      *             (</code>
      *           </td>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context <var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*svm_pointer</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>void <var>*svm_pointer</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -9405,15 +9405,15 @@ public final class CL
      *             cl_sampler <strong>clCreateSamplerWithProperties</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context <var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_sampler_properties <var>*sampler_properties</var>, </td>
+     *           <td> </td>
+     *           <td>const cl_sampler_properties <var>*sampler_properties</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13538,15 +13538,15 @@ public final class CL
      *             <strong>clSetKernelArgSVMPointer</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_kernel <var>kernel</var>, </td>
+     *           <td>cl_kernel <var>kernel</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>arg_index</var>, </td>
+     *           <td> </td>
+     *           <td>cl_uint <var>arg_index</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const void <var>*arg_value</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>const void <var>*arg_value</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13710,31 +13710,31 @@ public final class CL
      *           </td>
      *           <td>
      *             cl_kernel
-     *              <var>kernel</var>
+     *              <var>kernel</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_kernel_exec_info
-     *              <var>param_name</var>
+     *              <var>param_name</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             size_t
-     *              <var>param_value_size</var>
+     *              <var>param_value_size</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             const void
-     *              <var>*param_value</var>
+     *              <var>*param_value</var>
      *             <code>)</code>
      *           </td>
      *         </tr>
@@ -13865,9 +13865,9 @@ public final class CL
      *       <p>
      *         <code><br />
      *         clSetKernelExecInfo(kernel,<br />
-     *              CL_KERNEL_EXEC_INFO_SVM_PTRS,<br />
-     *              num_ptrs * sizeof(void *),<br />
-     *              extra_svm_ptr_list);<br />
+     *              CL_KERNEL_EXEC_INFO_SVM_PTRS,<br />
+     *              num_ptrs * sizeof(void *),<br />
+     *              extra_svm_ptr_list);<br />
      *         </code>
      *       </p>
      *     </div>
@@ -21586,50 +21586,50 @@ public final class CL
      *             cl_int <strong>clEnqueueSVMFree</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue <var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_uint
-     *              <var>num_svm_pointers</var>
+     *              <var>num_svm_pointers</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             void
-     *              <var>*svm_pointers[]</var>
+     *              <var>*svm_pointers[]</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void (CL_CALLBACK  <var>*pfn_free_func)
+     *           <td> </td>
+     *           <td>void (CL_CALLBACK  <var>*pfn_free_func)
      *             (    cl_command_queue queue,     cl_uint num_svm_pointers,
      *             void *svm_pointers[]</var>),
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>    void <var> *user_data</var>), </td>
+     *           <td> </td>
+     *           <td>    void <var> *user_data</var>), </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*user_data</var>, </td>
+     *           <td> </td>
+     *           <td>void <var>*user_data</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td> </td>
+     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td> </td>
+     *           <td>const cl_event <var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_event <var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -21820,51 +21820,51 @@ public final class CL
      *             cl_int <strong>clEnqueueSVMMemcpy</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue <var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_bool
-     *              <var>blocking_copy</var>
+     *              <var>blocking_copy</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             void
-     *              <var>*dst_ptr</var>
+     *              <var>*dst_ptr</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             const  void
-     *              <var>*src_ptr</var>
+     *              <var>*src_ptr</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             size_t
-     *              <var>size</var>
+     *              <var>size</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td> </td>
+     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td> </td>
+     *           <td>const cl_event <var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_event <var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -22083,63 +22083,63 @@ public final class CL
      *           </td>
      *           <td>
      *             cl_command_queue
-     *              <var>command_queue</var>
+     *              <var>command_queue</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             void
-     *              <var>*svm_ptr</var>
+     *              <var>*svm_ptr</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>const
      *             void
-     *              <var>*pattern</var>
+     *              <var>*pattern</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             size_t
-     *              <var>pattern_size</var>
+     *              <var>pattern_size</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             size_t
-     *              <var>size</var>
+     *              <var>size</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_uint
-     *              <var>num_events_in_wait_list</var>
+     *              <var>num_events_in_wait_list</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>const
      *             cl_event
-     *              <var>*event_wait_list</var>
+     *              <var>*event_wait_list</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_event
-     *              <var>*event</var>
+     *              <var>*event</var>
      *             <code>)</code>
      *           </td>
      *         </tr>
@@ -22327,35 +22327,35 @@ public final class CL
      *             cl_int <strong>clEnqueueSVMMap</strong>
      *             (</code>
      *           </td>
-     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *           <td>cl_command_queue <var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_bool <var>blocking_map</var>, </td>
+     *           <td> </td>
+     *           <td>cl_bool <var>blocking_map</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_map_flags <var>map_flags</var>, </td>
+     *           <td> </td>
+     *           <td>cl_map_flags <var>map_flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>void <var>*svm_ptr</var>, </td>
+     *           <td> </td>
+     *           <td>void <var>*svm_ptr</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>size_t <var>size</var>, </td>
+     *           <td> </td>
+     *           <td>size_t <var>size</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *           <td> </td>
+     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *           <td> </td>
+     *           <td>const cl_event <var>*event_wait_list</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_event <var>*event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -22646,38 +22646,38 @@ public final class CL
      *           </td>
      *           <td>
      *             cl_command_queue
-     *              <var>command_queue</var>
+     *              <var>command_queue</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             void
-     *              <var>*svm_ptr</var>,
+     *              <var>*svm_ptr</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_uint
-     *              <var>num_events_in_wait_list</var>
+     *              <var>num_events_in_wait_list</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>const
      *             cl_event
-     *              <var>*event_wait_list</var>
+     *              <var>*event_wait_list</var>
      *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
+     *           <td> </td>
      *           <td>
      *             cl_event
-     *              <var>*event</var>
+     *              <var>*event</var>
      *             <code>)</code>
      *           </td>
      *         </tr>
@@ -23365,27 +23365,27 @@ public final class CL
      *             </strong>
      *             (</code>
      *           </td>
-     *           <td>cl_context <var>context</var>, </td>
+     *           <td>cl_context <var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *           <td> </td>
+     *           <td>cl_mem_flags <var>flags</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLenum <var>texture_target</var>, </td>
+     *           <td> </td>
+     *           <td>GLenum <var>texture_target</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLint <var>miplevel</var>, </td>
+     *           <td> </td>
+     *           <td>GLint <var>miplevel</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>GLuint <var>texture</var>, </td>
+     *           <td> </td>
+     *           <td>GLuint <var>texture</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td> </td>
-     *           <td>cl_int <var>* errcode_ret</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_int <var>* errcode_ret</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
