@@ -89,6 +89,12 @@ typedef void(CL_CALLBACK *EventCallbackFunctionPointer)(cl_event event, cl_int e
  */
 typedef void(CL_CALLBACK *PrintfCallbackFunctionPointer)(cl_context context, cl_uint printf_data_len, char* printf_data_ptr, void *user_data);
 
+/**
+ * Typedef for function pointers that may be passed to the
+ * cnEnqueueSVMFree function
+ */
+typedef void (CL_CALLBACK *SVMFreeCallbackFunctionPointer)(cl_command_queue, cl_uint, void **, void *);
+
 
 // The JVM, used for attaching the calling thread in
 // callback functions
@@ -125,6 +131,9 @@ int initCLJNIUtils(JNIEnv *env);
 
 
 cl_context_properties* createContextPropertiesArray(JNIEnv *env, jobject properties);
+cl_queue_properties* createQueuePropertiesArray(JNIEnv *env, jobject properties);
+cl_pipe_properties* createPipePropertiesArray(JNIEnv *env, jobject properties);
+cl_sampler_properties* createSamplerPropertiesArray(JNIEnv *env, jobject properties);
 
 void getCl_image_format(JNIEnv *env, jobject image_format, cl_image_format &nativeImage_format);
 void setCl_image_format(JNIEnv *env, jobject image_format, cl_image_format &nativeImage_format);
@@ -139,6 +148,7 @@ cl_event* createEventList(JNIEnv *env, jobjectArray event_list, cl_uint num_even
 cl_device_id* createDeviceList(JNIEnv *env, jobjectArray device_list, cl_uint num_devices);
 cl_mem* createMemList(JNIEnv *env, jobjectArray mem_list, cl_uint num_mems);
 cl_program* createProgramList(JNIEnv *env, jobjectArray program_list, cl_uint num_programs);
+void** createSvmPointers(JNIEnv *env, jobjectArray svm_pointers, cl_uint num_svm_pointers);
 
 CallbackInfo* initCallbackInfo(JNIEnv *env, jobject pfn_notify, jobject user_data);
 void deleteCallbackInfo(JNIEnv *env, CallbackInfo* &callbackInfo);

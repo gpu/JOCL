@@ -2,7 +2,7 @@
  * JOCL - Java bindings for OpenCL
  *
  * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -35,8 +35,8 @@
  */
 template <typename T> void initFunctionPointer(T* pointer, const char* name)
 {
-	T result =  (T)obtainFunctionPointer(name);
-	*pointer = result;
+    T result =  (T)obtainFunctionPointer(name);
+    *pointer = result;
 }
 
 /**
@@ -56,21 +56,24 @@ void initFunctionPointers()
     initFunctionPointer(&clRetainContextFP, "clRetainContext");
     initFunctionPointer(&clReleaseContextFP, "clReleaseContext");
     initFunctionPointer(&clGetContextInfoFP, "clGetContextInfo");
-    initFunctionPointer(&clCreateCommandQueueFP, "clCreateCommandQueue");
+    initFunctionPointer(&clCreateCommandQueueWithPropertiesFP, "clCreateCommandQueueWithProperties");
     initFunctionPointer(&clRetainCommandQueueFP, "clRetainCommandQueue");
     initFunctionPointer(&clReleaseCommandQueueFP, "clReleaseCommandQueue");
     initFunctionPointer(&clGetCommandQueueInfoFP, "clGetCommandQueueInfo");
     initFunctionPointer(&clCreateBufferFP, "clCreateBuffer");
     initFunctionPointer(&clCreateSubBufferFP, "clCreateSubBuffer");
-    initFunctionPointer(&clCreateSubBufferFP, "clCreateSubBuffer");
     initFunctionPointer(&clCreateImageFP, "clCreateImage");
+    initFunctionPointer(&clCreatePipeFP, "clCreatePipe");
     initFunctionPointer(&clRetainMemObjectFP, "clRetainMemObject");
     initFunctionPointer(&clReleaseMemObjectFP, "clReleaseMemObject");
     initFunctionPointer(&clGetSupportedImageFormatsFP, "clGetSupportedImageFormats");
     initFunctionPointer(&clGetMemObjectInfoFP, "clGetMemObjectInfo");
     initFunctionPointer(&clGetImageInfoFP, "clGetImageInfo");
+    initFunctionPointer(&clGetPipeInfoFP, "clGetPipeInfo");
     initFunctionPointer(&clSetMemObjectDestructorCallbackFP, "clSetMemObjectDestructorCallback");
-    initFunctionPointer(&clCreateSamplerFP, "clCreateSampler");
+    initFunctionPointer(&clSVMAllocFP, "clSVMAlloc");
+    initFunctionPointer(&clSVMFreeFP, "clSVMFree");
+    initFunctionPointer(&clCreateSamplerWithPropertiesFP, "clCreateSamplerWithProperties");
     initFunctionPointer(&clRetainSamplerFP, "clRetainSampler");
     initFunctionPointer(&clReleaseSamplerFP, "clReleaseSampler");
     initFunctionPointer(&clGetSamplerInfoFP, "clGetSamplerInfo");
@@ -90,6 +93,8 @@ void initFunctionPointers()
     initFunctionPointer(&clRetainKernelFP, "clRetainKernel");
     initFunctionPointer(&clReleaseKernelFP, "clReleaseKernel");
     initFunctionPointer(&clSetKernelArgFP, "clSetKernelArg");
+    initFunctionPointer(&clSetKernelArgSVMPointerFP, "clSetKernelArgSVMPointer");
+    initFunctionPointer(&clSetKernelExecInfoFP, "clSetKernelExecInfo");
     initFunctionPointer(&clGetKernelInfoFP, "clGetKernelInfo");
     initFunctionPointer(&clGetKernelArgInfoFP, "clGetKernelArgInfo");
     initFunctionPointer(&clGetKernelWorkGroupInfoFP, "clGetKernelWorkGroupInfo");
@@ -121,11 +126,14 @@ void initFunctionPointers()
     initFunctionPointer(&clEnqueueUnmapMemObjectFP, "clEnqueueUnmapMemObject");
     initFunctionPointer(&clEnqueueMigrateMemObjectsFP, "clEnqueueMigrateMemObjects");
     initFunctionPointer(&clEnqueueNDRangeKernelFP, "clEnqueueNDRangeKernel");
-    initFunctionPointer(&clEnqueueTaskFP, "clEnqueueTask");
     initFunctionPointer(&clEnqueueNativeKernelFP, "clEnqueueNativeKernel");
     initFunctionPointer(&clEnqueueMarkerWithWaitListFP, "clEnqueueMarkerWithWaitList");
     initFunctionPointer(&clEnqueueBarrierWithWaitListFP, "clEnqueueBarrierWithWaitList");
-    initFunctionPointer(&clSetPrintfCallbackFP, "clSetPrintfCallback");
+    initFunctionPointer(&clEnqueueSVMFreeFP, "clEnqueueSVMFree");
+    initFunctionPointer(&clEnqueueSVMMemcpyFP, "clEnqueueSVMMemcpy");
+    initFunctionPointer(&clEnqueueSVMMemFillFP, "clEnqueueSVMMemFill");
+    initFunctionPointer(&clEnqueueSVMMapFP, "clEnqueueSVMMap");
+    initFunctionPointer(&clEnqueueSVMUnmapFP, "clEnqueueSVMUnmap");
     initFunctionPointer(&clGetExtensionFunctionAddressForPlatformFP, "clGetExtensionFunctionAddressForPlatform");
     initFunctionPointer(&clSetCommandQueuePropertyFP, "clSetCommandQueueProperty");
     initFunctionPointer(&clCreateImage2DFP, "clCreateImage2D");
@@ -135,6 +143,10 @@ void initFunctionPointers()
     initFunctionPointer(&clEnqueueBarrierFP, "clEnqueueBarrier");
     initFunctionPointer(&clUnloadCompilerFP, "clUnloadCompiler");
     initFunctionPointer(&clGetExtensionFunctionAddressFP, "clGetExtensionFunctionAddress");
+    initFunctionPointer(&clCreateCommandQueueFP, "clCreateCommandQueue");
+    initFunctionPointer(&clCreateSamplerFP, "clCreateSampler");
+    initFunctionPointer(&clEnqueueTaskFP, "clEnqueueTask");
+
     initFunctionPointer(&clCreateFromGLBufferFP, "clCreateFromGLBuffer");
     initFunctionPointer(&clCreateFromGLTextureFP, "clCreateFromGLTexture");
     initFunctionPointer(&clCreateFromGLRenderbufferFP, "clCreateFromGLRenderbuffer");

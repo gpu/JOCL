@@ -2,7 +2,7 @@
  * JOCL - Java bindings for OpenCL
  *
  * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,7 +25,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// These typedefs for the types of pointers to CL functions are extracted 
+// These typedefs for the types of pointers to CL functions are extracted
 // from the cl.h header file. The original header of this file:
 
 /*******************************************************************************
@@ -55,6 +55,9 @@
 #define CL_FUNCTIONS_HPP
 
 #include "JOCLCommon.hpp"
+
+
+
 
 /* Platform API */
 typedef CL_API_ENTRY cl_int (CL_API_CALL
@@ -128,10 +131,10 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
 
 /* Command Queue APIs */
 typedef CL_API_ENTRY cl_command_queue (CL_API_CALL
-*clCreateCommandQueueFunctionPointerType)(cl_context                     /* context */,
-                     cl_device_id                   /* device */,
-                     cl_command_queue_properties    /* properties */,
-                     cl_int *                       /* errcode_ret */) CL_API_SUFFIX__VERSION_1_0;
+*clCreateCommandQueueWithPropertiesFunctionPointerType)(cl_context               /* context */,
+                                   cl_device_id             /* device */,
+                                   const cl_queue_properties *    /* properties */,
+                                   cl_int *                 /* errcode_ret */) CL_API_SUFFIX__VERSION_2_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clRetainCommandQueueFunctionPointerType)(cl_command_queue /* command_queue */) CL_API_SUFFIX__VERSION_1_0;
@@ -169,6 +172,14 @@ typedef CL_API_ENTRY cl_mem (CL_API_CALL
               void *                  /* host_ptr */,
               cl_int *                /* errcode_ret */) CL_API_SUFFIX__VERSION_1_2;
 
+typedef CL_API_ENTRY cl_mem (CL_API_CALL
+*clCreatePipeFunctionPointerType)(cl_context                 /* context */,
+             cl_mem_flags               /* flags */,
+             cl_uint                    /* pipe_packet_size */,
+             cl_uint                    /* pipe_max_packets */,
+             const cl_pipe_properties * /* properties */,
+             cl_int *                   /* errcode_ret */) CL_API_SUFFIX__VERSION_2_0;
+
 typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clRetainMemObjectFunctionPointerType)(cl_mem /* memobj */) CL_API_SUFFIX__VERSION_1_0;
 
@@ -198,17 +209,34 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
                size_t *         /* param_value_size_ret */) CL_API_SUFFIX__VERSION_1_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
-*clSetMemObjectDestructorCallbackFunctionPointerType)(  cl_mem /* memobj */,
-                                    void (CL_CALLBACK * /*pfn_notify*/)( cl_mem /* memobj */, void* /*user_data*/),
-                                    void * /*user_data */ )             CL_API_SUFFIX__VERSION_1_1;
+*clGetPipeInfoFunctionPointerType)(cl_mem           /* pipe */,
+              cl_pipe_info     /* param_name */,
+              size_t           /* param_value_size */,
+              void *           /* param_value */,
+              size_t *         /* param_value_size_ret */) CL_API_SUFFIX__VERSION_2_0;
+
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clSetMemObjectDestructorCallbackFunctionPointerType)(cl_mem /* memobj */,
+                                 void (CL_CALLBACK * /*pfn_notify*/)( cl_mem /* memobj */, void* /*user_data*/),
+                                 void * /*user_data */ )             CL_API_SUFFIX__VERSION_1_1;
+
+/* SVM Allocation APIs */
+typedef CL_API_ENTRY void * (CL_API_CALL
+*clSVMAllocFunctionPointerType)(cl_context       /* context */,
+           cl_svm_mem_flags /* flags */,
+           size_t           /* size */,
+           cl_uint          /* alignment */) CL_API_SUFFIX__VERSION_2_0;
+
+typedef CL_API_ENTRY void (CL_API_CALL
+*clSVMFreeFunctionPointerType)(cl_context        /* context */,
+          void *            /* svm_pointer */) CL_API_SUFFIX__VERSION_2_0;
 
 /* Sampler APIs */
 typedef CL_API_ENTRY cl_sampler (CL_API_CALL
-*clCreateSamplerFunctionPointerType)(cl_context          /* context */,
-                cl_bool             /* normalized_coords */,
-                cl_addressing_mode  /* addressing_mode */,
-                cl_filter_mode      /* filter_mode */,
-                cl_int *            /* errcode_ret */) CL_API_SUFFIX__VERSION_1_0;
+*clCreateSamplerWithPropertiesFunctionPointerType)(cl_context                     /* context */,
+                              const cl_sampler_properties *  /* normalized_coords */,
+                              cl_int *                       /* errcode_ret */) CL_API_SUFFIX__VERSION_2_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clRetainSamplerFunctionPointerType)(cl_sampler /* sampler */) CL_API_SUFFIX__VERSION_1_0;
@@ -325,6 +353,17 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
                cl_uint      /* arg_index */,
                size_t       /* arg_size */,
                const void * /* arg_value */) CL_API_SUFFIX__VERSION_1_0;
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clSetKernelArgSVMPointerFunctionPointerType)(cl_kernel    /* kernel */,
+                         cl_uint      /* arg_index */,
+                         const void * /* arg_value */) CL_API_SUFFIX__VERSION_2_0;
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clSetKernelExecInfoFunctionPointerType)(cl_kernel            /* kernel */,
+                    cl_kernel_exec_info  /* param_name */,
+                    size_t               /* param_value_size */,
+                    const void *         /* param_value */) CL_API_SUFFIX__VERSION_2_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clGetKernelInfoFunctionPointerType)(cl_kernel       /* kernel */,
@@ -612,13 +651,6 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
                        cl_event *       /* event */) CL_API_SUFFIX__VERSION_1_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
-*clEnqueueTaskFunctionPointerType)(cl_command_queue  /* command_queue */,
-              cl_kernel         /* kernel */,
-              cl_uint           /* num_events_in_wait_list */,
-              const cl_event *  /* event_wait_list */,
-              cl_event *        /* event */) CL_API_SUFFIX__VERSION_1_0;
-
-typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clEnqueueNativeKernelFunctionPointerType)(cl_command_queue  /* command_queue */,
                       void (CL_CALLBACK * /*user_func*/)(void *),
                       void *            /* args */,
@@ -631,25 +663,66 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
                       cl_event *        /* event */) CL_API_SUFFIX__VERSION_1_0;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
-*clEnqueueMarkerWithWaitListFunctionPointerType)(cl_command_queue /* command_queue */,
+*clEnqueueMarkerWithWaitListFunctionPointerType)(cl_command_queue  /* command_queue */,
                             cl_uint           /* num_events_in_wait_list */,
                             const cl_event *  /* event_wait_list */,
                             cl_event *        /* event */) CL_API_SUFFIX__VERSION_1_2;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
-*clEnqueueBarrierWithWaitListFunctionPointerType)(cl_command_queue /* command_queue */,
+*clEnqueueBarrierWithWaitListFunctionPointerType)(cl_command_queue  /* command_queue */,
                              cl_uint           /* num_events_in_wait_list */,
                              const cl_event *  /* event_wait_list */,
                              cl_event *        /* event */) CL_API_SUFFIX__VERSION_1_2;
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
-*clSetPrintfCallbackFunctionPointerType)(cl_context          /* context */,
-                    void (CL_CALLBACK * /* pfn_notify */)(cl_context /* program */,
-                                                          cl_uint /*printf_data_len */,
-                                                          char * /* printf_data_ptr */,
-                                                          void * /* user_data */),
-                    void *              /* user_data */) CL_API_SUFFIX__VERSION_1_2;
+*clEnqueueSVMFreeFunctionPointerType)(cl_command_queue  /* command_queue */,
+                 cl_uint           /* num_svm_pointers */,
+                 void *[]          /* svm_pointers[] */,
+                 void (CL_CALLBACK * /*pfn_free_func*/)(cl_command_queue /* queue */,
+                                                        cl_uint          /* num_svm_pointers */,
+                                                        void *[]         /* svm_pointers[] */,
+                                                        void *           /* user_data */),
+                 void *            /* user_data */,
+                 cl_uint           /* num_events_in_wait_list */,
+                 const cl_event *  /* event_wait_list */,
+                 cl_event *        /* event */) CL_API_SUFFIX__VERSION_2_0;
 
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clEnqueueSVMMemcpyFunctionPointerType)(cl_command_queue  /* command_queue */,
+                   cl_bool           /* blocking_copy */,
+                   void *            /* dst_ptr */,
+                   const void *      /* src_ptr */,
+                   size_t            /* size */,
+                   cl_uint           /* num_events_in_wait_list */,
+                   const cl_event *  /* event_wait_list */,
+                   cl_event *        /* event */) CL_API_SUFFIX__VERSION_2_0;
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clEnqueueSVMMemFillFunctionPointerType)(cl_command_queue  /* command_queue */,
+                    void *            /* svm_ptr */,
+                    const void *      /* pattern */,
+                    size_t            /* pattern_size */,
+                    size_t            /* size */,
+                    cl_uint           /* num_events_in_wait_list */,
+                    const cl_event *  /* event_wait_list */,
+                    cl_event *        /* event */) CL_API_SUFFIX__VERSION_2_0;
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clEnqueueSVMMapFunctionPointerType)(cl_command_queue  /* command_queue */,
+                cl_bool           /* blocking_map */,
+                cl_map_flags      /* flags */,
+                void *            /* svm_ptr */,
+                size_t            /* size */,
+                cl_uint           /* num_events_in_wait_list */,
+                const cl_event *  /* event_wait_list */,
+                cl_event *        /* event */) CL_API_SUFFIX__VERSION_2_0;
+
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clEnqueueSVMUnmapFunctionPointerType)(cl_command_queue  /* command_queue */,
+                  void *            /* svm_ptr */,
+                  cl_uint           /* num_events_in_wait_list */,
+                  const cl_event *  /* event_wait_list */,
+                  cl_event *        /* event */) CL_API_SUFFIX__VERSION_2_0;
 
 
 /* Extension function access
@@ -681,8 +754,8 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
                           cl_bool                        /* enable */,
                           cl_command_queue_properties * /* old_properties */) CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED;
 
-
-typedef CL_API_ENTRY cl_mem (CL_API_CALL
+/* Deprecated OpenCL 1.1 APIs */
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem (CL_API_CALL
 *clCreateImage2DFunctionPointerType)(cl_context              /* context */,
                 cl_mem_flags            /* flags */,
                 const cl_image_format * /* image_format */,
@@ -692,7 +765,7 @@ typedef CL_API_ENTRY cl_mem (CL_API_CALL
                 void *                  /* host_ptr */,
                 cl_int *                /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY cl_mem (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem (CL_API_CALL
 *clCreateImage3DFunctionPointerType)(cl_context              /* context */,
                 cl_mem_flags            /* flags */,
                 const cl_image_format * /* image_format */,
@@ -704,34 +777,49 @@ typedef CL_API_ENTRY cl_mem (CL_API_CALL
                 void *                  /* host_ptr */,
                 cl_int *                /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_int (CL_API_CALL
 *clEnqueueMarkerFunctionPointerType)(cl_command_queue    /* command_queue */,
                 cl_event *          /* event */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_int (CL_API_CALL
 *clEnqueueWaitForEventsFunctionPointerType)(cl_command_queue /* command_queue */,
-                       cl_uint          /* num_events */,
-                       const cl_event * /* event_list */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
+                        cl_uint          /* num_events */,
+                        const cl_event * /* event_list */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_int (CL_API_CALL
 *clEnqueueBarrierFunctionPointerType)(cl_command_queue /* command_queue */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_int (CL_API_CALL
 *clUnloadCompilerFunctionPointerType)(void) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY void * (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED void * (CL_API_CALL
 *clGetExtensionFunctionAddressFunctionPointerType)(const char * /* func_name */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
+/* Deprecated OpenCL 2.0 APIs */
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_2_0_DEPRECATED cl_command_queue (CL_API_CALL
+*clCreateCommandQueueFunctionPointerType)(cl_context                     /* context */,
+                     cl_device_id                   /* device */,
+                     cl_command_queue_properties    /* properties */,
+                     cl_int *                       /* errcode_ret */) CL_EXT_SUFFIX__VERSION_2_0_DEPRECATED;
 
 
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_2_0_DEPRECATED cl_sampler (CL_API_CALL
+*clCreateSamplerFunctionPointerType)(cl_context          /* context */,
+                cl_bool             /* normalized_coords */,
+                cl_addressing_mode  /* addressing_mode */,
+                cl_filter_mode      /* filter_mode */,
+                cl_int *            /* errcode_ret */) CL_EXT_SUFFIX__VERSION_2_0_DEPRECATED;
 
-
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_2_0_DEPRECATED cl_int (CL_API_CALL
+*clEnqueueTaskFunctionPointerType)(cl_command_queue  /* command_queue */,
+              cl_kernel         /* kernel */,
+              cl_uint           /* num_events_in_wait_list */,
+              const cl_event *  /* event_wait_list */,
+              cl_event *        /* event */) CL_EXT_SUFFIX__VERSION_2_0_DEPRECATED;
 
 
 
 // GL:
-
-
 
 
 
@@ -750,7 +838,7 @@ typedef CL_API_ENTRY cl_mem (CL_API_CALL
                       cl_GLint        /* miplevel */,
                       cl_GLuint       /* texture */,
                       cl_int *        /* errcode_ret */) CL_API_SUFFIX__VERSION_1_2;
-    
+
 typedef CL_API_ENTRY cl_mem (CL_API_CALL
 *clCreateFromGLRenderbufferFunctionPointerType)(cl_context   /* context */,
                            cl_mem_flags /* flags */,
@@ -761,7 +849,7 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clGetGLObjectInfoFunctionPointerType)(cl_mem                /* memobj */,
                   cl_gl_object_type *   /* gl_object_type */,
                   cl_GLuint *           /* gl_object_name */) CL_API_SUFFIX__VERSION_1_0;
-                  
+
 typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clGetGLTextureInfoFunctionPointerType)(cl_mem               /* memobj */,
                    cl_gl_texture_info   /* param_name */,
@@ -820,20 +908,24 @@ extern clCreateContextFromTypeFunctionPointerType clCreateContextFromTypeFP;
 extern clRetainContextFunctionPointerType clRetainContextFP;
 extern clReleaseContextFunctionPointerType clReleaseContextFP;
 extern clGetContextInfoFunctionPointerType clGetContextInfoFP;
-extern clCreateCommandQueueFunctionPointerType clCreateCommandQueueFP;
+extern clCreateCommandQueueWithPropertiesFunctionPointerType clCreateCommandQueueWithPropertiesFP;
 extern clRetainCommandQueueFunctionPointerType clRetainCommandQueueFP;
 extern clReleaseCommandQueueFunctionPointerType clReleaseCommandQueueFP;
 extern clGetCommandQueueInfoFunctionPointerType clGetCommandQueueInfoFP;
 extern clCreateBufferFunctionPointerType clCreateBufferFP;
 extern clCreateSubBufferFunctionPointerType clCreateSubBufferFP;
 extern clCreateImageFunctionPointerType clCreateImageFP;
+extern clCreatePipeFunctionPointerType clCreatePipeFP;
 extern clRetainMemObjectFunctionPointerType clRetainMemObjectFP;
 extern clReleaseMemObjectFunctionPointerType clReleaseMemObjectFP;
 extern clGetSupportedImageFormatsFunctionPointerType clGetSupportedImageFormatsFP;
 extern clGetMemObjectInfoFunctionPointerType clGetMemObjectInfoFP;
 extern clGetImageInfoFunctionPointerType clGetImageInfoFP;
+extern clGetPipeInfoFunctionPointerType clGetPipeInfoFP;
 extern clSetMemObjectDestructorCallbackFunctionPointerType clSetMemObjectDestructorCallbackFP;
-extern clCreateSamplerFunctionPointerType clCreateSamplerFP;
+extern clSVMAllocFunctionPointerType clSVMAllocFP;
+extern clSVMFreeFunctionPointerType clSVMFreeFP;
+extern clCreateSamplerWithPropertiesFunctionPointerType clCreateSamplerWithPropertiesFP;
 extern clRetainSamplerFunctionPointerType clRetainSamplerFP;
 extern clReleaseSamplerFunctionPointerType clReleaseSamplerFP;
 extern clGetSamplerInfoFunctionPointerType clGetSamplerInfoFP;
@@ -853,6 +945,8 @@ extern clCreateKernelsInProgramFunctionPointerType clCreateKernelsInProgramFP;
 extern clRetainKernelFunctionPointerType clRetainKernelFP;
 extern clReleaseKernelFunctionPointerType clReleaseKernelFP;
 extern clSetKernelArgFunctionPointerType clSetKernelArgFP;
+extern clSetKernelArgSVMPointerFunctionPointerType clSetKernelArgSVMPointerFP;
+extern clSetKernelExecInfoFunctionPointerType clSetKernelExecInfoFP;
 extern clGetKernelInfoFunctionPointerType clGetKernelInfoFP;
 extern clGetKernelArgInfoFunctionPointerType clGetKernelArgInfoFP;
 extern clGetKernelWorkGroupInfoFunctionPointerType clGetKernelWorkGroupInfoFP;
@@ -884,11 +978,14 @@ extern clEnqueueMapImageFunctionPointerType clEnqueueMapImageFP;
 extern clEnqueueUnmapMemObjectFunctionPointerType clEnqueueUnmapMemObjectFP;
 extern clEnqueueMigrateMemObjectsFunctionPointerType clEnqueueMigrateMemObjectsFP;
 extern clEnqueueNDRangeKernelFunctionPointerType clEnqueueNDRangeKernelFP;
-extern clEnqueueTaskFunctionPointerType clEnqueueTaskFP;
 extern clEnqueueNativeKernelFunctionPointerType clEnqueueNativeKernelFP;
 extern clEnqueueMarkerWithWaitListFunctionPointerType clEnqueueMarkerWithWaitListFP;
 extern clEnqueueBarrierWithWaitListFunctionPointerType clEnqueueBarrierWithWaitListFP;
-extern clSetPrintfCallbackFunctionPointerType clSetPrintfCallbackFP;
+extern clEnqueueSVMFreeFunctionPointerType clEnqueueSVMFreeFP;
+extern clEnqueueSVMMemcpyFunctionPointerType clEnqueueSVMMemcpyFP;
+extern clEnqueueSVMMemFillFunctionPointerType clEnqueueSVMMemFillFP;
+extern clEnqueueSVMMapFunctionPointerType clEnqueueSVMMapFP;
+extern clEnqueueSVMUnmapFunctionPointerType clEnqueueSVMUnmapFP;
 extern clGetExtensionFunctionAddressForPlatformFunctionPointerType clGetExtensionFunctionAddressForPlatformFP;
 extern clSetCommandQueuePropertyFunctionPointerType clSetCommandQueuePropertyFP;
 extern clCreateImage2DFunctionPointerType clCreateImage2DFP;
@@ -898,6 +995,9 @@ extern clEnqueueWaitForEventsFunctionPointerType clEnqueueWaitForEventsFP;
 extern clEnqueueBarrierFunctionPointerType clEnqueueBarrierFP;
 extern clUnloadCompilerFunctionPointerType clUnloadCompilerFP;
 extern clGetExtensionFunctionAddressFunctionPointerType clGetExtensionFunctionAddressFP;
+extern clCreateCommandQueueFunctionPointerType clCreateCommandQueueFP;
+extern clCreateSamplerFunctionPointerType clCreateSamplerFP;
+extern clEnqueueTaskFunctionPointerType clEnqueueTaskFP;
 
 extern clCreateFromGLBufferFunctionPointerType clCreateFromGLBufferFP;
 extern clCreateFromGLTextureFunctionPointerType clCreateFromGLTextureFP;

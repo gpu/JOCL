@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2014 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,20 +29,20 @@ package org.jocl;
 
 /**
  * Emulation of a function pointer that may be passed to the
- * {@link CL#clSetPrintfCallback(cl_context, PrintfCallbackFunction, Object)}
- * method.
+ * {@link CL#clEnqueueSVMFree(cl_command_queue, int, Pointer[], SVMFreeFunction, 
+ * Object, int, cl_event[], cl_event)} method
  * 
- * @see CL#clSetPrintfCallback(cl_context, PrintfCallbackFunction, Object)
+ * @see CL#clEnqueueSVMFree
  */
-public interface PrintfCallbackFunction 
+public interface SVMFreeFunction
 {
     /**
      * The function that will be called
      * 
-     * @param context The context
-     * @param printf_data_len The length of the printf data
-     * @param printf_data_ptr The printf data
+     * @param queue The command queue
+     * @param num_svm_pointers The number of pointers
+     * @param svm_pointers The pointers
      * @param user_data The user data
      */
-    void function(cl_context context , int printf_data_len , String printf_data_ptr , Object user_data);        
+    void function(cl_command_queue queue, int num_svm_pointers, Pointer svm_pointers[], Object user_data);
 }

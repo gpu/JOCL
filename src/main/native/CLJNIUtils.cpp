@@ -148,6 +148,150 @@ cl_context_properties* createContextPropertiesArray(JNIEnv *env, jobject propert
 }
 
 
+/**
+ * Create the cl_queue_properties array for the given properties
+ * object. The given 'properties' object is a org.jocl.Pointer to
+ * a long array (wrapped in a Buffer), which contains pairs of
+ * identifiers and values, and is terminated with a 0. This array
+ * is converted element-wise to a cl_queue_properties array here.
+ * The returned array must be freed by the caller! If an error
+ * occurs, NULL is returned.
+ */
+cl_queue_properties* createQueuePropertiesArray(JNIEnv *env, jobject properties)
+{
+    if (properties == NULL)
+    {
+        return NULL;
+    }
+    PointerData *propertiesPointerData = initPointerData(env, properties);
+    if (propertiesPointerData == NULL)
+    {
+        return NULL;
+    }
+    int javaPropertiesSize = 0;
+    jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
+    int MAX_PROPERTIES = 100;
+    for (int i=0; i<MAX_PROPERTIES; i++)
+    {
+        if (javaPropertyValues[i] == 0)
+        {
+            break;
+        }
+        javaPropertiesSize++;
+    }
+    cl_queue_properties *nativeProperties = new cl_queue_properties[javaPropertiesSize + 1];
+    if (nativeProperties == NULL)
+    {
+        ThrowByName(env, "java/lang/OutOfMemoryError",
+            "Out of memory during property array creation");
+        return NULL;
+    }
+
+    for (int i=0; i<javaPropertiesSize; i++)
+    {
+        nativeProperties[i] = (cl_queue_properties)javaPropertyValues[i];
+    }
+    nativeProperties[javaPropertiesSize] = 0;
+    if (!releasePointerData(env, propertiesPointerData, JNI_ABORT)) return NULL;
+    return nativeProperties;
+}
+
+/**
+ * Create the cl_pipe_properties array for the given properties
+ * object. The given 'properties' object is a org.jocl.Pointer to
+ * a long array (wrapped in a Buffer), which contains pairs of
+ * identifiers and values, and is terminated with a 0. This array
+ * is converted element-wise to a cl_pipe_properties array here.
+ * The returned array must be freed by the caller! If an error
+ * occurs, NULL is returned.
+ */
+cl_pipe_properties* createPipePropertiesArray(JNIEnv *env, jobject properties)
+{
+    if (properties == NULL)
+    {
+        return NULL;
+    }
+    PointerData *propertiesPointerData = initPointerData(env, properties);
+    if (propertiesPointerData == NULL)
+    {
+        return NULL;
+    }
+    int javaPropertiesSize = 0;
+    jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
+    int MAX_PROPERTIES = 100;
+    for (int i=0; i<MAX_PROPERTIES; i++)
+    {
+        if (javaPropertyValues[i] == 0)
+        {
+            break;
+        }
+        javaPropertiesSize++;
+    }
+    cl_pipe_properties *nativeProperties = new cl_pipe_properties[javaPropertiesSize + 1];
+    if (nativeProperties == NULL)
+    {
+        ThrowByName(env, "java/lang/OutOfMemoryError",
+            "Out of memory during property array creation");
+        return NULL;
+    }
+
+    for (int i=0; i<javaPropertiesSize; i++)
+    {
+        nativeProperties[i] = (cl_pipe_properties)javaPropertyValues[i];
+    }
+    nativeProperties[javaPropertiesSize] = 0;
+    if (!releasePointerData(env, propertiesPointerData, JNI_ABORT)) return NULL;
+    return nativeProperties;
+}
+
+/**
+ * Create the cl_sampler_properties array for the given properties
+ * object. The given 'properties' object is a org.jocl.Pointer to
+ * a long array (wrapped in a Buffer), which contains pairs of
+ * identifiers and values, and is terminated with a 0. This array
+ * is converted element-wise to a cl_sampler_properties array here.
+ * The returned array must be freed by the caller! If an error
+ * occurs, NULL is returned.
+ */
+cl_sampler_properties* createSamplerPropertiesArray(JNIEnv *env, jobject properties)
+{
+    if (properties == NULL)
+    {
+        return NULL;
+    }
+    PointerData *propertiesPointerData = initPointerData(env, properties);
+    if (propertiesPointerData == NULL)
+    {
+        return NULL;
+    }
+    int javaPropertiesSize = 0;
+    jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
+    int MAX_PROPERTIES = 100;
+    for (int i=0; i<MAX_PROPERTIES; i++)
+    {
+        if (javaPropertyValues[i] == 0)
+        {
+            break;
+        }
+        javaPropertiesSize++;
+    }
+    cl_sampler_properties *nativeProperties = new cl_sampler_properties[javaPropertiesSize + 1];
+    if (nativeProperties == NULL)
+    {
+        ThrowByName(env, "java/lang/OutOfMemoryError",
+            "Out of memory during property array creation");
+        return NULL;
+    }
+
+    for (int i=0; i<javaPropertiesSize; i++)
+    {
+        nativeProperties[i] = (cl_sampler_properties)javaPropertyValues[i];
+    }
+    nativeProperties[javaPropertiesSize] = 0;
+    if (!releasePointerData(env, propertiesPointerData, JNI_ABORT)) return NULL;
+    return nativeProperties;
+}
+
 
 /**
  * Fills the native representation of the given Java object.
@@ -420,6 +564,54 @@ cl_mem* createMemList(JNIEnv *env, jobjectArray mem_list, cl_uint num_mems)
     return nativeMem_list;
 }
 
+
+/**
+ * Creates a list containing the native void* objects for the
+ * java Pointer objects in the given java array. To delete the
+ * returned array is left to the caller. The returned array will
+ * have num_svm_pointers entries. If one of the java objects is 'null',
+ * then a NullPointerException will be thrown and the function
+ * returns NULL. If the java array has less than num_svm_pointers
+ * elements, then and ArrayIndexOutOfBoundsException will be
+ * thrown and the function returns NULL.
+ * Returns NULL if an error occurs.
+ */
+void** createSvmPointers(JNIEnv *env, jobjectArray svm_pointers, cl_uint num_svm_pointers)
+{
+    void** nativeSvm_pointers = new void*[num_svm_pointers];
+    if (nativeSvm_pointers == NULL)
+    {
+        ThrowByName(env, "java/lang/OutOfMemoryError",
+            "Out of memory during pointer array creation");
+        return NULL;
+    }
+
+    cl_uint svm_pointersLength = (cl_uint)env->GetArrayLength(svm_pointers);
+    if (svm_pointersLength < num_svm_pointers)
+    {
+        ThrowByName(env, "java/lang/ArrayIndexOutOfBoundsException",
+            "Pointer array size is smaller than specified number of pointers");
+        return NULL;
+    }
+    for (unsigned int i=0; i<num_svm_pointers; i++)
+    {
+        jobject svm_pointerObject = env->GetObjectArrayElement(svm_pointers, i);
+        if (env->ExceptionCheck())
+        {
+            delete[] nativeSvm_pointers;
+            return NULL;
+        }
+        if (svm_pointerObject == NULL)
+        {
+            delete[] nativeSvm_pointers;
+            ThrowByName(env, "java/lang/NullPointerException",
+                "Pointer array contains 'null' elements");
+            return NULL;
+        }
+        nativeSvm_pointers[i] = (void*)env->GetLongField(svm_pointerObject, NativePointerObject_nativePointer);
+    }
+    return nativeSvm_pointers;
+}
 
 
 /**

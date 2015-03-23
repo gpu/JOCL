@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2015 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -531,5 +531,39 @@ public final class Pointer extends NativePointerObject
     {
         return new Pointer(this, byteOffset);
     }
+    
+    
+
+    /**
+     * Returns a ByteBuffer that corresponds to the specified
+     * segment of the memory that this pointer points to.<br />
+     * <br />
+     * This function is solely intended for pointers that that
+     * have been allocated with {@link CL#clSVMAlloc}.
+     * <br />
+     * (It will work for all pointers to ByteBuffers, but for 
+     * other pointer types, <code>null</code> will be returned)
+     *
+     * @param byteOffset The offset in bytes
+     * @param byteSize The size of the byte buffer, in bytes
+     * @return The byte buffer
+     */
+    public ByteBuffer getByteBuffer(long byteOffset, long byteSize)
+    {
+        Buffer buffer = getBuffer();
+        if (buffer == null)
+        {
+            return null;
+        }
+        if (!(buffer instanceof ByteBuffer))
+        {
+            return null;
+        }
+        ByteBuffer byteBuffer = (ByteBuffer)buffer;
+        byteBuffer.limit((int)(byteOffset + byteSize));
+        byteBuffer.position((int)byteOffset);
+        return byteBuffer.slice();
+    }
+    
     
 }

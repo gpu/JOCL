@@ -46,6 +46,7 @@ static jmethodID EnqueueNativeKernelFunction_function; // (Ljava/lang/Object;)V
 static jmethodID MemObjectDestructorCallback_function; // (Lorg/jocl/cl_mem;Ljava/lang/Object;)V
 static jmethodID EventCallback_function; // (Lorg/jocl/cl_event;ILjava/lang/Object;)V
 static jmethodID PrintfCallbackFunction_function; // (Lorg/jocl/cl_program;Ljava/lang/Object;)V
+static jmethodID SVMFreeFunction_function; // (Lorg/jocl/cl_command_queue;I[Lorg/jocl/Pointer;Ljava/lang/Object;)V
 
 // Static class and method ID for cl_platform_id and its constructor
 static jclass cl_platform_id_Class;
@@ -88,25 +89,10 @@ static jclass cl_event_Class;
 static jmethodID cl_event_Constructor;
 
 
-
-
-
-
-
-
-
 /**
  * Register all native functions of JOCL
  */
 void registerAllNatives(JNIEnv *env, jclass cls);
-
-
-
-
-
-
-
-
 
 
 /**
@@ -159,6 +145,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
     if (!init(env, cls, "org/jocl/PrintfCallbackFunction")) return JNI_ERR;
     if (!init(env, cls, PrintfCallbackFunction_function, "function", "(Lorg/jocl/cl_context;ILjava/lang/String;Ljava/lang/Object;)V")) return JNI_ERR;
 
+    // Obtain the methodID for org.jocl.SVMFreeFunction#function
+    if (!init(env, cls, "org/jocl/SVMFreeFunction")) return JNI_ERR;
+    if (!init(env, cls, SVMFreeFunction_function, "function", "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/Pointer;Ljava/lang/Object;)V")) return JNI_ERR;
+
     // Obtain the global class references and the constructor methodIDs
     // for classes which will have to be instantiated
     if (!init(env, "org/jocl/cl_platform_id",    cl_platform_id_Class,   cl_platform_id_Constructor)) return JNI_ERR;
@@ -183,8 +173,38 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved)
     unloadImplementationLibrary();
 }
 
+/**
+ * Create a Java org.jocl.Pointer object that has the given native 
+ * pointer. If the given size is greater than 0, the object will
+ * contain a direct byte buffer with the given pointer address.
+ * Returns NULL if any exception occurs.
+ */
+jobject createJavaPointerObject(JNIEnv *env, void *nativePointer, size_t nativeSize)
+{
+    jobject pointer = env->NewObject(Pointer_Class, Pointer_Constructor);
+    if (env->ExceptionCheck())
+    {
+        return NULL;
+    }
+    jobject buffer = NULL;
+	if (nativeSize > 0)
+	{
+		buffer = env->NewDirectByteBuffer(nativePointer, (jlong)nativeSize);
+		if (env->ExceptionCheck())
+		{
+			return NULL;
+		}
+	}
+    env->SetObjectField(pointer, NativePointerObject_buffer, buffer);
+    env->SetObjectField(pointer, NativePointerObject_pointers, NULL);
+    env->SetLongField(pointer, NativePointerObject_byteOffset, 0);
+    env->SetLongField(pointer, NativePointerObject_nativePointer, (jlong)nativePointer);
+    return pointer;
+}
 
-
+// TODO The callbacks should perform as much cleanup as 
+// possible, even when an error occurs, although these
+// errors will be fatal (out of memory etc) in any case.
 
 /**
  * A pointer to this function will be passed to clCreateContext* functions.
@@ -443,6 +463,62 @@ void CL_CALLBACK PrintfCallbackFunction(cl_context context, cl_uint printf_data_
 }
 
 
+/**
+ * A pointer to this function will be passed to the clEnqueueSVMFree function
+ * if a Java callback object was given. The user_dataInfo is a pointer to a
+ * CallbackInfo that was initialized and is associated with the respective
+ * call to clEnqueueSVMFree.
+ */
+void CL_CALLBACK SVMFreeCallbackFunction(cl_command_queue queue, cl_uint num_svn_pointers, void** svm_pointers, void *user_dataInfo)
+{
+    Logger::log(LOG_DEBUGTRACE, "Executing SVMFreeCallbackFunction\n");
+
+    JNIEnv *env = NULL;
+    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    if (attached != JNI_OK)
+    {
+        globalJvm->AttachCurrentThread((void**)&env, NULL);
+    }
+
+    CallbackInfo *callbackInfo = (CallbackInfo*)user_dataInfo;
+    jobject pfn_notify = callbackInfo->globalPfn_notify;
+    if (pfn_notify != NULL)
+    {
+        jobject user_data = callbackInfo->globalUser_data;
+
+        // Create the command queue object which will be passed to the callback function
+        jobject queueObject = env->NewObject(cl_command_queue_Class, cl_command_queue_Constructor);
+        if (queueObject == NULL)
+        {
+            return;
+        }
+        setNativePointer(env, queueObject, (jlong)queue);
+
+		jobjectArray svm_pointersObjectArray = env->NewObjectArray((jsize)num_svn_pointers, Pointer_Class, NULL);
+        if (svm_pointersObjectArray == NULL)
+        {
+            // OutOfMemoryError was already thrown
+            return;
+        }
+		for (unsigned int i=0; i<num_svn_pointers; i++)
+		{
+			void *svm_pointer = svm_pointers[i];
+			jobject svm_pointerObject = createJavaPointerObject(env, svm_pointer, 0);
+			if (svm_pointerObject == NULL)
+			{
+				return;
+			}
+			env->SetObjectArrayElement(svm_pointersObjectArray, i, svm_pointerObject);
+		}
+        env->CallVoidMethod(pfn_notify, SVMFreeFunction_function, queueObject, (jint)num_svn_pointers, svm_pointersObjectArray, user_data);
+    }
+    deleteCallbackInfo(env, callbackInfo);
+    finishCallback(env);
+    if (attached != JNI_OK)
+    {
+        globalJvm->DetachCurrentThread();
+    }
+}
 
 
 
@@ -1230,6 +1306,73 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateCommandQueueNative
 }
 
 
+// #if defined(CL_VERSION_2_0)
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreateCommandQueueWithPropertiesNative
+ * Signature: (Lorg/jocl/cl_context;Lorg/jocl/cl_device_id;Lorg/jocl/cl_queue_properties;[I)Lorg/jocl/cl_command_queue;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateCommandQueueWithPropertiesNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jobject device, jobject properties, jintArray errcode_ret)
+{
+    Logger::log(LOG_TRACE, "Executing clCreateCommandQueueWithProperties\n");
+    if (clCreateCommandQueueWithPropertiesFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clCreateCommandQueueWithProperties is not supported");
+        return NULL;
+    }
+
+    // Native variables declaration
+    cl_context nativeContext = NULL;
+    cl_device_id nativeDevice = NULL;
+    const cl_queue_properties* nativeProperties = NULL;
+    cl_int nativeErrcode_ret = 0;
+    cl_command_queue nativeCommand_queue = NULL;
+
+    // Obtain native variable values
+    if (context != NULL)
+    {
+        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+    }
+    if (device != NULL)
+    {
+        nativeDevice = (cl_device_id)env->GetLongField(device, NativePointerObject_nativePointer);
+    }
+    if (properties != NULL)
+    {
+        nativeProperties = createQueuePropertiesArray(env, properties);
+        if (nativeProperties == NULL)
+        {
+            return NULL;
+        }
+    }
+    nativeCommand_queue = (clCreateCommandQueueWithPropertiesFP)(nativeContext, nativeDevice, nativeProperties, &nativeErrcode_ret);
+
+    // Write back native variable values and clean up
+    delete[] nativeProperties;
+    if (!set(env, errcode_ret, 0, nativeErrcode_ret)) return NULL;
+
+    if (nativeCommand_queue == NULL)
+    {
+        return NULL;
+    }
+
+    // Create and return the Java cl_command_queue object
+    jobject command_queue = env->NewObject(cl_command_queue_Class, cl_command_queue_Constructor);
+    if (env->ExceptionCheck())
+    {
+        return NULL;
+    }
+
+    setNativePointer(env, command_queue, (jlong)nativeCommand_queue);
+    return command_queue;
+}
+
+// #endif // defined(CL_VERSION_2_0)
+
+
 /*
  * Class:     org_jocl_CL
  * Method:    clRetainCommandQueueNative
@@ -1658,6 +1801,76 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImageNative
 //#endif // defined(CL_VERSION_1_2)
 
 
+// #if defined(CL_VERSION_2_0)
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreatePipeNative
+ * Signature: (Lorg/jocl/cl_context;JIILorg/jocl/cl_pipe_properties;[I)Lorg/jocl/cl_mem;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreatePipeNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jint pipe_packet_size, jint pipe_max_packets, jobject properties, jintArray errcode_ret)
+{
+    Logger::log(LOG_TRACE, "Executing clCreatePipe\n");
+    if (clCreatePipeFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clCreatePipe is not supported");
+        return NULL;
+    }
+
+    // Native variables declaration
+    cl_context nativeContext = NULL;
+    cl_mem_flags nativeFlags = 0;
+    cl_uint nativePipe_packet_size = 0;
+    cl_uint nativePipe_max_packets = 0;
+    const cl_pipe_properties* nativeProperties = NULL;
+    cl_int nativeErrcode_ret = 0;
+    cl_mem nativeMem = NULL;
+
+    // Obtain native variable values
+    if (context != NULL)
+    {
+        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+    }
+    nativeFlags = (cl_mem_flags)flags;
+    nativePipe_packet_size = (cl_uint)pipe_packet_size;
+    nativePipe_max_packets = (cl_uint)pipe_max_packets;
+	if (properties != NULL)
+	{
+		nativeProperties = createPipePropertiesArray(env, properties);
+        if (nativeProperties == NULL)
+        {
+            return NULL;
+        }
+	}
+
+    nativeMem = (clCreatePipeFP)(nativeContext, nativeFlags, nativePipe_packet_size, nativePipe_max_packets, nativeProperties, &nativeErrcode_ret);
+
+    // Write back native variable values and clean up
+    delete[] nativeProperties;
+    if (!set(env, errcode_ret, 0, nativeErrcode_ret)) return NULL;
+
+    if (nativeMem == NULL)
+    {
+        return NULL;
+    }
+
+    // Create and return the Java cl_mem object
+    jobject mem = env->NewObject(cl_mem_Class, cl_mem_Constructor);
+    if (env->ExceptionCheck())
+    {
+        return NULL;
+    }
+
+    setNativePointer(env, mem, (jlong)nativeMem);
+    return mem;
+
+
+}
+
+// #endif // defined(CL_VERSION_2_0)
+
 
 /*
  * Class:     org_jocl_CL
@@ -2069,6 +2282,56 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetImageInfoNative
 }
 
 
+//#if defined(CL_VERSION_2_0)
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clGetPipeInfoNative
+ * Signature: (Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPipeInfoNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject pipe, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+{
+    Logger::log(LOG_TRACE, "Executing clGetPipeInfo\n");
+    if (clGetPipeInfoFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clGetPipeInfo is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_mem nativePipe = NULL;
+    cl_pipe_info nativeParam_name = 0;
+    size_t nativeParam_value_size = 0;
+    void *nativeParam_value = NULL;
+    size_t nativeParam_value_size_ret;
+
+    // Obtain native variable values
+    if (pipe != NULL)
+    {
+        nativePipe = (cl_mem)env->GetLongField(pipe, NativePointerObject_nativePointer);
+    }
+    nativeParam_name = (cl_pipe_info)param_name;
+    nativeParam_value_size = (size_t)param_value_size;
+    PointerData *param_valuePointerData = initPointerData(env, param_value);
+    if (param_valuePointerData == NULL)
+    {
+        return CL_INVALID_HOST_PTR;
+    }
+    nativeParam_value = (void*)param_valuePointerData->pointer;
+
+    int result = (clGetPipeInfoFP)(nativePipe, nativeParam_name, nativeParam_value_size, nativeParam_value, &nativeParam_value_size_ret);
+
+    // Write back native variable values and clean up
+    if (!releasePointerData(env, param_valuePointerData)) return CL_INVALID_HOST_PTR;
+    if (!set(env, param_value_size_ret, 0, (long)nativeParam_value_size_ret)) return CL_OUT_OF_HOST_MEMORY;
+
+    return result;
+}
+
+//#endif // defined(CL_VERSION_2_0)
+
 
 //#if defined(CL_VERSION_1_1)
 
@@ -2115,6 +2378,158 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetMemObjectDestructorCallbackNative
 }
 
 //#endif // defined(CL_VERSION_1_1)
+
+
+
+//#if defined(CL_VERSION_2_0)
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clSVMAllocNative
+ * Signature: (Lorg/jocl/cl_context;JJI)Lorg/jocl/Pointer;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clSVMAllocNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jlong flags, jlong size, jint alignment)
+{
+    Logger::log(LOG_TRACE, "Executing clSVMAlloc\n");
+    if (clSVMAllocFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clSVMAlloc is not supported");
+        return NULL;
+    }
+
+    // Native variables declaration
+    cl_context nativeContext = NULL;
+    cl_mem_flags nativeFlags = NULL;
+    size_t nativeSize = 0;
+    cl_uint nativeAlignment = 0;
+    void *nativePointer = NULL;
+
+    // Obtain native variable values
+    if (context != NULL)
+    {
+        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+    }
+    nativeFlags = (cl_mem_flags)flags;
+    nativeSize = (size_t)size;
+    nativeAlignment = (cl_uint)alignment;
+
+    nativePointer = (clSVMAllocFP)(nativeContext, nativeFlags, nativeSize, nativeAlignment);
+
+    if (nativePointer == NULL)
+    {
+        return NULL;
+    }
+
+	return createJavaPointerObject(env, nativePointer, nativeSize);
+}
+
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clSVMFreeNative
+ * Signature: (Lorg/jocl/cl_context;Lorg/jocl/Pointer;)V
+ */
+JNIEXPORT void JNICALL Java_org_jocl_CL_clSVMFreeNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject context, jobject svm_pointer)
+{
+    Logger::log(LOG_TRACE, "Executing clSVMFree\n");
+    if (clSVMFreeFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clSVMFree is not supported");
+        return;
+    }
+
+    // Native variables declaration
+    cl_context nativeContext = NULL;
+	void *nativeSvm_pointer = NULL;
+
+    // Obtain native variable values
+    if (context != NULL)
+    {
+        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+    }
+	if (svm_pointer != NULL)
+	{
+		nativeSvm_pointer = (void*)env->GetLongField(svm_pointer, NativePointerObject_nativePointer);
+	}
+
+    (clSVMFreeFP)(nativeContext, nativeSvm_pointer);
+
+	if (svm_pointer != NULL)
+	{
+	    env->SetObjectField(svm_pointer, NativePointerObject_buffer, NULL);
+	    env->SetObjectField(svm_pointer, NativePointerObject_pointers, NULL);
+	    env->SetLongField(svm_pointer, NativePointerObject_byteOffset, 0);
+	    env->SetLongField(svm_pointer, NativePointerObject_nativePointer, 0);
+	}
+}
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clCreateSamplerWithPropertiesNative
+ * Signature: (Lorg/jocl/cl_context;Lorg/jocl/cl_sampler_properties;[I)Lorg/jocl/cl_sampler;
+ */
+JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSamplerWithPropertiesNative
+  (JNIEnv *env, jclass cls, jobject context, jobject properties, jintArray errcode_ret)
+{
+    Logger::log(LOG_TRACE, "Executing clCreateSamplerWithProperties\n");
+    if (clCreateSamplerWithPropertiesFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clCreateSamplerWithProperties is not supported");
+        return NULL;
+    }
+
+    // Native variables declaration
+    cl_context nativeContext = NULL;
+    const cl_sampler_properties* nativeProperties = NULL;
+    cl_int nativeErrcode_ret = 0;
+    cl_sampler nativeSampler = NULL;
+
+    // Obtain native variable values
+    if (context != NULL)
+    {
+        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+    }
+    if (properties != NULL)
+    {
+        nativeProperties = createSamplerPropertiesArray(env, properties);
+        if (nativeProperties == NULL)
+        {
+            return NULL;
+        }
+    }
+    nativeSampler = (clCreateSamplerWithPropertiesFP)(nativeContext, nativeProperties, &nativeErrcode_ret);
+
+    // Write back native variable values and clean up
+    delete[] nativeProperties;
+    if (!set(env, errcode_ret, 0, nativeErrcode_ret)) return NULL;
+
+    if (nativeSampler == NULL)
+    {
+        return NULL;
+    }
+
+    // Create and return the Java cl_sampler object
+    jobject sampler = env->NewObject(cl_sampler_Class, cl_sampler_Constructor);
+    if (env->ExceptionCheck())
+    {
+        return NULL;
+    }
+
+    setNativePointer(env, sampler, (jlong)nativeSampler);
+    return sampler;
+
+}
+
+//#endif // defined(CL_VERSION_2_0)
+
+
+
+
 
 
 /*
@@ -3301,7 +3716,95 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetKernelArgNative
     return result;
 }
 
+//#if defined(CL_VERSION_2_0)
 
+/*
+ * Class:     org_jocl_CL
+ * Method:    clSetKernelArgSVMPointerNative
+ * Signature: (Lorg/jocl/cl_kernel;ILorg/jocl/Pointer;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetKernelArgSVMPointerNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel, jint arg_index, jobject arg_value)
+{
+    Logger::log(LOG_TRACE, "Executing clSetKernelArgSVMPointer\n");
+    if (clSetKernelArgSVMPointerFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clSetKernelArgSVMPointer is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_kernel nativeKernel = NULL;
+    cl_uint nativeArg_index = 0;
+    void *nativeArg_value;
+
+    // Obtain native variable values
+    if (kernel != NULL)
+    {
+        nativeKernel = (cl_kernel)env->GetLongField(kernel, NativePointerObject_nativePointer);
+    }
+    nativeArg_index = (cl_uint)arg_index;
+    PointerData *arg_valuePointerData = initPointerData(env, arg_value);
+    if (arg_valuePointerData == NULL)
+    {
+        return CL_INVALID_HOST_PTR;
+    }
+    nativeArg_value = (void*)arg_valuePointerData->pointer;
+
+    int result = (clSetKernelArgSVMPointerFP)(nativeKernel, nativeArg_index, nativeArg_value);
+
+    // Write back native variable values and clean up
+    if (!releasePointerData(env, arg_valuePointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
+
+    return result;
+}
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clSetKernelExecInfoNative
+ * Signature: (Lorg/jocl/cl_kernel;IJLorg/jocl/Pointer;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetKernelExecInfoNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject kernel, jint param_name, jlong param_value_size, jobject param_value)
+{
+    Logger::log(LOG_TRACE, "Executing clSetKernelExecInfo\n");
+    if (clSetKernelExecInfoFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clSetKernelExecInfo is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_kernel nativeKernel = NULL;
+	cl_kernel_exec_info nativeParam_name = 0;
+	size_t nativeParam_value_size;
+    void *nativeParam_value;
+
+    // Obtain native variable values
+    if (kernel != NULL)
+    {
+        nativeKernel = (cl_kernel)env->GetLongField(kernel, NativePointerObject_nativePointer);
+    }
+    nativeParam_name = (cl_kernel_exec_info)param_name;
+	nativeParam_value_size = (size_t)param_value_size;
+    PointerData *param_valuePointerData = initPointerData(env, param_value);
+    if (param_valuePointerData == NULL)
+    {
+        return CL_INVALID_HOST_PTR;
+    }
+    nativeParam_value = (void*)param_valuePointerData->pointer;
+
+    int result = (clSetKernelExecInfoFP)(nativeKernel, nativeParam_name, nativeParam_value_size, nativeParam_value);
+
+    // Write back native variable values and clean up
+    if (!releasePointerData(env, param_valuePointerData, JNI_ABORT)) return CL_INVALID_HOST_PTR;
+
+    return result;
+}
+
+//#endif // defined(CL_VERSION_2_0)
 
 
 /*
@@ -5805,40 +6308,350 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetPrintfCallbackNative
   (JNIEnv *env, jclass UNUSED(cls), jobject context, jobject pfn_notify, jobject user_data)
 {
     Logger::log(LOG_TRACE, "Executing clSetPrintfCallback\n");
-    if (clSetPrintfCallbackFP == NULL)
+    //if (TRUE) // As of OpenCL 2.0
     {
         ThrowByName(env, "java/lang/UnsupportedOperationException",
             "The function clSetPrintfCallback is not supported");
         return CL_INVALID_OPERATION;
     }
+}
+
+
+//#endif // defined(CL_VERSION_1_2)
+
+
+
+//#if defined(CL_VERSION_2_0)
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueSVMFreeNative
+ * Signature: (Lorg/jocl/cl_command_queue;I[Lorg/jocl/Pointer;Lorg/jocl/SVMFreeFunction;Ljava/lang/Object;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMFreeNative
+(JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jint num_svm_pointers, jobjectArray svm_pointers, jobject pfn_free_func, jobject user_data, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+{
+    Logger::log(LOG_TRACE, "Executing clEnqueueSVMFree\n");
+    if (clEnqueueSVMFreeFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clEnqueueSVMFree is not supported");
+        return CL_INVALID_OPERATION;
+    }
 
     // Native variables declaration
-    cl_context nativeContext = NULL;
-    PrintfCallbackFunctionPointer nativePfn_notify = NULL;
+    cl_command_queue nativeCommand_queue = NULL;
+    cl_uint nativeNum_svm_pointers = 0;
+    void **nativeSvm_pointers = NULL;
+	SVMFreeCallbackFunctionPointer nativePfn_free_func = NULL;
     void *nativeUser_data = NULL;
+    cl_uint nativeNum_events_in_wait_list = 0;
+    cl_event *nativeEvent_wait_list = NULL;
+    cl_event nativeEvent = NULL;
+    cl_event *nativeEventPointer = NULL;
 
     // Obtain native variable values
-    if (context != NULL)
+    if (command_queue != NULL)
     {
-        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+        nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
     }
-    if (pfn_notify != NULL)
+    nativeNum_svm_pointers = (cl_uint)num_svm_pointers;
+    if (svm_pointers != NULL)
     {
-        nativePfn_notify = &PrintfCallbackFunction;
-        CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
+		nativeSvm_pointers = createSvmPointers(env, svm_pointers, num_svm_pointers);
+        if (nativeSvm_pointers == NULL)
+        {
+            return NULL;
+        }
+    }
+	CallbackInfo *callbackInfo = NULL;
+    if (pfn_free_func != NULL)
+    {
+		nativePfn_free_func = &SVMFreeCallbackFunction;
+        callbackInfo = initCallbackInfo(env, pfn_free_func, user_data);
         if (callbackInfo == NULL)
         {
             return NULL;
         }
         nativeUser_data = (void*)callbackInfo;
     }
+    nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
+    if (event_wait_list != NULL)
+    {
+        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        if (nativeEvent_wait_list == NULL)
+        {
+            return CL_OUT_OF_HOST_MEMORY;
+        }
+    }
+    if (event != NULL)
+    {
+        nativeEventPointer = &nativeEvent;
+    }
+    int result = (clEnqueueSVMFreeFP)(nativeCommand_queue, nativeNum_svm_pointers, nativeSvm_pointers, nativePfn_free_func, nativeUser_data, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
 
-    int result = (clSetPrintfCallbackFP)(nativeContext, nativePfn_notify, nativeUser_data);
+    // Write back native variable values and clean up
+    delete[] nativeSvm_pointers;
+    delete[] nativeEvent_wait_list;
+    setNativePointer(env, event, (jlong)nativeEvent);
+
+    return result;
+
+}
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueSVMMemcpyNative
+ * Signature: (Lorg/jocl/cl_command_queue;ZLorg/jocl/Pointer;Lorg/jocl/Pointer;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMMemcpyNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jboolean blocking_copy, jobject dst_ptr, jobject src_ptr, jlong size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+{
+    Logger::log(LOG_TRACE, "Executing clEnqueueSVMMemcpy\n");
+    if (clEnqueueSVMMemcpyFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clEnqueueSVMMemcpy is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_command_queue nativeCommand_queue = NULL;
+	cl_bool nativeBlocking_copy = CL_TRUE;
+    void* nativeDst_ptr = NULL;
+    void* nativeSrc_ptr = NULL;
+    size_t nativeSize = 0;
+    cl_uint nativeNum_events_in_wait_list = 0;
+    cl_event *nativeEvent_wait_list = NULL;
+    cl_event nativeEvent = NULL;
+    cl_event *nativeEventPointer = NULL;
+
+    // Obtain native variable values
+    if (command_queue != NULL)
+    {
+        nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
+    }
+	nativeBlocking_copy = (cl_bool)blocking_copy;
+    if (dst_ptr != NULL)
+    {
+        nativeDst_ptr = (void*)env->GetLongField(dst_ptr, NativePointerObject_nativePointer);
+    }
+    if (src_ptr != NULL)
+    {
+        nativeSrc_ptr = (void*)env->GetLongField(src_ptr, NativePointerObject_nativePointer);
+    }
+    nativeSize = (size_t)size;
+    nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
+    if (event_wait_list != NULL)
+    {
+        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        if (nativeEvent_wait_list == NULL)
+        {
+            return CL_OUT_OF_HOST_MEMORY;
+        }
+    }
+    if (event != NULL)
+    {
+        nativeEventPointer = &nativeEvent;
+    }
+
+    int result = (clEnqueueSVMMemcpyFP)(nativeCommand_queue, nativeBlocking_copy, nativeDst_ptr, nativeSrc_ptr, nativeSize, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
+
+    // Write back native variable values and clean up
+    delete[] nativeEvent_wait_list;
+    setNativePointer(env, event, (jlong)nativeEvent);
+
     return result;
 }
 
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueSVMMemFillNative
+ * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/Pointer;Lorg/jocl/Pointer;JJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMMemFillNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject svm_ptr, jobject pattern, jlong pattern_size, jlong size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+{
+    Logger::log(LOG_TRACE, "Executing clEnqueueSVMMemFill\n");
+    if (clEnqueueSVMMemFillFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clEnqueueSVMMemFill is not supported");
+        return CL_INVALID_OPERATION;
+    }
 
-//#endif // defined(CL_VERSION_1_2)
+    // Native variables declaration
+    cl_command_queue nativeCommand_queue = NULL;
+    void* nativeSvm_ptr = NULL;
+    void* nativePattern = NULL;
+    size_t nativePattern_size = 0;
+    size_t nativeSize = 0;
+    cl_uint nativeNum_events_in_wait_list = 0;
+    cl_event *nativeEvent_wait_list = NULL;
+    cl_event nativeEvent = NULL;
+    cl_event *nativeEventPointer = NULL;
+
+    // Obtain native variable values
+    if (command_queue != NULL)
+    {
+        nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
+    }
+    if (svm_ptr != NULL)
+    {
+        nativeSvm_ptr = (void*)env->GetLongField(svm_ptr, NativePointerObject_nativePointer);
+    }
+    if (pattern != NULL)
+    {
+        nativePattern = (void*)env->GetLongField(pattern, NativePointerObject_nativePointer);
+    }
+    nativePattern_size = (size_t)pattern_size;
+    nativeSize = (size_t)size;
+    nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
+    if (event_wait_list != NULL)
+    {
+        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        if (nativeEvent_wait_list == NULL)
+        {
+            return CL_OUT_OF_HOST_MEMORY;
+        }
+    }
+    if (event != NULL)
+    {
+        nativeEventPointer = &nativeEvent;
+    }
+
+    int result = (clEnqueueSVMMemFillFP)(nativeCommand_queue, nativeSvm_ptr, nativePattern, nativePattern_size, nativeSize, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
+
+    // Write back native variable values and clean up
+    delete[] nativeEvent_wait_list;
+    setNativePointer(env, event, (jlong)nativeEvent);
+
+    return result;
+}
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueSVMMapNative
+ * Signature: (Lorg/jocl/cl_command_queue;ZJLorg/jocl/Pointer;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMMapNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jboolean blocking_map, jlong flags, jobject svm_ptr, jlong size, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+{
+    Logger::log(LOG_TRACE, "Executing clEnqueueSVMMap\n");
+    if (clEnqueueSVMMapFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clEnqueueSVMMap is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_command_queue nativeCommand_queue = NULL;
+	cl_bool nativeBlocking_map = CL_TRUE;
+	cl_map_flags nativeFlags = 0;
+    void* nativeSvm_ptr = NULL;
+    size_t nativeSize = 0;
+    cl_uint nativeNum_events_in_wait_list = 0;
+    cl_event *nativeEvent_wait_list = NULL;
+    cl_event nativeEvent = NULL;
+    cl_event *nativeEventPointer = NULL;
+
+    // Obtain native variable values
+    if (command_queue != NULL)
+    {
+        nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
+    }
+	nativeBlocking_map = (cl_bool)blocking_map;
+	nativeFlags = (cl_map_flags)flags;
+    if (svm_ptr != NULL)
+    {
+        nativeSvm_ptr = (void*)env->GetLongField(svm_ptr, NativePointerObject_nativePointer);
+    }
+    nativeSize = (size_t)size;
+    nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
+    if (event_wait_list != NULL)
+    {
+        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        if (nativeEvent_wait_list == NULL)
+        {
+            return CL_OUT_OF_HOST_MEMORY;
+        }
+    }
+    if (event != NULL)
+    {
+        nativeEventPointer = &nativeEvent;
+    }
+
+    int result = (clEnqueueSVMMapFP)(nativeCommand_queue, nativeBlocking_map, nativeFlags, nativeSvm_ptr, nativeSize, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
+
+    // Write back native variable values and clean up
+    delete[] nativeEvent_wait_list;
+    setNativePointer(env, event, (jlong)nativeEvent);
+
+    return result;
+}
+
+/*
+ * Class:     org_jocl_CL
+ * Method:    clEnqueueSVMUnmapNative
+ * Signature: (Lorg/jocl/cl_command_queue;Lorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMUnmapNative
+  (JNIEnv *env, jclass UNUSED(cls), jobject command_queue, jobject svm_ptr, jint num_events_in_wait_list, jobjectArray event_wait_list, jobject event)
+{
+    Logger::log(LOG_TRACE, "Executing clEnqueueSVMUnmap\n");
+    if (clEnqueueSVMUnmapFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clEnqueueSVMUnmap is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_command_queue nativeCommand_queue = NULL;
+    void* nativeSvm_ptr = NULL;
+    cl_uint nativeNum_events_in_wait_list = 0;
+    cl_event *nativeEvent_wait_list = NULL;
+    cl_event nativeEvent = NULL;
+    cl_event *nativeEventPointer = NULL;
+
+    // Obtain native variable values
+    if (command_queue != NULL)
+    {
+        nativeCommand_queue = (cl_command_queue)env->GetLongField(command_queue, NativePointerObject_nativePointer);
+    }
+    if (svm_ptr != NULL)
+    {
+        nativeSvm_ptr = (void*)env->GetLongField(svm_ptr, NativePointerObject_nativePointer);
+    }
+    nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
+    if (event_wait_list != NULL)
+    {
+        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        if (nativeEvent_wait_list == NULL)
+        {
+            return CL_OUT_OF_HOST_MEMORY;
+        }
+    }
+    if (event != NULL)
+    {
+        nativeEventPointer = &nativeEvent;
+    }
+
+    int result = (clEnqueueSVMUnmapFP)(nativeCommand_queue, nativeSvm_ptr, nativeNum_events_in_wait_list, nativeEvent_wait_list, nativeEventPointer);
+
+    // Write back native variable values and clean up
+    delete[] nativeEvent_wait_list;
+    setNativePointer(env, event, (jlong)nativeEvent);
+
+    return result;
+
+}
+
+
+
+//#endif // defined(CL_VERSION_2_0)
+
 
 /*
  * Class:     org_jocl_CL
@@ -6460,12 +7273,10 @@ void registerAllNatives(JNIEnv *env, jclass cls)
     nativeMethod.signature = "(I)V";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "allocateAlignedNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_allocateAlignedNative;
     nativeMethod.signature = "(IILorg/jocl/Pointer;)Ljava/nio/ByteBuffer;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "freeAlignedNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_freeAlignedNative;
@@ -6478,546 +7289,505 @@ void registerAllNatives(JNIEnv *env, jclass cls)
     nativeMethod.signature = "(I[Lorg/jocl/cl_platform_id;[I)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clGetPlatformInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetPlatformInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_platform_id;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetDeviceIDsNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetDeviceIDsNative;
     nativeMethod.signature = "(Lorg/jocl/cl_platform_id;JI[Lorg/jocl/cl_device_id;[I)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clGetDeviceInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetDeviceInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_device_id;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clCreateSubDevicesNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateSubDevicesNative;
     nativeMethod.signature = "(Lorg/jocl/cl_device_id;Lorg/jocl/cl_device_partition_property;I[Lorg/jocl/cl_device_id;[I)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clRetainDeviceNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainDeviceNative;
     nativeMethod.signature = "(Lorg/jocl/cl_device_id;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clReleaseDeviceNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseDeviceNative;
     nativeMethod.signature = "(Lorg/jocl/cl_device_id;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clCreateContextNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateContextNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context_properties;I[Lorg/jocl/cl_device_id;Lorg/jocl/CreateContextFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_context;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clCreateContextFromTypeNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateContextFromTypeNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context_properties;JLorg/jocl/CreateContextFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_context;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clRetainContextNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainContextNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clReleaseContextNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseContextNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetContextInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetContextInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clCreateCommandQueueNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateCommandQueueNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;Lorg/jocl/cl_device_id;J[I)Lorg/jocl/cl_command_queue;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
+    nativeMethod.name = "clCreateCommandQueueWithPropertiesNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateCommandQueueWithPropertiesNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_context;Lorg/jocl/cl_device_id;Lorg/jocl/cl_queue_properties;[I)Lorg/jocl/cl_command_queue;";
+    env->RegisterNatives(cls, &nativeMethod, 1);
 
     nativeMethod.name = "clRetainCommandQueueNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainCommandQueueNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clReleaseCommandQueueNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseCommandQueueNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetCommandQueueInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetCommandQueueInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clSetCommandQueuePropertyNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetCommandQueuePropertyNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;JZ[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clCreateBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;JJLorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clCreateSubBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateSubBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;JILorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clCreateSubBuffer2Native";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateSubBuffer2Native;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;JILorg/jocl/cl_buffer_region;[I)Lorg/jocl/cl_mem;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clCreateImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;JLorg/jocl/cl_image_format;Lorg/jocl/cl_image_desc;Lorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
+
+    nativeMethod.name = "clCreatePipeNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreatePipeNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_context;JIILorg/jocl/cl_pipe_properties;[I)Lorg/jocl/cl_mem;";
+    env->RegisterNatives(cls, &nativeMethod, 1);
 
     nativeMethod.name = "clCreateImage2DNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateImage2DNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;J[Lorg/jocl/cl_image_format;JJJLorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clCreateImage3DNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateImage3DNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;J[Lorg/jocl/cl_image_format;JJJJJLorg/jocl/Pointer;[I)Lorg/jocl/cl_mem;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clRetainMemObjectNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainMemObjectNative;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clReleaseMemObjectNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseMemObjectNative;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetSupportedImageFormatsNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetSupportedImageFormatsNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;JII[Lorg/jocl/cl_image_format;[I)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clGetMemObjectInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetMemObjectInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetImageInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetImageInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
+    nativeMethod.name = "clGetPipeInfoNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetPipeInfoNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_mem;IJLorg/jocl/Pointer;[J)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clSetMemObjectDestructorCallbackNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetMemObjectDestructorCallbackNative;
     nativeMethod.signature = "(Lorg/jocl/cl_mem;Lorg/jocl/MemObjectDestructorCallbackFunction;Ljava/lang/Object;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
+
+    nativeMethod.name = "clSVMAllocNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSVMAllocNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_context;JJI)Lorg/jocl/Pointer;";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clSVMFreeNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSVMFreeNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_context;Lorg/jocl/Pointer;)V";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clCreateSamplerWithPropertiesNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateSamplerWithPropertiesNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_context;Lorg/jocl/cl_sampler_properties;[I)Lorg/jocl/cl_sampler;";
+    env->RegisterNatives(cls, &nativeMethod, 1);
 
     nativeMethod.name = "clCreateSamplerNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateSamplerNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;ZII[I)Lorg/jocl/cl_sampler;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clRetainSamplerNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainSamplerNative;
     nativeMethod.signature = "(Lorg/jocl/cl_sampler;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clReleaseSamplerNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseSamplerNative;
     nativeMethod.signature = "(Lorg/jocl/cl_sampler;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clGetSamplerInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetSamplerInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_sampler;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clCreateProgramWithSourceNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateProgramWithSourceNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;I[Ljava/lang/String;[J[I)Lorg/jocl/cl_program;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clCreateProgramWithBinaryNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateProgramWithBinaryNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;[J[[B[I[I)Lorg/jocl/cl_program;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clCreateProgramWithBuiltInKernelsNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateProgramWithBuiltInKernelsNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;Ljava/lang/String;[I)Lorg/jocl/cl_program;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clRetainProgramNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainProgramNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clReleaseProgramNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseProgramNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clBuildProgramNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clBuildProgramNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;I[Lorg/jocl/cl_device_id;Ljava/lang/String;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clCompileProgramNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCompileProgramNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;I[Lorg/jocl/cl_device_id;Ljava/lang/String;I[Lorg/jocl/cl_program;[Ljava/lang/String;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clLinkProgramNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clLinkProgramNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;I[Lorg/jocl/cl_device_id;Ljava/lang/String;I[Lorg/jocl/cl_program;Lorg/jocl/BuildProgramFunction;Ljava/lang/Object;[I)Lorg/jocl/cl_program;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clUnloadPlatformCompilerNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clUnloadPlatformCompilerNative;
     nativeMethod.signature = "(Lorg/jocl/cl_platform_id;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clUnloadCompilerNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clUnloadCompilerNative;
     nativeMethod.signature = "()I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clGetProgramInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetProgramInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetProgramBuildInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetProgramBuildInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;Lorg/jocl/cl_device_id;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clCreateKernelNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateKernelNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;Ljava/lang/String;[I)Lorg/jocl/cl_kernel;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clCreateKernelsInProgramNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateKernelsInProgramNative;
     nativeMethod.signature = "(Lorg/jocl/cl_program;I[Lorg/jocl/cl_kernel;[I)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clRetainKernelNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainKernelNative;
     nativeMethod.signature = "(Lorg/jocl/cl_kernel;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clReleaseKernelNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseKernelNative;
     nativeMethod.signature = "(Lorg/jocl/cl_kernel;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clSetKernelArgNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetKernelArgNative;
     nativeMethod.signature = "(Lorg/jocl/cl_kernel;IJLorg/jocl/Pointer;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
+    nativeMethod.name = "clSetKernelArgSVMPointerNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetKernelArgSVMPointerNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_kernel;ILorg/jocl/Pointer;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clSetKernelExecInfoNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetKernelExecInfoNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_kernel;IJLorg/jocl/Pointer;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
 
     nativeMethod.name = "clGetKernelInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetKernelInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_kernel;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clGetKernelArgInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetKernelArgInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_kernel;IIJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clGetKernelWorkGroupInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetKernelWorkGroupInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_kernel;Lorg/jocl/cl_device_id;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clWaitForEventsNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clWaitForEventsNative;
     nativeMethod.signature = "(I[Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clGetEventInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetEventInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_event;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clCreateUserEventNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clCreateUserEventNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;[I)Lorg/jocl/cl_event;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clRetainEventNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clRetainEventNative;
     nativeMethod.signature = "(Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clReleaseEventNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clReleaseEventNative;
     nativeMethod.signature = "(Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clSetUserEventStatusNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetUserEventStatusNative;
     nativeMethod.signature = "(Lorg/jocl/cl_event;I)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clSetEventCallbackNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetEventCallbackNative;
     nativeMethod.signature = "(Lorg/jocl/cl_event;ILorg/jocl/EventCallbackFunction;Ljava/lang/Object;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clGetEventProfilingInfoNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetEventProfilingInfoNative;
     nativeMethod.signature = "(Lorg/jocl/cl_event;IJLorg/jocl/Pointer;[J)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clFlushNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clFlushNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clFinishNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clFinishNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueReadBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueReadBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clEnqueueReadBufferRectNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueReadBufferRectNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[J[JJJJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clEnqueueWriteBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueWriteBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clEnqueueWriteBufferRectNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueWriteBufferRectNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[J[JJJJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clEnqueueFillBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueFillBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/Pointer;JJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clEnqueueCopyBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueCopyBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;JJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
-//#if defined(CL_VERSION_1_1)
     nativeMethod.name = "clEnqueueCopyBufferRectNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueCopyBufferRectNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;[J[J[JJJJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clEnqueueReadImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueReadImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[JJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueWriteImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueWriteImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Z[J[JJJLorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clEnqueueFillImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueFillImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/Pointer;[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clEnqueueCopyImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueCopyImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueCopyImageToBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueCopyImageToBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;[J[JJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clEnqueueCopyBufferToImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueCopyBufferToImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Lorg/jocl/cl_mem;J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueMapBufferNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueMapBufferNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJJJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;[I)Ljava/nio/ByteBuffer;";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clEnqueueMapImageNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueMapImageNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;ZJ[J[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;[I)Ljava/nio/ByteBuffer;";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueUnmapMemObjectNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueUnmapMemObjectNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_mem;Ljava/nio/ByteBuffer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clEnqueueMigrateMemObjectsNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueMigrateMemObjectsNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_mem;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
     nativeMethod.name = "clEnqueueNDRangeKernelNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueNDRangeKernelNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_kernel;I[J[J[JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueTaskNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueTaskNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_kernel;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clEnqueueNativeKernelNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueNativeKernelNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/EnqueueNativeKernelFunction;Ljava/lang/Object;JI[Lorg/jocl/cl_mem;[Lorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clEnqueueMarkerWithWaitListNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueMarkerWithWaitListNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clEnqueueBarrierWithWaitListNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueBarrierWithWaitListNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
 
-//#if defined(CL_VERSION_1_2)
     nativeMethod.name = "clSetPrintfCallbackNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clSetPrintfCallbackNative;
     nativeMethod.signature = "(Lorg/jocl/cl_context;Lorg/jocl/PrintfCallbackFunction;Ljava/lang/Object;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-//#endif
+
+    nativeMethod.name = "clEnqueueSVMFreeNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueSVMFreeNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/Pointer;Lorg/jocl/SVMFreeFunction;Ljava/lang/Object;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clEnqueueSVMMemcpyNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueSVMMemcpyNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_command_queue;ZLorg/jocl/Pointer;Lorg/jocl/Pointer;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clEnqueueSVMMemFillNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueSVMMemFillNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/Pointer;Lorg/jocl/Pointer;JJI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clEnqueueSVMMapNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueSVMMapNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_command_queue;ZJLorg/jocl/Pointer;JI[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
+
+    nativeMethod.name = "clEnqueueSVMUnmapNative";
+    nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueSVMUnmapNative;
+    nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/Pointer;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
+    env->RegisterNatives(cls, &nativeMethod, 1);
 
     nativeMethod.name = "clEnqueueMarkerNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueMarkerNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 
-
     nativeMethod.name = "clEnqueueWaitForEventsNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueWaitForEventsNative;
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
-
 
     nativeMethod.name = "clEnqueueBarrierNative";
     nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clEnqueueBarrierNative;

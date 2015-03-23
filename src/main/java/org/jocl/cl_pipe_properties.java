@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2014 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -28,21 +28,37 @@
 package org.jocl;
 
 /**
- * Emulation of a function pointer that may be passed to the
- * {@link CL#clSetPrintfCallback(cl_context, PrintfCallbackFunction, Object)}
- * method.
+ * Java port of cl_pipe_properties.
  * 
- * @see CL#clSetPrintfCallback(cl_context, PrintfCallbackFunction, Object)
+ * In OpenCL 2.0, the properties object must always be "null".
  */
-public interface PrintfCallbackFunction 
+public final class cl_pipe_properties extends cl_abstract_properties
 {
     /**
-     * The function that will be called
-     * 
-     * @param context The context
-     * @param printf_data_len The length of the printf data
-     * @param printf_data_ptr The printf data
-     * @param user_data The user data
+     * Creates new, empty cl_pipe_properties 
      */
-    void function(cl_context context , int printf_data_len , String printf_data_ptr , Object user_data);        
+    public cl_pipe_properties()
+    {
+    }
+    
+    @Override
+    protected String propertyString(long value)
+    {
+        return "(unknown)";
+    }
+    
+    /**
+     * Returns a String representation of this object.
+     * 
+     * @return A String representation of this object.
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder result = new StringBuilder("cl_pipe_properties[");
+        result.append(buildString());
+        result.append("]");
+        return result.toString();
+    }
+
 }

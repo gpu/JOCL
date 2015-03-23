@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2011 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2015 Marco Hutter - http://www.jocl.org
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -35,23 +35,23 @@ import java.util.concurrent.*;
 /**
  * JOCL - Java bindings for OpenCL.<br />
  * <br />
- * The documentation of the OpenCL methods has been extracted from the OpenCL 
- * registry at http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/
- * and is copyright (c) 2007-2010 by The Khronos Group Inc. 
+ * The documentation of the OpenCL methods has been extracted from the OpenCL
+ * registry at https://www.khronos.org/registry/cl/sdk/2.0/docs/man/xhtml/
+ * and is copyright (c) 2007-2010 by The Khronos Group Inc.
  */
 public final class CL
 {
     // Initialization of the native library
     static
     {
-        LibUtils.loadLibrary("JOCL_0_1_9");
+        LibUtils.loadLibrary("JOCL_0_2_0");
     }
-    
+
     /**
      * Initialize the native library. That is, initialize the function
      * pointers which will be used to call the OpenCL functions.
-     * 
-     * @param fullName The full, platform specific name of the 
+     *
+     * @param fullName The full, platform specific name of the
      * OpenCL implementation library (e.g. "OpenCL.dll")
      * @return Whether the initialization succeeded.
      */
@@ -122,7 +122,7 @@ public final class CL
     public static final int CL_LINK_PROGRAM_FAILURE                     = -17;
     public static final int CL_DEVICE_PARTITION_FAILED                  = -18;
     public static final int CL_KERNEL_ARG_INFO_NOT_AVAILABLE            = -19;
-    
+
     public static final int CL_INVALID_VALUE                            = -30;
     public static final int CL_INVALID_DEVICE_TYPE                      = -31;
     public static final int CL_INVALID_PLATFORM                         = -32;
@@ -163,19 +163,24 @@ public final class CL
     public static final int CL_INVALID_COMPILER_OPTIONS                 = -66;
     public static final int CL_INVALID_LINKER_OPTIONS                   = -67;
     public static final int CL_INVALID_DEVICE_PARTITION_COUNT           = -68;
-    
+
+    // OPENCL_2_0
+    public static final int CL_INVALID_PIPE_SIZE                        = -69;
+    public static final int CL_INVALID_DEVICE_QUEUE                     = -70;
+
+
     public static final int CL_JOCL_INTERNAL_ERROR                      = -16384;
     public static final int CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR      = -1000;
     public static final int CL_PLATFORM_NOT_FOUND_KHR                   = -1001;
-    
-    
+
+
     // cl_bool
     public static final boolean CL_TRUE = true;
     public static final boolean CL_FALSE = false;
     // OPENCL_1_2
     public static final boolean CL_BLOCKING = CL_TRUE;
     public static final boolean CL_NON_BLOCKING = CL_FALSE;
-    
+
     // cl_platform_info
     public static final int CL_PLATFORM_PROFILE = 0x0900;
     public static final int CL_PLATFORM_VERSION = 0x0901;
@@ -192,7 +197,7 @@ public final class CL
     public static final long CL_DEVICE_TYPE_ACCELERATOR = (1 << 3);
     public static final long CL_DEVICE_TYPE_ALL = 0xFFFFFFFF;
     // OPENCL_1_2
-    public static final long CL_DEVICE_TYPE_CUSTOM = (1 << 4);    
+    public static final long CL_DEVICE_TYPE_CUSTOM = (1 << 4);
 
     // cl_device_info
     public static final int CL_DEVICE_TYPE = 0x1000;
@@ -237,6 +242,11 @@ public final class CL
     public static final int CL_DEVICE_AVAILABLE = 0x1027;
     public static final int CL_DEVICE_COMPILER_AVAILABLE = 0x1028;
     public static final int CL_DEVICE_EXECUTION_CAPABILITIES = 0x1029;
+
+    /**
+     * @deprecated As of OpenCL 2.0, replaced by
+     * {@link #CL_DEVICE_QUEUE_ON_HOST_PROPERTIES}
+     */
     public static final int CL_DEVICE_QUEUE_PROPERTIES = 0x102A;
     public static final int CL_DEVICE_NAME = 0x102B;
     public static final int CL_DEVICE_VENDOR = 0x102C;
@@ -245,8 +255,12 @@ public final class CL
     public static final int CL_DEVICE_VERSION = 0x102F;
     public static final int CL_DEVICE_EXTENSIONS = 0x1030;
     public static final int CL_DEVICE_PLATFORM = 0x1031;
+
     // OPENCL_1_1
     public static final int CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF       = 0x1034;
+    /**
+     * @deprecated As of OpenCL 2.0
+     */
     public static final int CL_DEVICE_HOST_UNIFIED_MEMORY               = 0x1035;
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_CHAR          = 0x1036;
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_SHORT         = 0x1037;
@@ -256,6 +270,7 @@ public final class CL
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE        = 0x103B;
     public static final int CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF          = 0x103C;
     public static final int CL_DEVICE_OPENCL_C_VERSION                  = 0x103D;
+
     // OPENCL_1_2
     public static final int CL_DEVICE_LINKER_AVAILABLE                  = 0x103E;
     public static final int CL_DEVICE_BUILT_IN_KERNELS                  = 0x103F;
@@ -269,11 +284,31 @@ public final class CL
     public static final int CL_DEVICE_REFERENCE_COUNT                   = 0x1047;
     public static final int CL_DEVICE_PREFERRED_INTEROP_USER_SYNC       = 0x1048;
     public static final int CL_DEVICE_PRINTF_BUFFER_SIZE                = 0x1049;
-    
+
+    // OPENCL_2_0
+    public static final int CL_DEVICE_QUEUE_ON_HOST_PROPERTIES             = 0x102A;
+    public static final int CL_DEVICE_IMAGE_PITCH_ALIGNMENT                = 0x104A;
+    public static final int CL_DEVICE_IMAGE_BASE_ADDRESS_ALIGNMENT         = 0x104B;
+    public static final int CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS            = 0x104C;
+    public static final int CL_DEVICE_MAX_GLOBAL_VARIABLE_SIZE             = 0x104D;
+    public static final int CL_DEVICE_QUEUE_ON_DEVICE_PROPERTIES           = 0x104E;
+    public static final int CL_DEVICE_QUEUE_ON_DEVICE_PREFERRED_SIZE       = 0x104F;
+    public static final int CL_DEVICE_QUEUE_ON_DEVICE_MAX_SIZE             = 0x1050;
+    public static final int CL_DEVICE_MAX_ON_DEVICE_QUEUES                 = 0x1051;
+    public static final int CL_DEVICE_MAX_ON_DEVICE_EVENTS                 = 0x1052;
+    public static final int CL_DEVICE_SVM_CAPABILITIES                     = 0x1053;
+    public static final int CL_DEVICE_GLOBAL_VARIABLE_PREFERRED_TOTAL_SIZE = 0x1054;
+    public static final int CL_DEVICE_MAX_PIPE_ARGS                        = 0x1055;
+    public static final int CL_DEVICE_PIPE_MAX_ACTIVE_RESERVATIONS         = 0x1056;
+    public static final int CL_DEVICE_PIPE_MAX_PACKET_SIZE                 = 0x1057;
+    public static final int CL_DEVICE_PREFERRED_PLATFORM_ATOMIC_ALIGNMENT  = 0x1058;
+    public static final int CL_DEVICE_PREFERRED_GLOBAL_ATOMIC_ALIGNMENT    = 0x1059;
+    public static final int CL_DEVICE_PREFERRED_LOCAL_ATOMIC_ALIGNMENT     = 0x105A;
+
     // CL_EXT
     public static final int CL_DEVICE_DOUBLE_FP_CONFIG                  = 0x1032;
     public static final int CL_DEVICE_HALF_FP_CONFIG                    = 0x1033;
-    
+
 
     // cl_device_address_info - bitfield
     public static final long CL_DEVICE_ADDRESS_32_BITS = (1 << 0);
@@ -289,7 +324,7 @@ public final class CL
     public static final long CL_FP_SOFT_FLOAT = (1 << 6);
     // OPENCL_1_2
     public static final long CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT = (1 << 7);
-    
+
     // cl_device_mem_cache_type
     public static final int CL_NONE = 0x0;
     public static final int CL_READ_ONLY_CACHE = 0x1;
@@ -306,6 +341,10 @@ public final class CL
     // cl_command_queue_properties - bitfield
     public static final long CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE = (1 << 0);
     public static final long CL_QUEUE_PROFILING_ENABLE = (1 << 1);
+    // OPENCL_2_0
+    public static final long CL_QUEUE_ON_DEVICE = (1 << 2);
+    public static final long CL_QUEUE_ON_DEVICE_DEFAULT =(1 << 3);
+
 
     // cl_context_info
     public static final int CL_CONTEXT_REFERENCE_COUNT = 0x1080;
@@ -317,14 +356,14 @@ public final class CL
     public static final int CL_CONTEXT_PLATFORM          = 0x1084;
     // OPENCL_1_2
     public static final int CL_CONTEXT_INTEROP_USER_SYNC = 0x1085;
-    
+
     // OPENCL_1_2
     /* cl_device_partition_property */
     public static final int  CL_DEVICE_PARTITION_EQUALLY                = 0x1086;
     public static final int  CL_DEVICE_PARTITION_BY_COUNTS              = 0x1087;
     public static final int  CL_DEVICE_PARTITION_BY_COUNTS_LIST_END     = 0x0;
     public static final int  CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN     = 0x1088;
-        
+
     // OPENCL_1_2
     /* cl_device_affinity_domain - bitfield */
     public static final long CL_DEVICE_AFFINITY_DOMAIN_NUMA               = (1 << 0);
@@ -333,12 +372,22 @@ public final class CL
     public static final long CL_DEVICE_AFFINITY_DOMAIN_L2_CACHE           = (1 << 3);
     public static final long CL_DEVICE_AFFINITY_DOMAIN_L1_CACHE           = (1 << 4);
     public static final long CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE = (1 << 5);
-    
+
+    // OPENCL_2_0
+    /* cl_device_svm_capabilities - bitfield */
+    public static final long CL_DEVICE_SVM_COARSE_GRAIN_BUFFER           = (1 << 0);
+    public static final long CL_DEVICE_SVM_FINE_GRAIN_BUFFER             = (1 << 1);
+    public static final long CL_DEVICE_SVM_FINE_GRAIN_SYSTEM             = (1 << 2);
+    public static final long CL_DEVICE_SVM_ATOMICS                       = (1 << 3);
+
+
     // cl_command_queue_info
     public static final int CL_QUEUE_CONTEXT = 0x1090;
     public static final int CL_QUEUE_DEVICE = 0x1091;
     public static final int CL_QUEUE_REFERENCE_COUNT = 0x1092;
     public static final int CL_QUEUE_PROPERTIES = 0x1093;
+    // OPENCL_2_0
+    public static final int CL_QUEUE_SIZE = 0x1094;
 
     // cl_mem_flags - bitfield
     public static final long CL_MEM_READ_WRITE = (1 << 0);
@@ -351,12 +400,15 @@ public final class CL
     public static final long  CL_MEM_HOST_WRITE_ONLY =(1 << 7);
     public static final long  CL_MEM_HOST_READ_ONLY = (1 << 8);
     public static final long  CL_MEM_HOST_NO_ACCESS = (1 << 9);
-    
+    // OPENCL_2_0
+    public static final long CL_MEM_SVM_FINE_GRAIN_BUFFER = (1 << 10);   /* used by cl_svm_mem_flags only */
+    public static final long CL_MEM_SVM_ATOMICS = (1 << 11);   /* used by cl_svm_mem_flags only */
+
     // OPENCL_1_2
     /* cl_mem_migration_flags - bitfield */
     public static final long  CL_MIGRATE_MEM_OBJECT_HOST              = (1 << 0);
     public static final long  CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED = (1 << 1);
-    
+
     // cl_channel_order
     public static final int CL_R = 0x10B0;
     public static final int CL_A = 0x10B1;
@@ -372,6 +424,15 @@ public final class CL
     public static final int CL_Rx                                       = 0x10BA;
     public static final int CL_RGx                                      = 0x10BB;
     public static final int CL_RGBx                                     = 0x10BC;
+    // OPENCL_2_0
+    public static final int CL_DEPTH                                    = 0x10BD;
+    public static final int CL_DEPTH_STENCIL                            = 0x10BE;
+    public static final int CL_sRGB                                     = 0x10BF;
+    public static final int CL_sRGBx                                    = 0x10C0;
+    public static final int CL_sRGBA                                    = 0x10C1;
+    public static final int CL_sBGRA                                    = 0x10C2;
+    public static final int CL_ABGR                                     = 0x10C3;
+
 
     // cl_channel_type
     public static final int CL_SNORM_INT8 = 0x10D0;
@@ -389,6 +450,9 @@ public final class CL
     public static final int CL_UNSIGNED_INT32 = 0x10DC;
     public static final int CL_HALF_FLOAT = 0x10DD;
     public static final int CL_FLOAT = 0x10DE;
+    // OPENCL_2_0
+    public static final int CL_UNORM_INT24 = 0x10DF;
+
 
     // cl_mem_object_type
     public static final int CL_MEM_OBJECT_BUFFER = 0x10F0;
@@ -399,6 +463,9 @@ public final class CL
     public static final int CL_MEM_OBJECT_IMAGE1D        = 0x10F4;
     public static final int CL_MEM_OBJECT_IMAGE1D_ARRAY  = 0x10F5;
     public static final int CL_MEM_OBJECT_IMAGE1D_BUFFER = 0x10F6;
+    // OPENCL_2_0
+    public static final int CL_MEM_OBJECT_PIPE = 0x10F7;
+
 
     // cl_mem_info
     public static final int CL_MEM_TYPE = 0x1100;
@@ -411,6 +478,9 @@ public final class CL
     // OPENCL_1_1
     public static final int CL_MEM_ASSOCIATED_MEMOBJECT                 = 0x1107;
     public static final int CL_MEM_OFFSET                               = 0x1108;
+    // OPENCL_2_0
+    public static final int CL_MEM_USES_SVM_POINTER                     = 0x1109;
+
 
     // cl_image_info
     public static final int CL_IMAGE_FORMAT = 0x1110;
@@ -425,7 +495,13 @@ public final class CL
     public static final int CL_IMAGE_BUFFER         = 0x1118;
     public static final int CL_IMAGE_NUM_MIP_LEVELS = 0x1119;
     public static final int CL_IMAGE_NUM_SAMPLES    = 0x111A;
-    
+
+    // OPENCL_2_0
+    // cl_pipe_info - uint
+    public static final int CL_PIPE_PACKET_SIZE                         = 0x1120;
+    public static final int CL_PIPE_MAX_PACKETS                         = 0x1121;
+
+
     // cl_addressing_mode
     public static final int CL_ADDRESS_NONE = 0x1130;
     public static final int CL_ADDRESS_CLAMP_TO_EDGE = 0x1131;
@@ -444,13 +520,18 @@ public final class CL
     public static final int CL_SAMPLER_NORMALIZED_COORDS = 0x1152;
     public static final int CL_SAMPLER_ADDRESSING_MODE = 0x1153;
     public static final int CL_SAMPLER_FILTER_MODE = 0x1154;
+    // OPENCL_2_0
+    public static final int CL_SAMPLER_MIP_FILTER_MODE                  = 0x1155;
+    public static final int CL_SAMPLER_LOD_MIN                          = 0x1156;
+    public static final int CL_SAMPLER_LOD_MAX                          = 0x1157;
+
 
     // cl_map_flags - bitfield
     public static final long CL_MAP_READ = (1 << 0);
     public static final long CL_MAP_WRITE = (1 << 1);
     // OPENCL_1_2
     public static final long CL_MAP_WRITE_INVALIDATE_REGION = (1 << 2);
-    
+
     // cl_program_info
     public static final int CL_PROGRAM_REFERENCE_COUNT = 0x1160;
     public static final int CL_PROGRAM_CONTEXT = 0x1161;
@@ -462,21 +543,24 @@ public final class CL
     // OPENCL_1_2
     public static final int CL_PROGRAM_NUM_KERNELS  = 0x1167;
     public static final int CL_PROGRAM_KERNEL_NAMES = 0x1168;
-    
+
     // cl_program_build_info
     public static final int CL_PROGRAM_BUILD_STATUS = 0x1181;
     public static final int CL_PROGRAM_BUILD_OPTIONS = 0x1182;
     public static final int CL_PROGRAM_BUILD_LOG = 0x1183;
     // OPENCL_1_2
     public static final int CL_PROGRAM_BINARY_TYPE = 0x1184;
-    
+    // OPENCL_2_0
+    public static final int CL_PROGRAM_BUILD_GLOBAL_VARIABLE_TOTAL_SIZE = 0x1185;
+
+
     /* cl_program_binary_type */
     // OPENCL_1_2
     public static final int CL_PROGRAM_BINARY_TYPE_NONE            = 0x0;
     public static final int CL_PROGRAM_BINARY_TYPE_COMPILED_OBJECT = 0x1;
     public static final int CL_PROGRAM_BINARY_TYPE_LIBRARY         = 0x2;
     public static final int CL_PROGRAM_BINARY_TYPE_EXECUTABLE      = 0x4;
-    
+
     // cl_build_status
     public static final int CL_BUILD_SUCCESS = 0;
     public static final int CL_BUILD_NONE = -1;
@@ -491,7 +575,7 @@ public final class CL
     public static final int CL_KERNEL_PROGRAM = 0x1194;
     // OPENCL_1_2
     public static final int CL_KERNEL_ATTRIBUTES = 0x1195;
-    
+
     /* cl_kernel_arg_info */
     // OPENCL_1_2
     public static final int CL_KERNEL_ARG_ADDRESS_QUALIFIER = 0x1196;
@@ -513,15 +597,17 @@ public final class CL
     public static final int CL_KERNEL_ARG_ACCESS_WRITE_ONLY = 0x11A1;
     public static final int CL_KERNEL_ARG_ACCESS_READ_WRITE = 0x11A2;
     public static final int CL_KERNEL_ARG_ACCESS_NONE       = 0x11A3;
-        
+
     /* cl_kernel_arg_type_qualifer - bitfield */
     // OPENCL_1_2
     public static final long CL_KERNEL_ARG_TYPE_NONE      = 0;
     public static final long CL_KERNEL_ARG_TYPE_CONST     = (1 << 0);
     public static final long CL_KERNEL_ARG_TYPE_RESTRICT  = (1 << 1);
     public static final long CL_KERNEL_ARG_TYPE_VOLATILE  = (1 << 2);
-    
-    
+    // OPENCL_2_0
+    public static final long CL_KERNEL_ARG_TYPE_PIPE      = (1 << 3);
+
+
     // cl_kernel_work_group_info
     public static final int CL_KERNEL_WORK_GROUP_SIZE = 0x11B0;
     public static final int CL_KERNEL_COMPILE_WORK_GROUP_SIZE = 0x11B1;
@@ -531,8 +617,13 @@ public final class CL
     public static final int CL_KERNEL_PRIVATE_MEM_SIZE                   = 0x11B4;
     // OPENCL_1_2
     public static final int CL_KERNEL_GLOBAL_WORK_SIZE = 0x11B5;
-    
-    
+
+    // OPENCL_2_0
+    /* cl_kernel_exec_info - uint */
+    public static final int CL_KERNEL_EXEC_INFO_SVM_PTRS               = 0x11B6;
+    public static final int CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM  = 0x11B7;
+
+
     // cl_event_info
     public static final int CL_EVENT_COMMAND_QUEUE = 0x11D0;
     public static final int CL_EVENT_COMMAND_TYPE = 0x11D1;
@@ -569,13 +660,20 @@ public final class CL
     public static final int CL_COMMAND_MIGRATE_MEM_OBJECTS              = 0x1206;
     public static final int CL_COMMAND_FILL_BUFFER                      = 0x1207;
     public static final int CL_COMMAND_FILL_IMAGE                       = 0x1208;
-    
-    
+    // OPENCL_2_0
+    public static final int CL_COMMAND_SVM_FREE                         = 0x1209;
+    public static final int CL_COMMAND_SVM_MEMCPY                       = 0x120A;
+    public static final int CL_COMMAND_SVM_MEMFILL                      = 0x120B;
+    public static final int CL_COMMAND_SVM_MAP                          = 0x120C;
+    public static final int CL_COMMAND_SVM_UNMAP                        = 0x120D;
+
+
     // command execution status
     public static final int CL_COMPLETE = 0x0;
     public static final int CL_RUNNING = 0x1;
     public static final int CL_SUBMITTED = 0x2;
     public static final int CL_QUEUED = 0x3;
+
 
     // cl_buffer_create_type
     // OPENCL_1_1
@@ -586,6 +684,8 @@ public final class CL
     public static final int CL_PROFILING_COMMAND_SUBMIT = 0x1281;
     public static final int CL_PROFILING_COMMAND_START = 0x1282;
     public static final int CL_PROFILING_COMMAND_END = 0x1283;
+    // OPENCL_2_0
+    public static final int CL_PROFILING_COMMAND_COMPLETE = 0x1284;
 
     // cl_gl_object_type
     public static final int CL_GL_OBJECT_BUFFER             = 0x2000;
@@ -597,11 +697,12 @@ public final class CL
     public static final int  CL_GL_OBJECT_TEXTURE1D         = 0x200F;
     public static final int  CL_GL_OBJECT_TEXTURE1D_ARRAY   = 0x2010;
     public static final int  CL_GL_OBJECT_TEXTURE_BUFFER    = 0x2011;
-    
+
      // cl_gl_texture_info
     public static final int CL_GL_TEXTURE_TARGET            = 0x2004;
     public static final int CL_GL_MIPMAP_LEVEL              = 0x2005;
-
+    // OPENCL_2_0
+    public static final int CL_GL_NUM_SAMPLES               = 0x2012;
 
     // cl_khr_gl_sharing
     public static final int CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR  =  0x2006;
@@ -763,10 +864,12 @@ public final class CL
             case CL_INVALID_COMPILER_OPTIONS: return "CL_INVALID_COMPILER_OPTIONS";
             case CL_INVALID_LINKER_OPTIONS: return "CL_INVALID_LINKER_OPTIONS";
             case CL_INVALID_DEVICE_PARTITION_COUNT: return "CL_INVALID_DEVICE_PARTITION_COUNT";
+            case CL_INVALID_PIPE_SIZE: return "CL_INVALID_PIPE_SIZE";
+            case CL_INVALID_DEVICE_QUEUE: return "CL_INVALID_DEVICE_QUEUE";
             case CL_JOCL_INTERNAL_ERROR: return "CL_JOCL_INTERNAL_ERROR";
             case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
             case CL_PLATFORM_NOT_FOUND_KHR: return "CL_PLATFORM_NOT_FOUND_KHR";
-            
+
             // Some OpenCL implementation return 1 for glBuildProgram
             // if the source code contains errors...
             case 1: return "Error in program source code";
@@ -848,7 +951,7 @@ public final class CL
             case CL_DEVICE_AVAILABLE: return "CL_DEVICE_AVAILABLE";
             case CL_DEVICE_COMPILER_AVAILABLE: return "CL_DEVICE_COMPILER_AVAILABLE";
             case CL_DEVICE_EXECUTION_CAPABILITIES: return "CL_DEVICE_EXECUTION_CAPABILITIES";
-            case CL_DEVICE_QUEUE_PROPERTIES: return "CL_DEVICE_QUEUE_PROPERTIES";
+            //case CL_DEVICE_QUEUE_PROPERTIES: return "CL_DEVICE_QUEUE_PROPERTIES";
             case CL_DEVICE_NAME: return "CL_DEVICE_NAME";
             case CL_DEVICE_VENDOR: return "CL_DEVICE_VENDOR";
             case CL_DRIVER_VERSION: return "CL_DRIVER_VERSION";
@@ -878,6 +981,24 @@ public final class CL
             case CL_DEVICE_REFERENCE_COUNT: return "CL_DEVICE_REFERENCE_COUNT";
             case CL_DEVICE_PREFERRED_INTEROP_USER_SYNC: return "CL_DEVICE_PREFERRED_INTEROP_USER_SYNC";
             case CL_DEVICE_PRINTF_BUFFER_SIZE: return "CL_DEVICE_PRINTF_BUFFER_SIZE";
+            case CL_DEVICE_QUEUE_ON_HOST_PROPERTIES: return "CL_DEVICE_QUEUE_ON_HOST_PROPERTIES";
+            case CL_DEVICE_IMAGE_PITCH_ALIGNMENT: return "CL_DEVICE_IMAGE_PITCH_ALIGNMENT";
+            case CL_DEVICE_IMAGE_BASE_ADDRESS_ALIGNMENT: return "CL_DEVICE_IMAGE_BASE_ADDRESS_ALIGNMENT";
+            case CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS: return "CL_DEVICE_MAX_READ_WRITE_IMAGE_ARGS";
+            case CL_DEVICE_MAX_GLOBAL_VARIABLE_SIZE: return "CL_DEVICE_MAX_GLOBAL_VARIABLE_SIZE";
+            case CL_DEVICE_QUEUE_ON_DEVICE_PROPERTIES: return "CL_DEVICE_QUEUE_ON_DEVICE_PROPERTIES";
+            case CL_DEVICE_QUEUE_ON_DEVICE_PREFERRED_SIZE: return "CL_DEVICE_QUEUE_ON_DEVICE_PREFERRED_SIZE";
+            case CL_DEVICE_QUEUE_ON_DEVICE_MAX_SIZE: return "CL_DEVICE_QUEUE_ON_DEVICE_MAX_SIZE";
+            case CL_DEVICE_MAX_ON_DEVICE_QUEUES: return "CL_DEVICE_MAX_ON_DEVICE_QUEUES";
+            case CL_DEVICE_MAX_ON_DEVICE_EVENTS: return "CL_DEVICE_MAX_ON_DEVICE_EVENTS";
+            case CL_DEVICE_SVM_CAPABILITIES: return "CL_DEVICE_SVM_CAPABILITIES";
+            case CL_DEVICE_GLOBAL_VARIABLE_PREFERRED_TOTAL_SIZE: return "CL_DEVICE_GLOBAL_VARIABLE_PREFERRED_TOTAL_SIZE";
+            case CL_DEVICE_MAX_PIPE_ARGS: return "CL_DEVICE_MAX_PIPE_ARGS";
+            case CL_DEVICE_PIPE_MAX_ACTIVE_RESERVATIONS: return "CL_DEVICE_PIPE_MAX_ACTIVE_RESERVATIONS";
+            case CL_DEVICE_PIPE_MAX_PACKET_SIZE: return "CL_DEVICE_PIPE_MAX_PACKET_SIZE";
+            case CL_DEVICE_PREFERRED_PLATFORM_ATOMIC_ALIGNMENT: return "CL_DEVICE_PREFERRED_PLATFORM_ATOMIC_ALIGNMENT";
+            case CL_DEVICE_PREFERRED_GLOBAL_ATOMIC_ALIGNMENT: return "CL_DEVICE_PREFERRED_GLOBAL_ATOMIC_ALIGNMENT";
+            case CL_DEVICE_PREFERRED_LOCAL_ATOMIC_ALIGNMENT: return "CL_DEVICE_PREFERRED_LOCAL_ATOMIC_ALIGNMENT";
         }
         return "INVALID cl_device_info: " + n;
     }
@@ -987,6 +1108,7 @@ public final class CL
             case CL_QUEUE_DEVICE: return "CL_QUEUE_DEVICE";
             case CL_QUEUE_REFERENCE_COUNT: return "CL_QUEUE_REFERENCE_COUNT";
             case CL_QUEUE_PROPERTIES: return "CL_QUEUE_PROPERTIES";
+            case CL_QUEUE_SIZE: return "CL_QUEUE_SIZE";
         }
         return "INVALID cl_command_queue_info: " + n;
     }
@@ -1014,6 +1136,13 @@ public final class CL
             case CL_Rx: return "CL_Rx";
             case CL_RGx: return "CL_RGx";
             case CL_RGBx: return "CL_RGBx";
+            case CL_DEPTH: return "CL_DEPTH";
+            case CL_DEPTH_STENCIL: return "CL_DEPTH_STENCIL";
+            case CL_sRGB: return "CL_sRGB";
+            case CL_sRGBx: return "CL_sRGBx";
+            case CL_sRGBA: return "CL_sRGBA";
+            case CL_sBGRA: return "CL_sBGRA";
+            case CL_ABGR: return "CL_ABGR";
         }
         return "INVALID cl_channel_order: " + n;
     }
@@ -1043,6 +1172,7 @@ public final class CL
             case CL_UNSIGNED_INT32: return "CL_UNSIGNED_INT32";
             case CL_HALF_FLOAT: return "CL_HALF_FLOAT";
             case CL_FLOAT: return "CL_FLOAT";
+            case CL_UNORM_INT24: return "CL_UNORM_INT24";
         }
         return "INVALID cl_channel_type: " + n;
     }
@@ -1064,6 +1194,7 @@ public final class CL
             case CL_MEM_OBJECT_IMAGE1D: return "CL_MEM_OBJECT_IMAGE1D";
             case CL_MEM_OBJECT_IMAGE1D_ARRAY: return "CL_MEM_OBJECT_IMAGE1D_ARRAY";
             case CL_MEM_OBJECT_IMAGE1D_BUFFER: return "CL_MEM_OBJECT_IMAGE1D_BUFFER";
+            case CL_MEM_OBJECT_PIPE: return "CL_MEM_OBJECT_PIPE";
         }
         return "INVALID cl_mem_object_type: " + n;
     }
@@ -1087,7 +1218,7 @@ public final class CL
             case CL_MEM_CONTEXT: return "CL_MEM_CONTEXT";
             case CL_MEM_ASSOCIATED_MEMOBJECT: return "CL_MEM_ASSOCIATED_MEMOBJECT";
             case CL_MEM_OFFSET: return "CL_MEM_OFFSET";
-
+            case CL_MEM_USES_SVM_POINTER: return "CL_MEM_USES_SVM_POINTER";
         }
         return "INVALID cl_mem_info: " + n;
     }
@@ -1115,6 +1246,23 @@ public final class CL
             case CL_IMAGE_NUM_SAMPLES: return "CL_IMAGE_NUM_SAMPLES";
         }
         return "INVALID cl_image_info: " + n;
+    }
+
+
+    /**
+     * Returns the String identifying the given cl_pipe_info
+     *
+     * @param n A cl_pipe_info value
+     * @return The String for the given cl_pipe_info
+     */
+    public static String stringFor_cl_pipe_info(int n)
+    {
+        switch (n)
+        {
+            case CL_PIPE_PACKET_SIZE: return "CL_PIPE_PACKET_SIZE";
+            case CL_PIPE_MAX_PACKETS: return "CL_PIPE_MAX_PACKETS";
+        }
+        return "INVALID cl_pipe_info: " + n;
     }
 
     /**
@@ -1167,6 +1315,9 @@ public final class CL
             case CL_SAMPLER_NORMALIZED_COORDS: return "CL_SAMPLER_NORMALIZED_COORDS";
             case CL_SAMPLER_ADDRESSING_MODE: return "CL_SAMPLER_ADDRESSING_MODE";
             case CL_SAMPLER_FILTER_MODE: return "CL_SAMPLER_FILTER_MODE";
+            case CL_SAMPLER_MIP_FILTER_MODE: return "CL_SAMPLER_MIP_FILTER_MODE";
+            case CL_SAMPLER_LOD_MIN: return "CL_SAMPLER_LOD_MIN";
+            case CL_SAMPLER_LOD_MAX: return "CL_SAMPLER_LOD_MAX";
         }
         return "INVALID cl_sampler_info: " + n;
     }
@@ -1208,6 +1359,7 @@ public final class CL
             case CL_PROGRAM_BUILD_OPTIONS: return "CL_PROGRAM_BUILD_OPTIONS";
             case CL_PROGRAM_BUILD_LOG: return "CL_PROGRAM_BUILD_LOG";
             case CL_PROGRAM_BINARY_TYPE: return "CL_PROGRAM_BINARY_TYPE";
+            case CL_PROGRAM_BUILD_GLOBAL_VARIABLE_TOTAL_SIZE: return "CL_PROGRAM_BUILD_GLOBAL_VARIABLE_TOTAL_SIZE";
         }
         return "INVALID cl_program_build_info: " + n;
     }
@@ -1229,7 +1381,7 @@ public final class CL
         }
         return "INVALID cl_program_binary_type: " + n;
     }
-    
+
 
     /**
      * Returns the String identifying the given cl_build_status
@@ -1268,7 +1420,7 @@ public final class CL
         }
         return "INVALID cl_kernel_info: " + n;
     }
-    
+
 
     /**
      * Returns the String identifying the given cl_kernel_arg_info
@@ -1306,7 +1458,7 @@ public final class CL
         }
         return "INVALID cl_kernel_arg_address_qualifier: " + n;
     }
-    
+
 
     /**
      * Returns the String identifying the given cl_kernel_arg_access_qualifier
@@ -1325,7 +1477,7 @@ public final class CL
         }
         return "INVALID cl_kernel_arg_access_qualifier: " + n;
     }
-    
+
 
     /**
      * Returns the String identifying the given cl_kernel_work_group_info
@@ -1346,6 +1498,23 @@ public final class CL
         }
         return "INVALID cl_kernel_work_group_info: " + n;
     }
+
+    /**
+     * Returns the String identifying the given cl_kernel_exec_info
+     *
+     * @param n A cl_kernel_exec_info value
+     * @return The String for the given cl_kernel_exec_info
+     */
+    public static String stringFor_cl_kernel_exec_info(int n)
+    {
+        switch (n)
+        {
+            case CL_KERNEL_EXEC_INFO_SVM_PTRS: return "CL_KERNEL_EXEC_INFO_SVM_PTRS";
+            case CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM: return "CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM";
+        }
+        return "INVALID cl_kernel_exec_info: " + n;
+    }
+
 
     /**
      * Returns the String identifying the given cl_event_info
@@ -1401,6 +1570,11 @@ public final class CL
             case CL_COMMAND_MIGRATE_MEM_OBJECTS: return "CL_COMMAND_MIGRATE_MEM_OBJECTS";
             case CL_COMMAND_FILL_BUFFER: return "CL_COMMAND_FILL_BUFFER";
             case CL_COMMAND_FILL_IMAGE: return "CL_COMMAND_FILL_IMAGE";
+            case CL_COMMAND_SVM_FREE: return "CL_COMMAND_SVM_FREE";
+            case CL_COMMAND_SVM_MEMCPY: return "CL_COMMAND_SVM_MEMCPY";
+            case CL_COMMAND_SVM_MEMFILL: return "CL_COMMAND_SVM_MEMFILL";
+            case CL_COMMAND_SVM_MAP: return "CL_COMMAND_SVM_MAP";
+            case CL_COMMAND_SVM_UNMAP: return "CL_COMMAND_SVM_UNMAP";
         }
         return "INVALID cl_command_type: " + n;
     }
@@ -1438,6 +1612,7 @@ public final class CL
             case CL_PROFILING_COMMAND_SUBMIT: return "CL_PROFILING_COMMAND_SUBMIT";
             case CL_PROFILING_COMMAND_START: return "CL_PROFILING_COMMAND_START";
             case CL_PROFILING_COMMAND_END: return "CL_PROFILING_COMMAND_END";
+            case CL_PROFILING_COMMAND_COMPLETE: return "CL_PROFILING_COMMAND_COMPLETE";
         }
         return "INVALID cl_profiling_info: " + n;
     }
@@ -1610,6 +1785,8 @@ public final class CL
         String result = "";
         if ((n & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE) != 0) result += "CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE ";
         if ((n & CL_QUEUE_PROFILING_ENABLE) != 0) result += "CL_QUEUE_PROFILING_ENABLE ";
+        if ((n & CL_QUEUE_ON_DEVICE) != 0) result += "CL_QUEUE_ON_DEVICE ";
+        if ((n & CL_QUEUE_ON_DEVICE_DEFAULT) != 0) result += "CL_QUEUE_ON_DEVICE_DEFAULT ";
         return result;
     }
 
@@ -1635,7 +1812,27 @@ public final class CL
         if ((n & CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE) != 0) result += "CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE ";
         return result;
     }
-    
+
+    /**
+     * Returns the string describing the given cl_device_svm_capabilities - bitfield
+     *
+     * @param n The cl_device_svm_capabilities - bitfield
+     * @return The string describing the cl_device_svm_capabilities - bitfield
+     */
+    public static String stringFor_cl_device_svm_capabilities(long n)
+    {
+        if (n == 0)
+        {
+            return "(none)";
+        }
+        String result = "";
+        if ((n & CL_DEVICE_SVM_COARSE_GRAIN_BUFFER) != 0) result += "CL_DEVICE_SVM_COARSE_GRAIN_BUFFER ";
+        if ((n & CL_DEVICE_SVM_FINE_GRAIN_BUFFER) != 0) result += "CL_DEVICE_SVM_FINE_GRAIN_BUFFER ";
+        if ((n & CL_DEVICE_SVM_FINE_GRAIN_SYSTEM) != 0) result += "CL_DEVICE_SVM_FINE_GRAIN_SYSTEM ";
+        if ((n & CL_DEVICE_SVM_ATOMICS) != 0) result += "CL_DEVICE_SVM_ATOMICS ";
+        return result;
+    }
+
     /**
      * Returns the string describing the given cl_mem_flags - bitfield
      *
@@ -1658,6 +1855,8 @@ public final class CL
         if ((n & CL_MEM_HOST_WRITE_ONLY) != 0) result += "CL_MEM_HOST_WRITE_ONLY ";
         if ((n & CL_MEM_HOST_READ_ONLY) != 0) result += "CL_MEM_HOST_READ_ONLY ";
         if ((n & CL_MEM_HOST_NO_ACCESS) != 0) result += "CL_MEM_HOST_NO_ACCESS ";
+        if ((n & CL_MEM_SVM_FINE_GRAIN_BUFFER) != 0) result += "CL_MEM_SVM_FINE_GRAIN_BUFFER ";
+        if ((n & CL_MEM_SVM_ATOMICS) != 0) result += "CL_MEM_SVM_ATOMICS ";
         return result;
     }
 
@@ -1678,7 +1877,7 @@ public final class CL
         if ((n & CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED) != 0) result += "CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED ";
         return result;
     }
-    
+
     /**
      * Returns the string describing the given cl_map_flags - bitfield
      *
@@ -1714,10 +1913,11 @@ public final class CL
         if ((n & CL_KERNEL_ARG_TYPE_CONST) != 0) result += "CL_KERNEL_ARG_TYPE_CONST ";
         if ((n & CL_KERNEL_ARG_TYPE_RESTRICT) != 0) result += "CL_KERNEL_ARG_TYPE_RESTRICT ";
         if ((n & CL_KERNEL_ARG_TYPE_VOLATILE) != 0) result += "CL_KERNEL_ARG_TYPE_VOLATILE ";
+        if ((n & CL_KERNEL_ARG_TYPE_PIPE) != 0) result += "CL_KERNEL_ARG_TYPE_PIPE ";
         return result;
     }
 
-    
+
     /**
      * The log levels which may be used to control the internal
      * logging of the native JOCL library
@@ -1761,13 +1961,13 @@ public final class CL
     }
 
     /**
-     * Set the specified log level for the library.<br />
-     * <br />
+     * Set the specified log level for the library.
+     * <p>
      * Currently supported log levels:
-     * <br />
-     * LOG_QUIET: Never print anything <br />
-     * LOG_ERROR: Print error messages <br />
-     * LOG_TRACE: Print a trace of all native function calls <br />
+     * <p>
+     * LOG_QUIET: Never print anything <p>
+     * LOG_ERROR: Print error messages <p>
+     * LOG_TRACE: Print a trace of all native function calls <p>
      *
      * @param logLevel The log level to use.
      */
@@ -1839,29 +2039,29 @@ public final class CL
     /**
      * <p>Obtain the list of platforms available.</p>
      *
-     * <div title="clGetPlatformIDs">
+     * <div>
      *   <div>
      *     <h2></h2>
      *     <div>
      *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
      *         <tr valign="bottom">
      *           <td>
-     *             <code>cl_int <b>clGetPlatformIDs</b>(</code>
-     *           <td>cl_uint<var>num_entries</var>, </td>
+     *             <code>cl_int <strong>clGetPlatformIDs</strong>(</code>
      *           </td>
+     *           <td>cl_uint <var>num_entries</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td></td>
-     *           <td>cl_platform_id<var>*platforms</var>, </td>
+     *           <td> </td>
+     *           <td>cl_platform_id <var>*platforms</var>, </td>
      *         </tr>
      *         <tr valign="top">
-     *           <td></td>
-     *           <td>cl_uint<var>*num_platforms</var><code>)</code></td>
+     *           <td> </td>
+     *           <td>cl_uint <var>*num_platforms</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
      *   </div>
-     *   <div title="Parameters">
+     *   <div>
      *     <h2>Parameters</h2>
      *     <div>
      *       <dl>
@@ -1872,7 +2072,10 @@ public final class CL
      *         </dt>
      *         <dd>
      *           <p>
-     *             The number of cl_platform_id entries that can be added to <code>platforms</code>. If <code>platforms</code> is not NULL, the <code>num_entries</code> must be greater than zero.
+     *             The number of cl_platform_id
+     *             entries that can be added to <code>platforms</code>. If
+     *             <code>platforms</code> is not NULL, the <code>num_entries</code>
+     *             must be greater than zero.
      *           </p>
      *         </dd>
      *         <dt>
@@ -1882,9 +2085,12 @@ public final class CL
      *         </dt>
      *         <dd>
      *           <p>
-     *             Returns a list of OpenCL platforms found. The cl_platform_id values returned in
-     *             <code>platforms</code> can be used to identify a specific OpenCL platform. If <code>platforms</code> argument is NULL, this argument is ignored. The number of OpenCL platforms returned is the mininum of the value
-     *             specified by <code>num_entries</code> or the number of OpenCL platforms available.
+     *             Returns a list of OpenCL platforms found. The cl_platform_id values returned
+     *             in <code>platforms</code> can be used to identify a specific OpenCL
+     *             platform. If <code>platforms</code> argument is NULL, this argument
+     *             is ignored. The number of OpenCL platforms returned is the mininum of the
+     *             value specified by <code>num_entries</code> or the number of OpenCL
+     *             platforms available.
      *           </p>
      *         </dd>
      *         <dt>
@@ -1894,19 +2100,49 @@ public final class CL
      *         </dt>
      *         <dd>
      *           <p>
-     *             Returns the number of OpenCL platforms available. If <code>num_platforms</code> is NULL, this argument is ignored.
+     *             Returns the number of OpenCL platforms available. If
+     *             <code>num_platforms</code> is NULL, this argument is ignored.
      *           </p>
      *         </dd>
      *       </dl>
      *     </div>
      *   </div>
-     *   <div title="Errors">
+     *   <div>
      *     <h2>Errors</h2>
      *     <p>
-     *       Returns <span>CL_SUCCESS</span> if the function is executed successfully. Otherwise it returns  <span>CL_INVALID_VALUE</span> if <code>num_entries</code> is equal to zero and <code>platforms</code> is not NULL, or if both <code>num_platforms</code> and <code>platforms</code> are NULL.
+     *       Returns <span>CL_SUCCESS</span> if the function is executed
+     *       successfully. If the
+     *       <span><span>cl_khr_icd</span></span>
+     *       extension is enabled, <code>clGetPlatformIDs</code> returns
+     *       <span>CL_SUCCESS</span> if the function is executed successfully
+     *       and there are a non zero number of platforms available.
      *     </p>
      *     <p>
-     *       Returns <span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate resources required by the OpenCL implementation on the host.
+     *       Otherwise it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_VALUE</span> if <code>num_entries</code>
+     *           is equal to zero and <code>platforms</code> is not NULL or if
+     *           both <code>num_platforms</code> and
+     *           <code>platforms</code> are NULL.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *         <li><span>CL_PLATFORM_NOT_FOUND_KHR</span> if the
+     *           <span><span>cl_khr_icd</span></span>
+     *           extension is enabled and no platforms are found.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clGetPlatformInfo</span></span>,
+     *       <span><span>clGetDeviceInfo</span></span>,
+     *       <span><span>Cardinality Diagram</span></span>
      *     </p>
      *   </div>
      * </div>
@@ -1929,8 +2165,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetPlatformInfo</b>(</code>
-     *           <td>cl_platform_id<var>platform</var>, </td>
      *           </td>
+     *           <td>cl_platform_id<var>platform</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -2118,8 +2354,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetDeviceIDs</b>(</code>
-     *           <td>cl_platform_id<var>platform</var>, </td>
      *           </td>
+     *           <td>cl_platform_id<var>platform</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -2299,8 +2535,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetDeviceInfo</b>(</code>
-     *           <td>cl_device_id<var>device</var>, </td>
      *           </td>
+     *           <td>cl_device_id<var>device</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -2994,13 +3230,13 @@ public final class CL
 
     private static native int clGetDeviceInfoNative(cl_device_id device, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
 
-    
-    
+
+
     /**
      * <p>
      * Creates an array of sub-devices that each reference a non-intersecting set of compute units within <code>in_device</code>.
      *   </p>
-     * 
+     *
      * <div title="clCreateSubDevices">
      *   <div>
      *     <h2></h2>
@@ -3011,11 +3247,11 @@ public final class CL
      *             <code>
      *             cl_int <b>clCreateSubDevices</b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_device_id
      *             <var>in_device</var>
-     *             , 
-     *           </td>
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -3023,7 +3259,7 @@ public final class CL
      *           <td>const
      *             cl_device_partition_property
      *             <var>*properties</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -3031,7 +3267,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>num_devices</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -3039,7 +3275,7 @@ public final class CL
      *           <td>
      *             cl_device_id
      *             <var>*out_devices</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -3364,7 +3600,7 @@ public final class CL
      * <p>
      *     Increments the <code>devices</code> reference count.
      *   </p>
-     * 
+     *
      * <div title="clRetainDevice">
      *   <div>
      *     <h2></h2>
@@ -3376,11 +3612,11 @@ public final class CL
      *             cl_int
      *             <b>clRetainDevice</b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_device_id
      *             <var>device</var>
      *             <code>)</code>
-     *           </td>
      *           </td>
      *         </tr>
      *       </table>
@@ -3427,13 +3663,13 @@ public final class CL
         return checkResult(clRetainDeviceNative(device));
     }
     private static native int clRetainDeviceNative(cl_device_id device);
-    
-        
+
+
     /**
      * <p>
      *       Decrements the <code>device</code> reference count.
      *   </p>
-     * 
+     *
      * <div title="clReleaseDevice">
      *   <div>
      *     <h2></h2>
@@ -3444,8 +3680,8 @@ public final class CL
      *             <code>
      *             cl_int <b>clReleaseDevice</b>
      *             (</code>
-     *           <td>cl_device_id<var>device</var><code>)</code></td>
      *           </td>
+     *           <td>cl_device_id<var>device</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -3496,8 +3732,8 @@ public final class CL
         return checkResult(clReleaseDeviceNative(device));
     }
     private static native int clReleaseDeviceNative(cl_device_id device);
-    
-    
+
+
     /**
      * <p>Creates an OpenCL context.</p>
      *
@@ -3509,8 +3745,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_context <b>clCreateContext</b>(</code>
-     *           <td>const cl_context_properties<var>*properties</var>, </td>
      *           </td>
+     *           <td>const cl_context_properties<var>*properties</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -3830,9 +4066,9 @@ public final class CL
      *             clCreateContextFromType
      *             </b>
      *             (</code>
+     *           </td>
      *           <td>const cl_context_properties
      *             <var> *properties</var>,
-     *           </td>
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -4213,8 +4449,8 @@ public final class CL
      *             clRetainContext
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var><code>)</code></td>
      *           </td>
+     *           <td>cl_context<var>context</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4294,8 +4530,8 @@ public final class CL
      *             clReleaseContext
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var><code>)</code></td>
      *           </td>
+     *           <td>cl_context<var>context</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4370,8 +4606,8 @@ public final class CL
      *             clGetContextInfo
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -4590,8 +4826,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_command_queue <b>clCreateCommandQueue</b>(</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -4734,6 +4970,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 2.0. Use {@link #clCreateCommandQueueWithProperties} instead
      */
     public static cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, long properties, int errcode_ret[])
     {
@@ -4756,6 +4993,337 @@ public final class CL
 
     private static native cl_command_queue clCreateCommandQueueNative(cl_context context, cl_device_id device, long properties, int errcode_ret[]);
 
+
+
+    /**
+     * <p>Create a host or device command-queue on a specific device.</p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>cl_command_queue <strong>clCreateCommandQueueWithProperties</strong>(</code>
+     *           </td>
+     *           <td>cl_context <var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_device_id <var>device</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const cl_queue_properties <var>*properties</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>context</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a valid OpenCL context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>device</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a device associated with <code>context</code>.
+     *             It can either be in the list of devices specified when
+     *             <code>context</code> is created using
+     *             <span><span>clCreateContext</span></span>
+     *             or have the same device type as the device type specified
+     *             when the <code>context</code> is created using
+     *             <span><span>clCreateContextFromType</span></span>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>properties</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies a list of properties for the
+     *             command-queue and their corresponding values.
+     *             Each property name is immediately followed
+     *             by the corresponding desired value. The list is
+     *             terminated with 0. The list of supported properties
+     *             is described in the table below. If a
+     *             supported property and its value is not specified in
+     *             <code>properties</code>, its default value will be used.
+     *             <code>properties</code> can be NULL in which case
+     *             the default values for supported command-queue properties
+     *             will be used.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">Queue Properties</th>
+     *                   <th align="left">Property Value</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_QUEUE_PROPERTIES</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>cl_command_queue_-
+     *                     properties</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>This is a bitfield and can be set to a
+     *                       combination of the following values:
+     *                     </p>
+     *                     <p><code>CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE</code> -
+     *                       Determines whether the
+     *                       commands queued in the command-queue
+     *                       are executed in-order or out-of-order. If
+     *                       set, the commands in the command-queue
+     *                       are executed out-of-order. Otherwise,
+     *                       commands are executed in-order.
+     *                     </p>
+     *                     <p><code>CL_QUEUE_PROFILING_ENABLE</code> -
+     *                       Enable or disable profiling of commands in
+     *                       the command-queue. If set, the profiling of
+     *                       commands is enabled. Otherwise profiling
+     *                       of commands is disabled.
+     *                     </p>
+     *                     <p><code>CL_QUEUE_ON_DEVICE</code> - Indicates that this
+     *                       is a device queue. If <code>CL_QUEUE_ON_DEVICE</code>
+     *                       is set, <code>CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE</code>
+     *                       must also be set. Only out-of-order device queues are supported.
+     *                     </p>
+     *                     <p><code>CL_QUEUE_ON_DEVICE_DEFAULT</code> -
+     *                       indicates that this is the default device
+     *                       queue. This can only be used with
+     *                       <code>CL_QUEUE_ON_DEVICE</code>.
+     *                       The application should create the default device queue if needed.
+     *                       There can only be one default device queue per context.
+     *                       <code>clCreateCommandQueueWithProperties</code>
+     *                       with <code>CL_QUEUE_PROPERTIES</code> set to
+     *                       <code>CL_QUEUE_ON_DEVICE</code> |
+     *                       <code>CL_QUEUE_ON_DEVICE_DEFAULT</code>
+     *                       will return the default device queue thas
+     *                       already been created and increment its retain count by 1.
+     *                     </p>
+     *                     <p>If <code>CL_QUEUE_PROPERTIES</code> is not
+     *                       specified an in-order host command queue
+     *                       is created for the specified device.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_QUEUE_SIZE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>cl_uint</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>Specifies the size of the device queue in
+     *                       bytes.
+     *                     </p>
+     *                     <p>This can only be specified if
+     *                       <code>CL_QUEUE_ON_DEVICE</code> is set in
+     *                       <code>CL_QUEUE_PROPERTIES</code>. This must be a
+     *                       value â‰¤ <code>CL_DEVICE_QUEUE_ON_DEVICE_MAX_SIZE</code>.
+     *                     </p>
+     *                     <p>For best performance, this should be â‰¤
+     *                       <code>CL_DEVICE_QUEUE_ON_DEVICE_PREFERRED_SIZE</code>.
+     *                     </p>
+     *                     <p>If <code>CL_QUEUE_SIZE</code> is not specified, the
+     *                       device queue is created with
+     *                       <code>CL_DEVICE_QUEUE_ON_DEVICE_PREFERRED_SIZE</code>
+     *                       as the size of the queue.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>errcode_ret</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an appropriate error code. If <code>errcode_ret</code>
+     *             is <code>NULL</code>, no error code is returned.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       OpenCL objects such as memory, program and kernel objects are created using a
+     *       context.  Operations on these objects are performed using  a command-queue. The
+     *       command-queue can be used to queue a set of operations (referred to as commands)
+     *       in order.  Having multiple command-queues allows applications to queue multiple
+     *       independent commands without requiring synchronization.  Note that this should work
+     *       as long as these objects are not being shared.  Sharing of objects across multiple
+     *       command-queues will require the application to perform appropriate synchronization.
+     *       This is described in Appendix A of the specification.
+     *     </p>
+     *     <h4>Out-of-order Execution of Kernels and Memory Object Commands</h4>
+     *     <p>
+     *       The OpenCL functions that are submitted to a command-queue are enqueued in the order
+     *       the calls are made but can be configured to execute in-order or out-of-order. The
+     *       <code>properties</code> argument in <code>clCreateCommandQueueWithProperties</code>
+     *       can be used to specify the execution order.
+     *     </p>
+     *     <p>
+     *       If the <code>CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE</code>
+     *       property of a command-queue is not set, the commands enqueued to a
+     *       command-queue execute in order. For example, if an application calls
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *       to execute kernel A followed by a
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *       to execute kernel B, the application can assume that kernel A finishes first and then
+     *       kernel B is executed. If the memory objects output by kernel A are inputs to kernel
+     *       B then kernel B will see the correct data in memory objects produced by execution of
+     *       kernel A. If the <code>CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE</code> property
+     *       of a command-queue is set, then there is no guarantee that kernel A will finish before
+     *       kernel B starts execution.
+     *     </p>
+     *     <p>
+     *       Applications can configure the commands enqueued to a command-queue to execute
+     *       out-of-order by setting the <code>CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE</code>
+     *       property of the command-queue. This can be specified when the command-queue is
+     *       created. In out-of-order execution mode there is no guarantee that the enqueued
+     *       commands will finish execution in the order they were queued. As there is no
+     *       guarantee that kernels will be executed in order, i.e. based on when the
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *       calls are made within a command-queue, it is therefore possible that an earlier
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *       call to execute kernel A identified by event A may execute and/or finish later than a
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *       call to execute kernel B which was called by the application at a later
+     *       point in time. To guarantee a specific order of execution of kernels, a
+     *       wait on a particular event (in this case event A) can be used. The wait for
+     *       event A can be specified in the <code>event_wait_list</code> argument to
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *       for kernel B.
+     *     </p>
+     *     <p>
+     *       In addition, a wait for events
+     *       (<span><span>clEnqueueMarkerWithWaitList</span></span>)
+     *       or a barrier
+     *       (<span><span>clEnqueueBarrierWithWaitList</span></span>)
+     *       command can be enqueued to the command-queue. The wait for events command ensures
+     *       that previously enqueued commands identified by the list of events to wait for have
+     *       finished before the next batch of commands is executed. The barrier command ensures
+     *       that all previously enqueued commands in a command-queue have finished execution
+     *       before the next batch of commands is executed.
+     *     </p>
+     *     <p>
+     *       Similarly, commands to read, write, copy or map memory objects that are enqueued after
+     *       <span><span>clEnqueueNDRangeKernel</span></span> or
+     *       <span><span>clEnqueueNativeKernel</span></span>
+     *       commands are not guaranteed to wait for kernels scheduled for execution to have
+     *       completed (if the <code>CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE</code>
+     *       property is set). To ensure correct ordering of commands, the event object returned by
+     *       <span><span>clEnqueueNDRangeKernel</span></span> or
+     *       <span><span>clEnqueueNativeKernel</span></span>
+     *       can be used to enqueue a wait for event or a barrier command can be enqueued that
+     *       must complete before reads or writes to the memory object(s) occur.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clCreateCommandQueueWithProperties</code>
+     *       returns a valid non-zero command-queue and
+     *       <code>errcode_ret</code> is set to <span>CL_SUCCESS</span> if the
+     *       command-queue is created successfully. Otherwise, it returns a NULL value with one
+     *       of the following error values returned in <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code> is not a valid
+     *           context.
+     *         </li>
+     *         <li><span>CL_INVALID_DEVICE</span> if <code>device</code> is not a valid
+     *           device or is not associated with <code>context</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if values specified in
+     *           <code>properties</code> are not valid.
+     *         </li>
+     *         <li><span>CL_INVALID_QUEUE_PROPERTIES</span> if values specified in
+     *           <code>properties</code> are valid but are not supported by the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure
+     *           to allocate resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure
+     *           to allocate resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clGetCommandQueueInfo</span></span>,
+     *       <span><span>clReleaseCommandQueue</span></span>,
+     *       <span><span>clRetainCommandQueue</span></span>,
+     *       <span><span>clCreateContext</span></span>,
+     *       <span><span>clCreateContextFromType</span></span>,
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static cl_command_queue clCreateCommandQueueWithProperties(cl_context context, cl_device_id device, cl_queue_properties properties, int errcode_ret[])
+    {
+        // OPENCL_2_0
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_command_queue result = clCreateCommandQueueWithPropertiesNative(context, device, properties, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_command_queue result = clCreateCommandQueueWithPropertiesNative(context, device, properties, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_command_queue clCreateCommandQueueWithPropertiesNative(cl_context context, cl_device_id device, cl_queue_properties properties, int errcode_ret[]);
+
+
     /**
      * <p>Increments the <code>command_queue</code> reference count.</p>
      *
@@ -4767,8 +5335,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clRetainCommandQueue</b>(</code>
-     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4832,8 +5400,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clReleaseCommandQueue</b>(</code>
-     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -4903,8 +5471,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clGetCommandQueueInfo</b>(</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -5084,8 +5652,8 @@ public final class CL
      *         <tr valign="bottom">
      *           <td>
      *             <code>cl_int <b>clSetCommandQueueProperty</b>(</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -5209,8 +5777,8 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateBuffer</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -5458,7 +6026,7 @@ public final class CL
     /**
      * @deprecated The buffer_create_info that has to be passed to this function
      * is specific for the underlying architecture (32/64 bit). The preferred
-     * way of creating a sub-buffer is now via 
+     * way of creating a sub-buffer is now via
      * {@link #clCreateSubBuffer(cl_mem, long, int, cl_buffer_region, int[])}
      * @since OpenCL 1.1
      */
@@ -5500,8 +6068,8 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateSubBuffer</b>
      *             (</code>
-     *           <td>cl_mem<var>buffer</var>, </td>
      *           </td>
+     *           <td>cl_mem<var>buffer</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -5750,15 +6318,15 @@ public final class CL
         }
     }
     private static native cl_mem clCreateSubBuffer2Native(cl_mem buffer, /*cl_mem_flags*/ long flags, /*cl_buffer_create_type*/ int buffer_create_type, cl_buffer_region buffer_create_info, int errcode_ret[]);
-    
-    
-    
-    
+
+
+
+
     /**
      * <p>
      *       Creates a 1D image, 1D image buffer, 1D image array, 2D image, 2D image array or 3D image object.
      *   </p>
-     * 
+     *
      * <div title="clCreateImage">
      *   <div>
      *     <h2></h2>
@@ -5769,8 +6337,8 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateImage</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -5803,7 +6371,7 @@ public final class CL
      *           <span> <code> context </code> </span>
      *         </dt>
      *         <dd>
-     *           <p> 
+     *           <p>
      *             A valid OpenCL context on which the image object is to be created.
      *           </p>
      *         </dd>
@@ -6064,7 +6632,7 @@ public final class CL
      *                     <code>CL_MEM_OBJECT_IMAGE1D</code>
      *                   </td>
      *                   <td align="left">
-     *                     <code>â‰¥ image_row_pitch</code>
+     *                     <code>&gt;= image_row_pitch</code>
      *                   </td>
      *                 </tr>
      *                 <tr>
@@ -6072,7 +6640,7 @@ public final class CL
      *                     <code>CL_MEM_OBJECT_IMAGE1D_BUFFER</code>
      *                   </td>
      *                   <td align="left">
-     *                     <code>â‰¥ image_row_pitch</code>
+     *                     <code>&gt;= image_row_pitch</code>
      *                   </td>
      *                 </tr>
      *                 <tr>
@@ -6080,7 +6648,7 @@ public final class CL
      *                     <code>CL_MEM_OBJECT_IMAGE2D</code>
      *                   </td>
      *                   <td align="left">
-     *                     <code>â‰¥ image_row_pitch * image_height</code>
+     *                     <code>&gt;= image_row_pitch * image_height</code>
      *                   </td>
      *                 </tr>
      *                 <tr>
@@ -6088,7 +6656,7 @@ public final class CL
      *                     <code>CL_MEM_OBJECT_IMAGE3D</code>
      *                   </td>
      *                   <td align="left">
-     *                     <code>â‰¥ image_slice_pitch * image_depth</code>
+     *                     <code>&gt;= image_slice_pitch * image_depth</code>
      *                   </td>
      *                 </tr>
      *                 <tr>
@@ -6096,7 +6664,7 @@ public final class CL
      *                     <code>CL_MEM_OBJECT_IMAGE1D_ARRAY</code>
      *                   </td>
      *                   <td align="left">
-     *                     <code>â‰¥ image_slice_pitch * image_array_size</code>
+     *                     <code>&gt;= image_slice_pitch * image_array_size</code>
      *                   </td>
      *                 </tr>
      *                 <tr>
@@ -6104,7 +6672,7 @@ public final class CL
      *                     <code>CL_MEM_OBJECT_IMAGE2D_ARRAY</code>
      *                   </td>
      *                   <td align="left">
-     *                     <code>â‰¥ image_slice_pitch * image_array_size</code>
+     *                     <code>&gt;= image_slice_pitch * image_array_size</code>
      *                   </td>
      *                 </tr>
      *               </tbody>
@@ -6218,7 +6786,7 @@ public final class CL
      * </div>
      * @since OpenCL 1.2
      */
-    public static cl_mem clCreateImage(cl_context context, long flags, cl_image_format image_format, cl_image_desc image_desc, Pointer host_ptr, int errcode_ret[])    
+    public static cl_mem clCreateImage(cl_context context, long flags, cl_image_format image_format, cl_image_desc image_desc, Pointer host_ptr, int errcode_ret[])
     {
         // OPENCL_1_2
         if (exceptionsEnabled)
@@ -6242,6 +6810,372 @@ public final class CL
 
     /**
      * <p>
+     *             Creates a pipe object.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_mem <strong>clCreatePipe</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_context <var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_uint <var>pipe_packet_size</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_uint <var>pipe_max_packets</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const cl_pipe_properties <var>* properties</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> context </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid OpenCL context used to create the pipe object.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> flags </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A bit-field that is used to specify
+     *             allocation and usage information such as the memory
+     *             arena that should be used to allocate the pipe object and how it
+     *             will be used. The table below describes
+     *             the possible values for <code>flags</code>.
+     *             Only <code>CL_MEM_READ_ONLY</code>,
+     *             <code>CL_MEM_WRITE_ONLY</code>, <code>CL_MEM_READ_WRITE</code>,
+     *             and <code>CL_MEM_HOST_NO_ACCESS</code>
+     *             can be specified when creating a pipe object.
+     *             If value specified for <code>flags</code> is 0,
+     *             the default is used which is
+     *             <code>CL_MEM_READ_WRITE</code>.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_mem_flags</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_READ_WRITE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This flag specifies that the memory object will be read and written by a kernel. This
+     *                     is the default.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_WRITE_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the memory object will be written but not read by
+     *                       a kernel.
+     *                     </p>
+     *                     <p>
+     *                       Reading from a buffer or image object created with
+     *                       <code>CL_MEM_WRITE_ONLY</code> inside a kernel is undefined.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_READ_WRITE</code> and <code>CL_MEM_WRITE_ONLY</code>
+     *                       are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_READ_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the memory object is a read-only memory object when
+     *                       used inside a kernel.
+     *                     </p>
+     *                     <p>
+     *                       Writing to a buffer or image object created with
+     *                       <code>CL_MEM_READ_ONLY</code> inside a kernel is undefined.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_READ_WRITE</code> or <code>CL_MEM_WRITE_ONLY</code>
+     *                       and <code>CL_MEM_READ_ONLY</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_USE_HOST_PTR</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag is valid only if <code>host_ptr</code> is not NULL. If
+     *                       specified, it indicates that the application wants the OpenCL implementation
+     *                       to use memory referenced by <code>host_ptr</code> as the storage bits
+     *                       for the memory object.
+     *                     </p>
+     *                     <p>
+     *                       OpenCL implementations are allowed to cache the buffer contents pointed to by
+     *                       <code>host_ptr</code> in device memory. This cached copy can be used when
+     *                       kernels are executed on a device.
+     *                     </p>
+     *                     <p>
+     *                       The result of OpenCL commands that operate on multiple buffer objects created with
+     *                       the same <code>host_ptr</code> or overlapping host regions is considered
+     *                       to be undefined.
+     *                     </p>
+     *                     <p>
+     *                       Refer to the <span><span>description
+     *                       of the alignment rules</span></span> for
+     *                       <code>host_ptr</code> for memory objects (buffer and images) created
+     *                       using <code>CL_MEM_USE_HOST_PTR</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_ALLOC_HOST_PTR</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the application wants the OpenCL implementation to
+     *                       allocate memory from host accessible memory.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_ALLOC_HOST_PTR</code> and
+     *                       <code>CL_MEM_USE_HOST_PTR</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_COPY_HOST_PTR</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag is valid only if <code>host_ptr</code> is not NULL. If specified,
+     *                       it indicates that the application wants the OpenCL implementation to allocate
+     *                       memory for the memory object and copy the data from memory referenced by
+     *                       <code>host_ptr</code>.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_COPY_HOST_PTR</code> and
+     *                       <code>CL_MEM_USE_HOST_PTR</code> are mutually exclusive.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_COPY_HOST_PTR</code> can be used with
+     *                       <code>CL_MEM_ALLOC_HOST_PTR</code> to initialize the contents of the
+     *                       <span>cl_mem</span> object allocated using host-accessible (e.g.  PCIe) memory.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_HOST_WRITE_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the host will only write to the memory object (using
+     *                       OpenCL APIs that enqueue a write or a map for write).  This can be used to optimize
+     *                       write access from the host (e.g. enable write-combined allocations for memory
+     *                       objects for devices that communicate with the host over a system bus such as PCIe).
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_HOST_READ_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the host will only read the memory object (using OpenCL
+     *                       APIs that enqueue a read or a map for read).
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_HOST_WRITE_ONLY</code> and
+     *                       <code>CL_MEM_HOST_READ_ONLY</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_HOST_NO_ACCESS</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the host will not read or write the memory object.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_HOST_WRITE_ONLY</code> or
+     *                       <code>CL_MEM_HOST_READ_ONLY</code> and
+     *                       <code>CL_MEM_HOST_NO_ACCESS</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> pipe_packet_size </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Size in bytes of a pipe packet.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>pipe_max_packets</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the pipe capacity by specifying the
+     *             maximum number of packets the pipe can hold.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>properties</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A list of properties for the pipe and their corresponding values. Each property
+     *             name is immediately followed by the corresponding desired value.
+     *             The list is terminated with 0.
+     *             In OpenCL 2.0, <code>properties</code> must be NULL.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>errcode_ret</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Will return an appropriate error code. If <code>errcode_ret</code>
+     *             is NULL, no error code is returned.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Pipes follow the same memory consistency model as
+     *       defined for buffer and image objects. The
+     *       pipe state i.e. contents of the pipe across kernel
+     *       executions (on the same or different devices) is
+     *       enforced at a synchronization point.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clCreatePipe</code> returns a valid non-zero pipe object and
+     *       <code>errcode_ret</code> is set to <span>CL_SUCCESS</span> if the
+     *       pipe object is created successfully. Otherwise, it returns a NULL value with one of
+     *       the following error values returned in <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code> is not a valid context.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if values specified in
+     *           <code>flags</code> are not as defined above.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>properties</code> is not NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_PIPE_SIZE</span> if <code>pipe_packet_size</code>
+     *           is 0 or the <code>pipe_packet_size</code> exceeds
+     *           <code>CL_DEVICE_PIPE_MAX_PACKET_SIZE</code> value specified in table 4.3
+     *           (see <span><span>clGetDeviceInfo</span></span>)
+     *           for all devices in <code>context</code> or if
+     *           <code>pipe_max_packets</code> is 0.
+     *         </li>
+     *         <li><span>CL_MEM_OBJECT_ALLOCATION_FAILURE</span> if there is a failure to
+     *           allocate memory for the pipe object.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clCreateBuffer</span></span>,
+     *       <span><span>clCreateImage</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static cl_mem clCreatePipe(cl_context context, long flags, int pipe_packet_size, int pipe_max_packets, cl_pipe_properties properties, int errcode_ret[])
+    {
+        // OPENCL_2_0
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_mem result = clCreatePipeNative(context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_mem result = clCreatePipeNative(context, flags, pipe_packet_size, pipe_max_packets, properties, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_mem clCreatePipeNative(cl_context context, long flags, int pipe_packet_size, int pipe_max_packets, cl_pipe_properties properties, int errcode_ret[]);
+
+    /**
+     * <p>
      *       Creates a 2D image object.
      *   </p>
      *
@@ -6255,8 +7189,8 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateImage2D</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -6483,8 +7417,8 @@ public final class CL
      *             <code>
      *             cl_mem <b>clCreateImage3D</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -6743,8 +7677,8 @@ public final class CL
      *             cl_int
      *             <b>clRetainMemObject</b>
      *             (</code>
-     *           <td>cl_mem<var>memobj</var><code>)</code></td>
      *           </td>
+     *           <td>cl_mem<var>memobj</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6806,8 +7740,8 @@ public final class CL
      *             cl_int
      *             <b>clReleaseMemObject</b>
      *             (</code>
-     *           <td>cl_mem<var>memobj</var><code>)</code></td>
      *           </td>
+     *           <td>cl_mem<var>memobj</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -6868,8 +7802,8 @@ public final class CL
      *             cl_int
      *             <b>clGetSupportedImageFormats</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -7134,8 +8068,8 @@ public final class CL
      *             cl_int
      *             <b>clGetMemObjectInfo</b>
      *             (</code>
-     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -7416,8 +8350,8 @@ public final class CL
      *             <code>
      *             cl_int * <b>clGetImageInfo</b>
      *             (</code>
-     *           <td>cl_mem<var>image</var>, </td>
      *           </td>
+     *           <td>cl_mem<var>image</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -7659,6 +8593,210 @@ public final class CL
 
     /**
      * <p>
+     *             Get information specific to a pipe object created with clCreatePipe.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <strong>clGetPipeInfo</strong>
+     *             (</code>
+     *           </td>
+     *           <td>
+     *             cl_mem
+     *              <var>pipe</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_pipe_info
+     *              <var>param_name</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             size_t
+     *              <var>param_value_size</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             void
+     *              <var>*param_value</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             size_t
+     *              <var>*param_value_size_ret</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> pipe </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the pipe object being queried.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_name </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the information to query. The list of supported
+     *             <code>param_name</code> types and the
+     *             information returned in <code>param_value</code> by
+     *             <code>clGetPipeInfo</code> is described
+     *             in the table below.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_pipe_info</th>
+     *                   <th align="left">Return Type</th>
+     *                   <th align="left">Info. returned in <code>param_value</code></th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_PIPE_PACKET_SIZE</code>
+     *                   </td>
+     *                   <td align="left">cl_uint</td>
+     *                   <td align="left">
+     *                     Return pipe packet size specified when
+     *                     <code>pipe</code> is created with
+     *                     <span><span>clCreatePipe</span></span>.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_PIPE_MAX_PACKETS</code>
+     *                   </td>
+     *                   <td align="left">cl_uint</td>
+     *                   <td align="left">
+     *                     Return max. number of packets specified
+     *                     when <code>pipe</code> is created with
+     *                     <span><span>clCreatePipe</span></span>.
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_value </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to memory where the appropriate result being queried is returned.
+     *             If <code>param_value</code> is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_value_size </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Used to specify the size in bytes of memory pointed to by <code>param_value</code>.
+     *             This size must be &gt;= size of return type as described in the table above.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_value_size_ret </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns the actual size in bytes of data being queried by <code>param_value</code>.
+     *             If <code>param_value_size_ret</code> is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       To get information that is common to all memory objects,
+     *       use the <span><span>clGetMemObjectInfo</span></span> function.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function is executed successfully.
+     *       Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_VALUE</span> if
+     *           <code>param_name</code> is not valid, or if size
+     *           in bytes specified by <code>param_value_size</code>
+     *           is &lt; the size of return type as
+     *           described in the table above and <code>param_value</code> is not NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_MEM_OBJECT</span> if <code>pipe</code>
+     *           is a not a valid memory object.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to
+     *           allocate resources required by the
+     *           OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to
+     *           allocate resources required by the
+     *           OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clGetImageInfo</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clGetPipeInfo(cl_mem pipe, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[])
+    {
+        // OPENCL_2_0
+        return checkResult(clGetPipeInfoNative(pipe, param_name, param_value_size, param_value, param_value_size_ret));
+    }
+    private static native int clGetPipeInfoNative(cl_mem pipe, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
+
+
+
+    /**
+     * <p>
      *       Registers a user callback function that will be called when the memory object is
      *       deleted and its resources freed.
      *   </p>
@@ -7673,8 +8811,8 @@ public final class CL
      *             <code>cl_int
      *             <b>clSetMemObjectDestructorCallback</b>
      *             (</code>
-     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -7838,6 +8976,734 @@ public final class CL
     private static native int clSetMemObjectDestructorCallbackNative(cl_mem memobj, MemObjectDestructorCallbackFunction pfn_notify, Object user_data);
 
 
+    /**
+     * <p>
+     *             Allocates a shared virtual memory (SVM) buffer that can be shared by the host and all devices in an OpenCL context that support shared virtual memory.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             void <strong> * clSVMAlloc</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_context <var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_svm_mem_flags <var>flags</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>size_t <var>size</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>unsigned int <var>alignment</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>context</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>A valid OpenCL context used to create the SVM buffer.</p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code>flags</code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A bit-field that is used to specify
+     *             allocation and usage information. The following
+     *             table describes the possible values for <code>flags</code>.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_svm_mem_flags</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_READ_WRITE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This flag specifies that the SVM buffer will be read
+     *                     and written by a kernel. This is the default.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_WRITE_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the SVM buffer will be written
+     *                       but not read by a kernel.
+     *                     </p>
+     *                     <p>
+     *                       Reading from a SVM buffer created with
+     *                       <code>CL_MEM_WRITE_ONLY</code> inside a kernel is undefined.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_READ_WRITE</code> and
+     *                       <code>CL_MEM_WRITE_ONLY</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_READ_ONLY</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the SVM buffer object is a
+     *                       read-only memory object when used inside a kernel.
+     *                     </p>
+     *                     <p>
+     *                       Writing to a SVM buffer created with
+     *                       <code>CL_MEM_READ_ONLY</code> inside a kernel is undefined.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MEM_READ_WRITE</code> or <code>CL_MEM_WRITE_ONLY</code> and
+     *                       <code>CL_MEM_READ_ONLY</code> are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_SVM_FINE_GRAIN_BUFFER</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This specifies that the application wants the OpenCL
+     *                     implementation to do a fine-grained allocation.
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MEM_SVM_ATOMICS</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     This flag is valid only if
+     *                     <code>CL_MEM_SVM_FINE_GRAIN_BUFFER</code> is specified in
+     *                     <code>flags</code>. It is used to indicate that SVM atomic
+     *                     operations can control visibility of memory accesses
+     *                     in this SVM buffer.
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>size</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>The size in bytes of the SVM buffer to be allocated.</p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>alignment</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The minimum alignment in bytes that is required for
+     *             the newly created bufferâ€™s
+     *             memory region. It must be a power of two up to the
+     *             largest data type supported by the OpenCL
+     *             device. For the full profile, the largest data type
+     *             is <span>long16</span>. For the embedded profile, it is
+     *             <span>long16</span> if the device supports 64-bit
+     *             integers; otherwise it is <span>int16</span>. If
+     *             alignment is 0, a
+     *             default alignment will be used that is equal to
+     *             the size of largest data type supported by the
+     *             OpenCL implementation.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       If <code>CL_MEM_SVM_FINE_GRAIN_BUFFER</code> is not
+     *       specified, the buffer can be created as a coarse
+     *       grained SVM allocation. Similarly, if <code>CL_MEM_SVM_ATOMICS</code>
+     *       is not specified, the buffer can be
+     *       created without support for the OpenCL 2.0 SVM atomic
+     *       operations (refer to section 6.13.11 of
+     *       the OpenCL C 2.0 specification).
+     *     </p>
+     *     <p>
+     *       Calling <code>clSVMAlloc</code> does not itself
+     *       provide consistency for the shared memory region. When
+     *       the host canâ€™t use the SVM atomic operations, it
+     *       must rely on OpenCLâ€™s guaranteed memory
+     *       consistency at synchronization points. To initialize
+     *       a buffer to be shared with a kernel, the host
+     *       can create the buffer and use the resulting virtual
+     *       memory pointer to initialize the bufferâ€™s
+     *       contents.
+     *     </p>
+     *     <p>
+     *       For SVM to be used efficiently, the host and any
+     *       devices sharing a buffer containing virtual
+     *       memory pointers should have the same endianness.
+     *       If the context passed to <code>clSVMAlloc</code> has
+     *       devices with mixed endianness and the OpenCL
+     *       implementation is unable to implement SVM
+     *       because of that mixed endianness,
+     *       <code>clSVMAlloc</code> will fail and return NULL.
+     *     </p>
+     *     <p>
+     *       Although SVM is generally not supported for image objects,
+     *       <span><span>clCreateImage</span></span>
+     *       may create an image from a buffer (a 1D image from a buffer
+     *       or a 2D image from buffer) if the buffer specified
+     *       in its image description parameter is a SVM
+     *       buffer. Such images have a linear memory
+     *       representation so their memory can be
+     *       shared using SVM. However, fine grained sharing and
+     *       atomics are not supported for image reads and writes in a kernel.
+     *     </p>
+     *     <p>
+     *       If <span><span>clCreateBuffer</span></span>
+     *       is called with a pointer returned by
+     *       <code>clSVMAlloc</code> as its
+     *       <code>host_ptr</code> argument, and
+     *       <code>CL_MEM_USE_HOST_PTR</code> is set in its <code>flags</code> argument,
+     *       <span><span>clCreateBuffer</span></span>
+     *       will succeed and return a
+     *       valid non-zero buffer object as long as the <code>size</code>
+     *       argument to
+     *       <span><span>clCreateBuffer</span></span>
+     *       is no larger than the
+     *       <code>size</code> argument passed in the original
+     *       <code>clSVMAlloc</code> call. The new
+     *       buffer object returned has the
+     *       shared memory as the underlying storage.
+     *       Locations in the bufferâ€™s underlying shared memory
+     *       can be operated on using, e.g., atomic
+     *       operations if the device supports them.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns a valid non-NULL shared virtual memory address if the SVM buffer is
+     *       successfully allocated. Otherwise, like malloc, it returns a NULL pointer
+     *       value. <code>clSVMAlloc</code> will fail if:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><code>context</code> is not a valid context.
+     *         </li>
+     *         <li><code>flags</code> does not contain
+     *           <code>CL_MEM_SVM_FINE_GRAIN_BUFFER</code> but does contain
+     *           <code>CL_MEM_SVM_ATOMICS</code>.
+     *         </li>
+     *         <li>
+     *           Values specified in <code>flags</code> do not follow
+     *           rules described for supported values in the table above.
+     *         </li>
+     *         <li><code>CL_MEM_SVM_FINE_GRAIN_BUFFER</code> or
+     *           <code>CL_MEM_SVM_ATOMICS</code> is specified in
+     *           <code>flags</code> and these are not supported
+     *           by at least one device in <code>context</code>.
+     *         </li>
+     *         <li>
+     *           The values specified in <code>flags</code> are
+     *           not valid i.e. donâ€™t match those defined in the table above.
+     *         </li>
+     *         <li><code>size</code> is 0 or &gt; <code>CL_DEVICE_MAX_MEM_ALLOC_SIZE</code>
+     *           value for any device in <code>context</code>.
+     *         </li>
+     *         <li><code>alignment</code> is not a power of two
+     *           or the OpenCL implementation cannot support the
+     *           specified alignment for at least one device in <code>context</code>.
+     *         </li>
+     *         <li>
+     *           There was a failure to allocate resources.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clSVMFree</span></span>,
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static Pointer clSVMAlloc(cl_context context, long flags, long size, int alignment)
+    {
+        // OPENCL_2_0
+        Pointer result = clSVMAllocNative(context, flags, size, alignment);
+        if (result == null && exceptionsEnabled)
+        {
+            throw new CLException("Could not allocate SVM pointer", -1);
+        }
+        return result;
+    }
+    private static native Pointer clSVMAllocNative(cl_context context, long flags, long size, int alignment);
+
+
+    /**
+     * <p>
+     *             Frees a shared virtual memory buffer allocated using clSVMAlloc.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             void
+     *             <strong>
+     *             clSVMFree
+     *             </strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_context <var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>void <var>*svm_pointer</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           context
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid OpenCL context used to create the SVM buffer.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           svm_pointer
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be the value returned by a call to <span><span>clSVMAlloc</span></span>.
+     *             If a NULL pointer is passed in
+     *             <code>svm_pointer</code>, no action occurs.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Note that <code>clSVMFree</code> does not wait
+     *       for previously enqueued commands that may be using
+     *       <code>svm_pointer</code> to finish before freeing
+     *       <code>svm_pointer</code>. It is the responsibility
+     *       of the application to
+     *       make sure that enqueued commands that use
+     *       <code>svm_pointer</code> have finished before freeing
+     *       <code>svm_pointer</code>. This can be done by
+     *       enqueuing a blocking operation such as
+     *       <span><span>clFinish</span></span>,
+     *       <span><span>clWaitForEvents</span></span>,
+     *       <span><span>clEnqueueReadBuffer</span></span>
+     *       or by registering a callback with the events
+     *       associated with enqueued commands and when the
+     *       last enqueued comamnd has finished freeing
+     *       <code>svm_pointer</code>.
+     *     </p>
+     *     <p>
+     *       The behavior of using <code>svm_pointer</code> after
+     *       it has been freed is undefined. In addition, if a buffer
+     *       object is created using
+     *       <span><span>clCreateBuffer</span></span>
+     *       with <code>svm_pointer</code>, the buffer object must first be released
+     *       before the <code>svm_pointer</code> is freed.
+     *     </p>
+     *     <p>
+     *       The <span><span>clEnqueueSVMFree</span></span>
+     *       API can also be used to enqueue a callback to free the shared virtual
+     *       memory buffer allocated using
+     *       <span><span>clSVMAlloc</span></span>
+     *       or a shared system memory pointer.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clSVMAlloc</span></span>,
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static void clSVMFree(cl_context context, Pointer svm_pointer)
+    {
+        // OPENCL_2_0
+        clSVMFreeNative(context, svm_pointer);
+    }
+    private static native void clSVMFreeNative(cl_context context, Pointer svm_pointer);
+
+
+
+    /**
+     * <p>
+     *             Creates a sampler object.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_sampler <strong>clCreateSamplerWithProperties</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_context <var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const cl_sampler_properties <var>*sampler_properties</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_int <var>*errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> context </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a valid OpenCL context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code>sampler_properties</code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies a list of sampler property names and
+     *             their corresponding values.
+     *             Each sampler property name is immediately followed
+     *             by the corresponding desired value. The
+     *             list is terminated with 0. The list of supported
+     *             properties is described in the table below. If a
+     *             supported property and its value is not specified in
+     *             <code>sampler_properties</code>, its default value will be
+     *             used. <code>sampler_properties</code> can be
+     *             NULL in which case the default values for supported sampler
+     *             properties will be used.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_sampler_properties enum</th>
+     *                   <th align="left">Property Value</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_SAMPLER_NORMALIZED_COORDS</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>cl_bool</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       A boolean value that specifies
+     *                       whether the image coordinates
+     *                       specified are normalized or not.
+     *                     </p>
+     *                     <p>
+     *                       The default value (i.e. the value used
+     *                       if this property is not specified in
+     *                       <code>sampler_properties</code>) is <code>CL_TRUE</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_SAMPLER_ADDRESSING_MODE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>cl_addressing_mode</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Specifies how out-of-range image
+     *                       coordinates are handled when reading
+     *                       from an image.
+     *                     </p>
+     *                     <p>
+     *                       Valid values are:
+     *                     </p>
+     *                     <div>
+     *                       <ul type="disc">
+     *                         <li><code>CL_ADDRESS_MIRRORED_REPEAT</code></li>
+     *                         <li><code>CL_ADDRESS_REPEAT</code></li>
+     *                         <li><code>CL_ADDRESS_CLAMP_TO_EDGE</code></li>
+     *                         <li><code>CL_ADDRESS_CLAMP</code></li>
+     *                         <li><code>CL_ADDRESS_NONE</code></li>
+     *                       </ul>
+     *                     </div>
+     *                     <p>
+     *                       The default is <code>CL_ADDRESS_CLAMP</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_SAMPLER_FILTER_MODE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>cl_filter_mode</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       Specifies the type of filter that must
+     *                       be applied when reading an image.
+     *                       Valid values are:
+     *                     </p>
+     *                     <div>
+     *                       <ul type="disc">
+     *                         <li><code>CL_FILTER_NEAREST</code></li>
+     *                         <li><code>CL_FILTER_LINEAR</code></li>
+     *                       </ul>
+     *                     </div>
+     *                     <p>
+     *                       The default is <code>CL_FILTER_NEAREST</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *           <p>
+     *             If the <span><span>cl_khr_mipmap_image</span></span>
+     *             extension is supported, the following sampler
+     *             properties can be specified when a sampler object is
+     *             created using <code>clCreateSamplerWithProperties</code>:
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_sampler_properties enum</th>
+     *                   <th align="left">Property Value</th>
+     *                   <th align="left">Default Value</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_SAMPLER_MIP_FILTER_MODE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>cl_filter_mode</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>CL_FILTER_NONE</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_SAMPLER_LOD_MIN</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>float</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>0.0f</code>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_SAMPLER_LOD_MAX</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <span>float</span>
+     *                   </td>
+     *                   <td align="left">
+     *                     <code>MAXFLOAT</code>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> errcode_ret </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an appropriate error code. If
+     *             <code>errcode_ret</code> is NULL, no error code is returned.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       A sampler object describes how to sample an image when the
+     *       image is read in the kernel. The built-in functions to read from an image in a kernel
+     *       take a sampler as an argument. The sampler arguments to the image read function can
+     *       be sampler objects created using OpenCL functions and passed as argument values to
+     *       the kernel or can be samplers declared inside a kernel.
+     *     </p>
+     *     <p>
+     *       For more information about working with samplers, see
+     *       <span><span>sampler_t</span></span>
+     *     </p>
+     *     <p>
+     *       If the <span><span>cl_khr_mipmap_image</span></span>
+     *       extension is supported, the sampler properties
+     *       <code>CL_SAMPLER_MIP_FILTER_MODE</code>,
+     *       <code>CL_SAMPLER_LOD_MIN</code> and
+     *       <code>CL_SAMPLER_LOD_MAX</code> cannot be
+     *       specified with any samplers initialized in the OpenCL
+     *       program source. Only the default values for these
+     *       properties will be used. To create a sampler
+     *       with specific values for these properties, a
+     *       sampler object must be created with
+     *       <code>clCreateSamplerWithProperties</code>
+     *       and passed as an argument to a kernel.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns a valid non-zero sampler object and <code>errcode_ret</code> is set to
+     *       <span>CL_SUCCESS</span> if the sampler object is created successfully.
+     *       Otherwise, it returns a NULL value with one of the following error values returned in
+     *       <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code>
+     *           is not a valid context.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if the property
+     *           name in <code>sampler_properties</code> is not a supported
+     *           property name, if the value specified for a supported property
+     *           name is not valid, or if the
+     *           same property name is specified more than once.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if images are not
+     *           supported by any device associated with <code>context</code>
+     *           (i.e. <code>CL_DEVICE_IMAGE_SUPPORT</code>
+     *           specified in the table of OpenCL Device Queries for
+     *           <span><span>clGetDeviceInfo</span></span>
+     *           is <span>CL_FALSE</span>).
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clRetainSampler</span></span>,
+     *       <span><span>clReleaseSampler</span></span>,
+     *       <span><span>clGetSamplerInfo</span></span>
+     *       <span><span>sampler_t</span></span>,
+     *       <span><span>cl_khr_mipmap_image</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static cl_sampler clCreateSamplerWithProperties(cl_context context, cl_sampler_properties properties, int errcode_ret[])
+    {
+        // OPENCL_2_0
+        if (exceptionsEnabled)
+        {
+            if (errcode_ret == null)
+            {
+                errcode_ret = new int[1];
+            }
+            cl_sampler result = clCreateSamplerWithPropertiesNative(context, properties, errcode_ret);
+            checkResult(errcode_ret[0]);
+            return result;
+        }
+        else
+        {
+            cl_sampler result = clCreateSamplerWithPropertiesNative(context, properties, errcode_ret);
+            return result;
+        }
+    }
+    private static native cl_sampler clCreateSamplerWithPropertiesNative(cl_context context, cl_sampler_properties properties, int errcode_ret[]);
 
     /**
      * <p>
@@ -7854,8 +9720,8 @@ public final class CL
      *             <code>
      *             cl_sampler <b>clCreateSampler</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -7975,6 +9841,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 2.0. Use {@link #clCreateSamplerWithProperties} instead.
      */
     public static cl_sampler clCreateSampler(cl_context context, boolean normalized_coords, int addressing_mode, int filter_mode, int errcode_ret[])
     {
@@ -8012,8 +9879,8 @@ public final class CL
      *             <code>
      *             cl_int
      *             <b>clRetainSampler</b>(</code>
-     *           <td>cl_sampler<var>sampler</var><code>)</code></td>
      *           </td>
+     *           <td>cl_sampler<var>sampler</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8083,8 +9950,8 @@ public final class CL
      *             cl_int
      *             <b>clReleaseSampler</b>
      *             (</code>
-     *           <td>cl_sampler<var>sampler</var><code>)</code></td>
      *           </td>
+     *           <td>cl_sampler<var>sampler</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8141,8 +10008,8 @@ public final class CL
      *             cl_int
      *             <b>clGetSamplerInfo</b>
      *             (</code>
-     *           <td>cl_sampler<var>sampler</var>, </td>
      *           </td>
+     *           <td>cl_sampler<var>sampler</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -8351,8 +10218,8 @@ public final class CL
      *             <code>
      *             cl_program <b>clCreateProgramWithSource</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -8510,8 +10377,8 @@ public final class CL
      *             <code>
      *             cl_program <b>clCreateProgramWithBinary</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -8714,14 +10581,14 @@ public final class CL
 
     private static native cl_program clCreateProgramWithBinaryNative(cl_context context, int num_devices, cl_device_id device_list[], long lengths[], byte binaries[][], int binary_status[], int errcode_ret[]);
 
-    
-    
+
+
     /**
      * <p>
      *       Creates a program object for a context, and loads the information related to the built-in kernels
      *       into a program object.
      *   </p>
-     * 
+     *
      * <div title="clCreateProgramWithBuiltInKernels">
      *   <div>
      *     <h2></h2>
@@ -8732,8 +10599,8 @@ public final class CL
      *             <code>
      *             cl_program <b>clCreateProgramWithBuiltInKernels</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -8856,8 +10723,8 @@ public final class CL
         }
     }
     private static native cl_program clCreateProgramWithBuiltInKernelsNative(cl_context  context, int num_devices, cl_device_id device_list[], String kernel_names, int errcode_ret[]);
-    
-    
+
+
     /**
      * <p>
      *     Increments the <code>program</code> reference count.
@@ -8874,8 +10741,8 @@ public final class CL
      *             cl_int
      *             <b>clRetainProgram</b>
      *             (</code>
-     *           <td>cl_program<var>program</var><code>)</code></td>
      *           </td>
+     *           <td>cl_program<var>program</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8922,8 +10789,8 @@ public final class CL
      *             <code>
      *             cl_int <b>clReleaseProgram</b>
      *             (</code>
-     *           <td>cl_program<var>program</var><code>)</code></td>
      *           </td>
+     *           <td>cl_program<var>program</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -8979,8 +10846,8 @@ public final class CL
      *             cl_int
      *             <b>clBuildProgram</b>
      *             (</code>
-     *           <td>cl_program<var>program</var>, </td>
      *           </td>
+     *           <td>cl_program<var>program</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -9402,15 +11269,15 @@ public final class CL
 
     private static native int clBuildProgramNative(cl_program program, int num_devices, cl_device_id device_list[], String options, BuildProgramFunction pfn_notify, Object user_data);
 
-    
-    
-    
+
+
+
     /**
      * <p>
      *       Compiles a programs source for all the devices or a specific device(s) in the OpenCL context
      *           associated with <code>program</code>.
      *   </p>
-     * 
+     *
      * <div title="clCompileProgram">
      *   <div>
      *     <h2></h2>
@@ -9422,8 +11289,8 @@ public final class CL
      *             cl_int
      *             <b>clCompileProgram</b>
      *             (</code>
-     *           <td>cl_program<var>program</var>, </td>
      *           </td>
+     *           <td>cl_program<var>program</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -9453,7 +11320,7 @@ public final class CL
      *           <td></td>
      *           <td>void<var>(CL_CALLBACK *pfn_notify)(
      *             cl_program program,
-     *             void *user_data)</var>, 
+     *             void *user_data)</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -10068,15 +11935,15 @@ public final class CL
     }
     private static native int clCompileProgramNative(cl_program program, int num_devices, cl_device_id device_list[], String options, int num_input_headers, cl_program input_headers[], String header_include_names[], BuildProgramFunction pfn_notify, Object user_data);
 
-    
-    
-    
+
+
+
     /**
      * <p>
      *       Links a set of compiled program objects and libraries for all the devices or a specific device(s) in
      *       the OpenCL context and creates an executable.
      *   </p>
-     * 
+     *
      * <div title="clLinkProgram">
      *   <div>
      *     <h2></h2>
@@ -10088,8 +11955,8 @@ public final class CL
      *             cl_program
      *             <b>clLinkProgram</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -10114,7 +11981,7 @@ public final class CL
      *         <tr valign="top">
      *           <td></td>
      *           <td>void<var>(CL_CALLBACK *pfn_notify)
-     *             (cl_program program, void *user_data)</var>, 
+     *             (cl_program program, void *user_data)</var>,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -10410,12 +12277,12 @@ public final class CL
     }
     private static native cl_program clLinkProgramNative(cl_context context, int num_devices, cl_device_id device_list[], String options, int num_input_programs, cl_program input_programs[], BuildProgramFunction pfn_notify, Object user_data, int errcode_ret[]);
 
-    
+
     /**
      * <p>
      *       Allows the implementation to release the resources allocated by the OpenCL compiler for <>platform</code>.
      *   </p>
-     * 
+     *
      * <div title="clUnloadPlatformCompiler">
      *   <div>
      *     <h2></h2>
@@ -10427,8 +12294,8 @@ public final class CL
      *             cl_int
      *             <b>clUnloadPlatformCompiler</b>
      *             (</code>
-     *           <td>cl_platform_id<var>platform</var><code>)</code></td>
      *           </td>
+     *           <td>cl_platform_id<var>platform</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -10467,10 +12334,10 @@ public final class CL
     {
         // OPENCL_1_2
         return checkResult(clUnloadPlatformCompilerNative(platform));
-    }    
+    }
     private static native int clUnloadPlatformCompilerNative(cl_platform_id platform);
-    
-    
+
+
     /**
      * <p>
      *       Allows the implementation to release the resources allocated by the OpenCL compiler.
@@ -10487,8 +12354,8 @@ public final class CL
      *             cl_int
      *             <b>clUnloadCompiler</b>
      *             (</code>
-     *           <td>void<var></var><code>)</code></td>
      *           </td>
+     *           <td>void<var></var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -10506,7 +12373,7 @@ public final class CL
      *     </p>
      *   </div>
      * </div>
-     * @deprecated As of OpenCL 1.2 
+     * @deprecated As of OpenCL 1.2
      */
     public static int clUnloadCompiler()
     {
@@ -10531,8 +12398,8 @@ public final class CL
      *             cl_int
      *             <b>clGetProgramInfo</b>
      *             (</code>
-     *           <td>cl_program<var>program</var>, </td>
      *           </td>
+     *           <td>cl_program<var>program</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -10819,8 +12686,8 @@ public final class CL
      *             cl_int
      *             <b>clGetProgramBuildInfo</b>
      *             (</code>
-     *           <td>cl_program <var>program</var>, </td>
      *           </td>
+     *           <td>cl_program <var>program</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -11054,8 +12921,8 @@ public final class CL
      *             <code>
      *             cl_kernel <b>clCreateKernel</b>
      *             (</code>
-     *           <td>cl_program <var>program</var>, </td>
      *           </td>
+     *           <td>cl_program <var>program</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -11188,8 +13055,8 @@ public final class CL
      *             cl_int
      *             <b>clCreateKernelsInProgram</b>
      *             (</code>
-     *           <td>cl_program <var>program</var>, </td>
      *           </td>
+     *           <td>cl_program <var>program</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -11329,8 +13196,8 @@ public final class CL
      *             cl_int
      *             <b>clRetainKernel</b>
      *             (</code>
-     *           <td>cl_kernel<var>kernel</var><code>)</code></td>
      *           </td>
+     *           <td>cl_kernel<var>kernel</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -11384,8 +13251,8 @@ public final class CL
      *             cl_int
      *             <b>clReleaseKernel</b>
      *             (</code>
-     *           <td>cl_kernel<var>kernel</var><code>)</code></td>
      *           </td>
+     *           <td>cl_kernel<var>kernel</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -11441,8 +13308,8 @@ public final class CL
      *             cl_int
      *             <b>clSetKernelArg</b>
      *             (</code>
-     *           <td>cl_kernel<var>kernel</var>, </td>
      *           </td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -11650,8 +13517,475 @@ public final class CL
     {
         return checkResult(clSetKernelArgNative(kernel, arg_index, arg_size, arg_value));
     }
-
     private static native int clSetKernelArgNative(cl_kernel kernel, int arg_index, long arg_size, Pointer arg_value);
+
+
+
+    /**
+     * <p>
+     *             Used to set a SVM pointer as the argument value for a specific argument of a kernel.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <strong>clSetKernelArgSVMPointer</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_kernel <var>kernel</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_uint <var>arg_index</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const void <var>*arg_value</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>kernel</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid kernel object.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>arg_index</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The argument index. Arguments to the kernel are
+     *             referred by indices that go from 0
+     *             for the leftmost argument to <code>n</code> - 1,
+     *             where <code>n</code> is the total
+     *             number of arguments declared by a kernel.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>arg_value</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to the SVM pointer that should be used as the argument value for
+     *             argument specified by <code>arg_index</code>.
+     *             The SVM pointer specified is the value used by all
+     *             API calls that enqueue <code>kernel</code>
+     *             (<span><span>clEnqueueNDRangeKernel</span></span>)
+     *             until the argument value is changed by a call to
+     *             <code>clSetKernelArgSVMPointer</code>
+     *             for <code>kernel</code>.
+     *             The SVM pointer can only be used for arguments that
+     *             are declared to be a pointer to global or constant
+     *             memory. The SVM pointer value must
+     *             be aligned according to the argumentâ€™s type. For
+     *             example, if the argument is declared to be
+     *             <code>global float4 *p</code>, the SVM pointer
+     *             value passed for <code>p</code> must
+     *             be at a minimum aligned to a
+     *             <span>float4</span>. The SVM pointer value
+     *             specified as the argument value can be the pointer returned by
+     *             <span><span>clSVMAlloc</span></span>
+     *             or can be a pointer + offset into the SVM region.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       All OpenCL API calls are thread-safe except
+     *       <span><span>clSetKernelArg</span></span>
+     *       and <code>clSetKernelArgSVMPointer</code>.
+     *       <span><span>clSetKernelArg</span></span>
+     *       and <code>clSetKernelArgSVMPointer</code> are safe
+     *       to call from any host thread, and safe to call re-entrantly so long as concurrent
+     *       calls operate on different <span>cl_kernel</span> objects.
+     *       However, the behavior of the <span>cl_kernel</span> object is undefined if
+     *       <span><span>clSetKernelArg</span></span>
+     *       or <code>clSetKernelArgSVMPointer</code>
+     *       are called from multiple host threads on the same
+     *       <span>cl_kernel</span> object at the same time.  Please note that there
+     *       are additional limitations as to which OpenCL APIs may be called
+     *       from OpenCL callback functions -- please see section 5.11.
+     *       (Please refer to the OpenCL glossary for the OpenCL definition of thread-safe.
+     *       This definition may be different from usage of the term in other contexts.)
+     *     </p>
+     *     <p>
+     *       There is an inherent race condition in the
+     *       design of OpenCL that occurs between setting a kernel argument and using the kernel
+     *       with <span><span>clEnqueueNDRangeKernel</span></span>.
+     *       Another host thread might change the kernel arguments between when a host thread sets the
+     *       kernel arguments and then enqueues the kernel, causing the wrong kernel arguments
+     *       to be enqueued. Rather than attempt to share <span>cl_kernel</span>
+     *       objects among multiple host threads, applications are strongly encouraged
+     *       to make additional <span>cl_kernel</span> objects
+     *       for kernel functions for each host thread.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clSetKernelArgSVMPointer</code> returns <span>CL_SUCCESS</span> if the
+     *       function is executed successfully. Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_KERNEL</span> if <code>kernel</code>
+     *           is not a valid kernel object.
+     *         </li>
+     *         <li><span>CL_INVALID_ARG_INDEX</span> if <code>arg_index</code>
+     *           is not a valid argument index.
+     *         </li>
+     *         <li><span>CL_INVALID_ARG_VALUE</span> if <code>arg_value</code>
+     *           specified is not a valid value.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clSetKernelArg</span></span>,
+     *       <span><span>clCreateKernel</span></span>,
+     *       <span><span>clCreateKernelsInProgram</span></span>,
+     *       <span><span>clReleaseKernel</span></span>,
+     *       <span><span>clRetainKernel</span></span>,
+     *       <span><span>clGetKernelInfo</span></span>,
+     *       <span><span>clGetKernelWorkGroupInfo</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clSetKernelArgSVMPointer(cl_kernel kernel, int arg_index, Pointer arg_value)
+    {
+        // OPENCL_2_0
+        return checkResult(clSetKernelArgSVMPointerNative(kernel, arg_index, arg_value));
+    }
+    private static native int clSetKernelArgSVMPointerNative(cl_kernel kernel, int      arg_index, Pointer arg_value);
+
+
+    /**
+     * <p>
+     *             Used to pass additional information other than argument values to a kernel.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <strong>clSetKernelExecInfo</strong>
+     *             (</code>
+     *           </td>
+     *           <td>
+     *             cl_kernel
+     *              <var>kernel</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_kernel_exec_info
+     *              <var>param_name</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             size_t
+     *              <var>param_value_size</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             const void
+     *              <var>*param_value</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> kernel </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the kernel object being queried.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_name </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the information to be passed to
+     *             <code>kernel</code>. The list of supported
+     *             <code>param_name</code> types and the corresponding values passed in
+     *             <code>param_value</code> is described in the table below.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code>param_value_size</code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the size in bytes of the memory pointed to by
+     *             <code>param_value</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> param_value </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to memory where the appropriate values
+     *             determined by <code>param_name</code> are specified.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_kernel_exec_info</th>
+     *                   <th align="left">Type</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_EXEC_INFO_SVM_PTRS</code>
+     *                   </td>
+     *                   <td align="left">void *[]</td>
+     *                   <td align="left">
+     *                     <p>
+     *                       SVM pointers used by a kernel which
+     *                       are not passed as arguments to <code>kernel</code>.
+     *                       These addresses may be defined in
+     *                       SVM buffer(s) that are passed as
+     *                       arguments to <code>kernel</code>.
+     *                     </p>
+     *                     <p>
+     *                       These non-argument SVM pointers
+     *                       must be specified using
+     *                       <code>clSetKernelExecInfo</code>
+     *                       for coarse-grain and fine-grain buffer SVM
+     *                       allocations but not for fine-grain
+     *                       system SVM allocations.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_KERNEL_EXEC_INFO_SVM_-
+     *                     FINE_GRAIN_SYSTEM</code>
+     *                   </td>
+     *                   <td align="left">cl_bool</td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag indicates whether the kernel
+     *                       uses pointers that are fine grain
+     *                       system SVM allocations. These fine
+     *                       grain system SVM pointers may be
+     *                       passed as arguments or defined in
+     *                       SVM buffers that are passed as
+     *                       argumentsto <code>kernel</code>.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       1. Coarse-grain or fine-grain buffer SVM pointers
+     *       used by a kernel which are not passed as a
+     *       kernel arguments must be specified using
+     *       <code>clSetKernelExecInfo</code> with
+     *       <code>CL_KERNEL_EXEC_INFO_SVM_PTRS</code>.
+     *       For example, if SVM buffer A contains a pointer to
+     *       another SVM buffer B, and the kernel dereferences
+     *       that pointer, then a pointer to B must either
+     *       be passed as an argument in the call to that
+     *       kernel or it must be made available to the kernel
+     *       using <code>clSetKernelExecInfo</code>.
+     *       For example, we might pass extra SVM pointers as follows:
+     *     </p>
+     *     <p></p>
+     *     <div>
+     *       <p>
+     *         <code><br />
+     *         clSetKernelExecInfo(kernel,<br />
+     *              CL_KERNEL_EXEC_INFO_SVM_PTRS,<br />
+     *              num_ptrs * sizeof(void *),<br />
+     *              extra_svm_ptr_list);<br />
+     *         </code>
+     *       </p>
+     *     </div>
+     *     <p>
+     *     </p>
+     *     <p>
+     *       Here <code>num_ptrs</code> specifies the number
+     *       of additional SVM pointers while
+     *       <code>extra_svm_ptr_list</code> specifies a
+     *       pointer to memory containing those SVM pointers.
+     *     </p>
+     *     <p>
+     *       When calling <code>clSetKernelExecInfo</code> with
+     *       <code>CL_KERNEL_EXEC_INFO_SVM_PTRS</code> to specify
+     *       pointers to non-argument SVM buffers as extra arguments
+     *       to a kernel, each of these pointers can
+     *       be the SVM pointer returned by
+     *       <span><span>clSVMAlloc</span></span>
+     *       or can be a pointer + offset into the SVM region.
+     *       It is sufficient to provide one pointer for each SVM buffer used.
+     *     </p>
+     *     <p>
+     *       2. <code>CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM</code>
+     *       is used to indicate whether SVM
+     *       pointers used by a kernel will refer to system allocations or not.
+     *     </p>
+     *     <p>
+     *       <code>CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM</code> =
+     *       <code>CL_FALSE</code> indicates that the
+     *       OpenCL implementation may assume that system pointers
+     *       are not passed as kernel arguments
+     *       and are not stored inside SVM allocations
+     *       passed as kernel arguments.
+     *     </p>
+     *     <p>
+     *       <code>CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM</code> =
+     *       <code>CL_TRUE</code> indicates that the OpenCL
+     *       implementation must assume that system pointers might
+     *       be passed as kernel arguments and/or
+     *       stored inside SVM allocations passed as kernel arguments.
+     *       In this case, if the device to which
+     *       the kernel is enqueued does not support system SVM pointers,
+     *       <span><span>clEnqueueNDRangeKernel</span></span> will
+     *       return a <span>CL_INVALID_OPERATION</span> error.
+     *       If none of the devices in the context
+     *       associated with kernel support fine-grain
+     *       system SVM allocations, <code>clSetKernelExecInfo</code>
+     *       will return a <span>CL_INVALID_OPERATION</span> error.
+     *     </p>
+     *     <p>
+     *       If <code>clSetKernelExecInfo</code> has not been called
+     *       with a value for
+     *       <code>CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM</code>
+     *       the default value is used for this kernel attribute.
+     *       The defaule value depends on whether the device on which
+     *       the kernel is enqueued supports fine-grain system SVM
+     *       allocations. If so, the default value used is
+     *       <code>CL_TRUE</code> (system pointers might
+     *       be passed); otherwise, the default is <code>CL_FALSE</code>.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function
+     *       is executed successfully. Otherwise,
+     *       it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_KERNEL</span> if <code>kernel</code>
+     *           is not a valid kernel object.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span>
+     *           if <code>param_name</code>
+     *           is not valid, if <code>param_value</code>
+     *           is NULL or if the size
+     *           specified by <code>param_value_size</code>
+     *           is not valid.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span>
+     *           if <code>param_name</code> =
+     *           <code>CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM</code>
+     *           and <code>param_value</code> = <code>CL_TRUE</code>
+     *           but no devices in context
+     *           associated with <code>kernel</code> support
+     *           fine-grain system SVM allocations.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>clCreateKernel</span></span>,
+     *       <span><span>clGetKernelInfo</span></span>,
+     *       <span><span>clGetKernelArgInfo</span></span>,
+     *       <span><span>clCreateKernelsInProgram</span></span>,
+     *       <span><span>clSetKernelArg</span></span>,
+     *       <span><span>clGetKernelWorkGroupInfo</span></span>,
+     *       <span><span>clEnqueueNDRangeKernel</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clSetKernelExecInfo(cl_kernel kernel, int param_name, long param_value_size, Pointer param_value)
+    {
+        // OPENCL_2_0
+        return checkResult(clSetKernelExecInfoNative(kernel, param_name, param_value_size, param_value));
+    }
+    private static native int clSetKernelExecInfoNative(cl_kernel kernel, int param_name, long param_value_size, Pointer param_value);
+
 
     /**
      * <p>
@@ -11669,8 +14003,8 @@ public final class CL
      *             cl_int
      *             <b>clGetKernelInfo</b>
      *             (</code>
-     *           <td>cl_kernel<var>kernel</var>, </td>
      *           </td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -11861,13 +14195,13 @@ public final class CL
 
     private static native int clGetKernelInfoNative(cl_kernel kernel, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
 
-    
-    
+
+
     /**
      * <p>
      *       Returns information about the arguments of a kernel.
      *   </p>
-     * 
+     *
      * <div title="clGetKernelArgInfo">
      *   <div>
      *     <h2></h2>
@@ -11879,11 +14213,11 @@ public final class CL
      *             cl_int
      *             <b>clGetKernelArgInfo</b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_kernel
      *             <var>kernel</var>
-     *             , 
-     *           </td>
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -11891,7 +14225,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>arg_indx</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -11899,7 +14233,7 @@ public final class CL
      *           <td>
      *             cl_kernel_arg_info
      *             <var>param_name</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -11907,7 +14241,7 @@ public final class CL
      *           <td>
      *             size_t
      *             <var>param_value_size</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -11915,7 +14249,7 @@ public final class CL
      *           <td>
      *             void
      *             <var>*param_value</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -12012,7 +14346,7 @@ public final class CL
      *                         <code>CL_KERNEL_ARG_ADDRESS_LOCAL</code><br />
      *                         <code>CL_KERNEL_ARG_ADDRESS_CONSTANT</code><br />
      *                         <code>CL_KERNEL_ARG_ADDRESS_PRIVATE</code><br />
-     *                         
+     *
      *                       </p>
      *                     </div>
      *                     <p>
@@ -12041,7 +14375,7 @@ public final class CL
      *                         <code>CL_KERNEL_ARG_ACCESS_WRITE_ONLY</code><br />
      *                         <code>CL_KERNEL_ARG_ACCESS_READ_WRITE</code><br />
      *                         <code>CL_KERNEL_ARG_ACCESS_NONE</code><br />
-     *                         
+     *
      *                       </p>
      *                     </div>
      *                     <p>
@@ -12173,7 +14507,7 @@ public final class CL
         return checkResult(clGetKernelArgInfoNative(kernel, arg_indx, param_name, param_value_size, param_value, param_value_size_ret));
     }
     private static native int clGetKernelArgInfoNative(cl_kernel kernel, int arg_indx, int param_name, long param_value_size, Pointer param_value, long param_value_size_ret[]);
-    
+
     /**
      * <p>
      *       Returns information about the kernel object that may be specific to a device.
@@ -12190,8 +14524,8 @@ public final class CL
      *             cl_int
      *             <b>clGetKernelWorkGroupInfo</b>
      *             (</code>
-     *           <td>cl_kernel<var>kernel</var>, </td>
      *           </td>
+     *           <td>cl_kernel<var>kernel</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -12453,8 +14787,8 @@ public final class CL
      *             cl_int
      *             <b>clWaitForEvents</b>
      *             (</code>
-     *           <td>cl_uint<var>num_events</var>, </td>
      *           </td>
+     *           <td>cl_uint<var>num_events</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -12550,8 +14884,8 @@ public final class CL
      *             clGetEventInfo
      *             </b>
      *             (</code>
-     *           <td>cl_event<var>event</var>, </td>
      *           </td>
+     *           <td>cl_event<var>event</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -12804,8 +15138,8 @@ public final class CL
      *             <code>
      *             cl_event <b>clCreateUserEvent</b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -12891,7 +15225,7 @@ public final class CL
             cl_event result = clCreateUserEventNative(context, errcode_ret);
             return result;
         }
-        
+
     }
     private static native cl_event clCreateUserEventNative(cl_context context, int errcode_ret[]);
 
@@ -12914,8 +15248,8 @@ public final class CL
      *             cl_int
      *             <b>clRetainEvent</b>
      *             (</code>
-     *           <td>cl_event<var>event</var><code>)</code></td>
      *           </td>
+     *           <td>cl_event<var>event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -12984,8 +15318,8 @@ public final class CL
      *             cl_int
      *             <b>clReleaseEvent</b>
      *             (</code>
-     *           <td>cl_event<var>event</var><code>)</code></td>
      *           </td>
+     *           <td>cl_event<var>event</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13054,8 +15388,8 @@ public final class CL
      *             <code>
      *             cl_mem <b>clSetUserEventStatus</b>
      *             (</code>
-     *           <td>cl_event<var>event</var>, </td>
      *           </td>
+     *           <td>cl_event<var>event</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -13202,8 +15536,8 @@ public final class CL
      *             <code>
      *             cl_int <b>clSetEventCallback</b>
      *             (</code>
-     *           <td>cl_event<var>event</var>, </td>
      *           </td>
+     *           <td>cl_event<var>event</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -13410,8 +15744,8 @@ public final class CL
      *             cl_int
      *             <b>clGetEventProfilingInfo</b>
      *             (</code>
-     *           <td>cl_event<var>event</var>, </td>
      *           </td>
+     *           <td>cl_event<var>event</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -13632,8 +15966,8 @@ public final class CL
      *             cl_int
      *             <b>clFlush</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13716,8 +16050,8 @@ public final class CL
      *             cl_int
      *             <b>clFinish</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -13777,8 +16111,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueReadBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -14044,8 +16378,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueReadBufferRect</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -14323,8 +16657,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWriteBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -14569,7 +16903,11 @@ public final class CL
                 event = new cl_event();
             }
             int result = clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
-            scheduleReferenceRelease(event, ptr, doReleaseEvent);
+            // Only schedule the reference release if the enqueue succeeds.
+            if (result == CL_SUCCESS)
+            {
+                scheduleReferenceRelease(event, ptr, doReleaseEvent);
+            }
             return checkResult(result);
         }
     }
@@ -14593,8 +16931,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWriteBufferRect</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -14862,12 +17200,12 @@ public final class CL
     private static native int clEnqueueWriteBufferRectNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event);
 
 
-    
+
     /**
      * <p>
      *       Enqueues a command to fill a buffer object with a pattern of a given pattern size.
      *   </p>
-     * 
+     *
      * <div title="clEnqueueFillBuffer">
      *   <div>
      *     <h2></h2>
@@ -14879,11 +17217,11 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueFillBuffer</b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_command_queue
      *             <var>command_queue</var>
-     *             , 
-     *           </td>
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14891,7 +17229,7 @@ public final class CL
      *           <td>
      *             cl_mem
      *             <var>buffer</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14899,7 +17237,7 @@ public final class CL
      *           <td>const
      *             void
      *             <var>*pattern</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14907,7 +17245,7 @@ public final class CL
      *           <td>
      *             size_t
      *             <var>pattern_size</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14915,7 +17253,7 @@ public final class CL
      *           <td>
      *             size_t
      *             <var>offset</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14923,7 +17261,7 @@ public final class CL
      *           <td>
      *             size_t
      *             <var>size</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14931,7 +17269,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>num_events_in_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -14939,7 +17277,7 @@ public final class CL
      *           <td>const
      *             cl_event
      *             <var>*event_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -15130,9 +17468,9 @@ public final class CL
     {
         // OPENCL_1_2
         return checkResult(clEnqueueFillBufferNative(command_queue, buffer, pattern, pattern_size, offset, size, num_events_in_wait_list, event_wait_list, event));
-    }    
+    }
     private static native int clEnqueueFillBufferNative(cl_command_queue command_queue, cl_mem buffer, Pointer pattern, long pattern_size, long offset, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
-    
+
     /**
      * <p>
      *       Enqueues a command to copy from one buffer object to another.
@@ -15148,8 +17486,8 @@ public final class CL
      *             <code>
      *             cl_int <b>clEnqueueCopyBuffer </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -15342,8 +17680,8 @@ public final class CL
      *             <code>
      *             cl_int <b>clEnqueueCopyBufferRect </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -15587,8 +17925,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueReadImage</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -15893,8 +18231,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWriteImage</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -16176,20 +18514,24 @@ public final class CL
                 event = new cl_event();
             }
             int result = clEnqueueWriteImageNative(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
-            scheduleReferenceRelease(event, ptr, doReleaseEvent);
+            // Only schedule the reference release if the enqueue succeeds.
+            if (result == CL_SUCCESS)
+            {
+                scheduleReferenceRelease(event, ptr, doReleaseEvent);
+            }
             return checkResult(result);
         }
     }
 
     private static native int clEnqueueWriteImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_write, long origin[], long region[], long input_row_pitch, long input_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
-    
-    
+
+
     /**
      * <p>
      *       Enqueues a command to fill an image object with a specified color.
      *   </p>
-     * 
+     *
      * <div title="clEnqueueFillImage">
      *   <div>
      *     <h2></h2>
@@ -16201,8 +18543,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueFillImage</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -16425,9 +18767,9 @@ public final class CL
     {
         // OPENCL_1_2
         return checkResult(clEnqueueFillImageNative(command_queue, image, fill_color, origin, region, num_events_in_wait_list, event_wait_list, event));
-    }    
+    }
     private static native int clEnqueueFillImageNative(cl_command_queue command_queue, cl_mem image, Pointer fill_color, long origin[], long region[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
-    
+
     /**
      * <p>
      *       Enqueues a command to copy image objects.
@@ -16444,8 +18786,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueCopyImage</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -16674,8 +19016,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueCopyImageToBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -16886,8 +19228,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueCopyBufferToImage</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -17110,8 +19452,8 @@ public final class CL
      *             <code>
      *             void * <b>clEnqueueMapBuffer</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -17383,8 +19725,8 @@ public final class CL
      *             <code>
      *             void * <b>clEnqueueMapImage </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -17712,8 +20054,8 @@ public final class CL
      *             <code>
      *             cl_int  <b>clEnqueueUnmapMemObject </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -17875,18 +20217,22 @@ public final class CL
             event = new cl_event();
         }
         int result = clEnqueueUnmapMemObjectNative(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
-        scheduleReferenceRelease(event, mapped_ptr, doReleaseEvent);
+        // Only schedule the reference release if the enqueue succeeds.
+        if (result == CL_SUCCESS)
+        {
+            scheduleReferenceRelease(event, mapped_ptr, doReleaseEvent);
+        }
         return checkResult(result);
     }
 
     private static native int clEnqueueUnmapMemObjectNative(cl_command_queue command_queue, cl_mem memobj, ByteBuffer mapped_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
-    
+
     /**
      * <p>
      *       Enqueues a command to indicate which device a set of memory objects should be associated with.
      *   </p>
-     * 
+     *
      * <div title="clEnqueueMigrateMemObjects">
      *   <div>
      *     <h2></h2>
@@ -17898,11 +20244,11 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueMigrateMemObjects </b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_command_queue
      *             <var>command_queue</var>
-     *             , 
-     *           </td>
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -17910,7 +20256,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>num_mem_objects</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -17918,7 +20264,7 @@ public final class CL
      *           <td>const
      *             cl_mem
      *             <var>*mem_objects</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -17926,7 +20272,7 @@ public final class CL
      *           <td>
      *             cl_mem_migration_flags
      *             <var>flags</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -17934,7 +20280,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>num_events_in_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -17942,7 +20288,7 @@ public final class CL
      *           <td>const
      *             cl_event
      *             <var>*event_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -18179,7 +20525,7 @@ public final class CL
         return checkResult(clEnqueueMigrateMemObjectsNative(command_queue, num_mem_objects, mem_objects, flags, num_events_in_wait_list, event_wait_list, event));
     }
     private static native int clEnqueueMigrateMemObjectsNative(cl_command_queue command_queue, int num_mem_objects, cl_mem mem_objects[], long flags, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
-    
+
     /**
      * <p>
      *       Enqueues a command to execute a kernel on a device.
@@ -18198,8 +20544,8 @@ public final class CL
      *             clEnqueueNDRangeKernel
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -18476,8 +20822,8 @@ public final class CL
      *             clEnqueueTask
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -18617,6 +20963,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * @deprecated As of OpenCL 2.0
      */
     public static int clEnqueueTask(cl_command_queue command_queue, cl_kernel kernel, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
@@ -18643,8 +20990,8 @@ public final class CL
      *             clEnqueueNativeKernel
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -18882,14 +21229,14 @@ public final class CL
 
     private static native int clEnqueueNativeKernelNative(cl_command_queue command_queue, EnqueueNativeKernelFunction user_func, Object args, long cb_args, int num_mem_objects, cl_mem mem_list[], Pointer args_mem_loc[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
-    
-    
+
+
     /**
      * <p>
      *       Enqueues a marker command which waits for either a list of events to complete,
      *       or all previously enqueued commands to complete.
      *   </p>
-     * 
+     *
      * <div title="clEnqueueMarkerWithWaitList">
      *   <div>
      *     <h2></h2>
@@ -18901,11 +21248,11 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueMarkerWithWaitList</b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_command_queue
      *             <var>command_queue</var>
-     *             , 
-     *           </td>
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -18913,7 +21260,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>num_events_in_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -18921,7 +21268,7 @@ public final class CL
      *           <td>const
      *             cl_event
      *             <var>*event_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -19045,14 +21392,14 @@ public final class CL
     }
     private static native int clEnqueueMarkerWithWaitListNative(cl_command_queue command_queue, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
 
-    
-    
-    
+
+
+
     /**
      * <p>
      *      A synchronization point that enqueues a barrier operation.
      *   </p>
-     * 
+     *
      * <div title="clEnqueueBarrierWithWaitList">
      *   <div>
      *     <h2></h2>
@@ -19064,11 +21411,11 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueBarrierWithWaitList</b>
      *             (</code>
+     *           </td>
      *           <td>
      *             cl_command_queue
      *             <var>command_queue</var>
-     *             , 
-     *           </td>
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -19076,7 +21423,7 @@ public final class CL
      *           <td>
      *             cl_uint
      *             <var>num_events_in_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -19084,7 +21431,7 @@ public final class CL
      *           <td>const
      *             cl_event
      *             <var>*event_wait_list</var>
-     *             , 
+     *             ,
      *           </td>
      *         </tr>
      *         <tr valign="top">
@@ -19208,23 +21555,1300 @@ public final class CL
         return checkResult(clEnqueueBarrierWithWaitListNative(command_queue, num_events_in_wait_list, event_wait_list, event));
     }
     private static native int clEnqueueBarrierWithWaitListNative(cl_command_queue command_queue, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
-    
-    
+
+
 
     /**
-     * TODO: Not documented in Khronos OpenCL registry
+     * (Not documented in Khronos OpenCL registry)
+     * @deprecated As of OpenCL 2.0
      */
-    public static int clSetPrintfCallback(cl_context context, PrintfCallbackFunction pfn_notify, Object user_data) 
+    public static int clSetPrintfCallback(cl_context context, PrintfCallbackFunction pfn_notify, Object user_data)
     {
         return checkResult(clSetPrintfCallbackNative(context, pfn_notify, user_data));
     }
-    private static native int clSetPrintfCallbackNative(cl_context context, PrintfCallbackFunction pfn_notify, Object user_data); 
+    private static native int clSetPrintfCallbackNative(cl_context context, PrintfCallbackFunction pfn_notify, Object user_data);
 
 
 
-    
-    
-    
+    /**
+     * <p>
+     *             Enqueues a command to free the shared virtual memory allocated using clSVMAlloc or a shared system memory pointer.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int <strong>clEnqueueSVMFree</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_uint
+     *              <var>num_svm_pointers</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             void
+     *              <var>*svm_pointers[]</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>void (CL_CALLBACK  <var>*pfn_free_func)
+     *             (    cl_command_queue queue,     cl_uint num_svm_pointers,
+     *             void *svm_pointers[]</var>),
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>    void <var> *user_data</var>), </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>void <var>*user_data</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>command_queue</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>A valid host command-queue.</p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>svm_pointers and num_svm_pointers</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify shared virtual memory pointers to be freed. Each
+     *             pointer in <code>svm_pointers</code> that was
+     *             allocated using
+     *             <span><span>clSVMAlloc</span></span>
+     *             must have been allocated from the
+     *             same context from which <code>command_queue</code>
+     *             was created. The memory associated with
+     *             <code>svm_pointers</code> can be reused or
+     *             freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>pfn_free_func</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the callback
+     *             function to be called to free the SVM pointers.
+     *             <code>pfn_free_func</code> takes four arguments:
+     *             <code>queue</code> which is the command queue in which
+     *             <code>clEnqueueSVMFree</code> was enqueued, the
+     *             count and list of SVM pointers to free and <code>user_data</code>
+     *             which is a pointer to user specified data.
+     *             If <code>pfn_free_func</code> is NULL, all pointers specified in
+     *             <code>svm_pointers</code> must be allocated using
+     *             <span><span>clSVMAlloc</span></span>
+     *             and the OpenCL implementation will free
+     *             these SVM pointers. <code>pfn_free_func</code> must
+     *             be a valid callback function if any SVM pointer to be
+     *             freed is a shared system memory pointer i.e. not allocated
+     *             using <span><span>clSVMAlloc</span></span>.
+     *             If <code>pfn_free_func</code>
+     *             is a valid callback function, the OpenCL implementation
+     *             will call <code>pfn_free_func</code> to free all the
+     *             SVM pointers specified in <code>svm_pointers</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>user_data</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Will be passed as the
+     *             <code>user_data</code> argument when <code>pfn_free_func</code>
+     *             is called. <code>user_data</code> can be NULL.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span><code>event_wait_list</code> and <code>num_events_in_wait_list</code></span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before
+     *             <code>clEnqueueSVMFree</code> can be executed. If
+     *             <code>event_wait_list</code> is NULL, then
+     *             <code>clEnqueueSVMFree</code>
+     *             does not wait on any event to complete. If
+     *             <code>event_wait_list</code> is NULL,
+     *             <code>num_events_in_wait_list</code>
+     *             must be 0. If <code>event_wait_list</code> is not
+     *             NULL, the list of events pointed to by
+     *             <code>event_wait_list</code> must
+     *             be valid and <code>num_events_in_wait_list</code>
+     *             must be greater than 0. The events specified in
+     *             <code>event_wait_list</code> act as synchronization
+     *             points. The context associated with events in
+     *             <code>event_wait_list</code> and
+     *             <code>command_queue</code> must be the same.
+     *             The memory associated with
+     *             <code>event_wait_list</code> can be
+     *             reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>event</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that
+     *             identifies this particular command and can be used to query or
+     *             queue a wait for this particular command to complete.
+     *             <code>event</code> can be NULL in which case it will
+     *             not be possible for the application to query the
+     *             status of this command or queue a wait for this
+     *             command to complete. If the <code>event_wait_list</code>
+     *             and the <code>event</code> arguments are not NULL,
+     *             the <code>event</code>
+     *             argument should not refer to an element of the
+     *             <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function is executed
+     *       successfully. Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if
+     *           <code>command_queue</code> is not a valid host command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if
+     *           <code>num_svm_pointers</code> is 0 or if
+     *           <code>svm_pointers</code> is NULL or if any of
+     *           the pointers specified in <code>svm_pointers</code>
+     *           array is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span> if
+     *           <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0, or
+     *           <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or
+     *           if event objects in <code>event_wait_list</code>
+     *           are not valid events.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there
+     *           is a failure to allocate resources required
+     *           by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there
+     *           is a failure to allocate resources
+     *           required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clEnqueueSVMFree(cl_command_queue command_queue, int num_svm_pointers, Pointer svm_pointers[], SVMFreeFunction pfn_free_func, Object user_data, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_2_0
+        return checkResult(clEnqueueSVMFreeNative(command_queue, num_svm_pointers, svm_pointers, pfn_free_func, user_data, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueSVMFreeNative(cl_command_queue command_queue, int num_svm_pointers, Pointer svm_pointers[], SVMFreeFunction pfn_free_func, Object user_data, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    /**
+     * <p>
+     *             Enqueues a command to do a memcpy operation.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int <strong>clEnqueueSVMMemcpy</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_bool
+     *              <var>blocking_copy</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             void
+     *              <var>*dst_ptr</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             const  void
+     *              <var>*src_ptr</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             size_t
+     *              <var>size</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>command_queue</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>Refers to the host command-queue in which the
+     *             read / write command will be
+     *             queued. <code>command_queue</code> and
+     *             <code>buffer</code> must be created
+     *             with the same OpenCL context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>blocking_copy</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Indicates if the copy operation is blocking or non-blocking.
+     *           </p>
+     *           <p>
+     *             If <code>blocking_copy</code> is <code>CL_TRUE</code>
+     *             i.e. the copy command is blocking, <code>clEnqueueSVMMemcpy</code>
+     *             does not return until the buffer data has been
+     *             copied into memory pointed to by <code>dst_ptr</code>.
+     *           </p>
+     *           <p>
+     *             If <code>blocking_copy</code> is <code>CL_FALSE</code>
+     *             i.e. the copy command is non-blocking,
+     *             <code>clEnqueueSVMMemcpy</code> queues a non-blocking
+     *             copy command and returns. The contents of
+     *             the buffer that <code>dst_ptr</code> point to cannot
+     *             be used until the copy command has completed. The <code>event</code>
+     *             argument returns an event object which can be used to
+     *             query the execution status of the read
+     *             command. When the copy command has completed, the
+     *             contents of the buffer that <code>dst_ptr</code>
+     *             points to can be used by the application.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>size</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The size in bytes of data being copied.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>dst_ptr</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The pointer to a memory region where data is copied to.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>src_ptr</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The pointer to a memory region where data is copied from.
+     *           </p>
+     *           <p>
+     *             If <code>dst_ptr</code> and/or <code>src_ptr</code> are
+     *             allocated using <span><span>clSVMAlloc</span></span>
+     *             then they must be allocated from the
+     *             same context from which <code>command_queue</code> was created.
+     *             Otherwise the behavior is undefined.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span><code>event_wait_list</code> and <code>num_events_in_wait_list</code></span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before
+     *             <code>clEnqueueSVMMemcpy</code> can be executed. If
+     *             <code>event_wait_list</code> is NULL, then
+     *             <code>clEnqueueSVMMemcpy</code>
+     *             does not wait on any event to complete. If
+     *             <code>event_wait_list</code> is NULL,
+     *             <code>num_events_in_wait_list</code>
+     *             must be 0. If <code>event_wait_list</code> is not
+     *             NULL, the list of events pointed to by
+     *             <code>event_wait_list</code> must
+     *             be valid and <code>num_events_in_wait_list</code>
+     *             must be greater than 0. The events specified in
+     *             <code>event_wait_list</code> act as synchronization
+     *             points. The context associated with events in
+     *             <code>event_wait_list</code> and
+     *             <code>command_queue</code> must be the same.
+     *             The memory associated with
+     *             <code>event_wait_list</code> can be
+     *             reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>event</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that
+     *             identifies this particular command and can be used to query or
+     *             queue a wait for this particular command to complete.
+     *             <code>event</code> can be NULL in which case it will
+     *             not be possible for the application to query the
+     *             status of this command or queue a wait for this
+     *             command to complete. If the <code>event_wait_list</code>
+     *             and the <code>event</code> arguments are not NULL,
+     *             the <code>event</code>
+     *             argument should not refer to an element of the
+     *             <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function is executed
+     *       successfully. Otherwise, it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if
+     *           <code>command_queue</code> is not a valid host command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if the context
+     *           associated with <code>command_queue</code> and events in
+     *           <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span> if
+     *           <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0, or
+     *           <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or
+     *           if event objects in <code>event_wait_list</code>
+     *           are not valid events.
+     *         </li>
+     *         <li><span>CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST</span>
+     *           if the copy operation is blocking and the execution status of any of
+     *           the events in <code>event_wait_list</code>
+     *           is a negative integer value.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span>
+     *           if <code>dst_ptr</code> or <code>src_ptr</code> are NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span>
+     *           if <code>size</code> is 0.
+     *         </li>
+     *         <li><span>CL_MEM_COPY_OVERLAP</span>
+     *           if the values specified for <code>dst_ptr</code>,
+     *           <code>src_ptr</code> and <code>size</code> result in
+     *           an overlapping copy.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to
+     *           allocate resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to
+     *           allocate resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clEnqueueSVMMemcpy(cl_command_queue command_queue, boolean blocking_copy, Pointer dst_ptr, Pointer src_ptr, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_2_0
+        return checkResult(clEnqueueSVMMemcpyNative(command_queue, blocking_copy, dst_ptr, src_ptr, size, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueSVMMemcpyNative(cl_command_queue command_queue, boolean blocking_copy, Pointer dst_ptr, Pointer src_ptr, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    /**
+     * <p>
+     *             Enqueues a command to fill a region in memory with a pattern of a given pattern size.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <strong>clEnqueueSVMMemFill</strong>
+     *             (</code>
+     *           </td>
+     *           <td>
+     *             cl_command_queue
+     *              <var>command_queue</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             void
+     *              <var>*svm_ptr</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const
+     *             void
+     *              <var>*pattern</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             size_t
+     *              <var>pattern_size</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             size_t
+     *              <var>size</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_uint
+     *              <var>num_events_in_wait_list</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const
+     *             cl_event
+     *              <var>*event_wait_list</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_event
+     *              <var>*event</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Refers to the host command-queue in which the fill command will be queued.
+     *             The OpenCL context associated with <code>command_queue</code>
+     *             and SVM pointer referred to by <code>svm_ptr</code> must be the same.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> svm_ptr </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a memory region that will be filled with
+     *             <code>pattern</code>. It must be aligned to
+     *             <code>pattern_size</code> bytes. If
+     *             <code>svm_ptr</code> is allocated using
+     *             <span><span>clSVMAlloc</span></span>
+     *             then it must be allocated from the
+     *             same context from which
+     *             <code>command_queue</code> was created.
+     *             Otherwise the behavior is undefined.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> pattern </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to the data pattern of size <code>pattern_size</code>
+     *             in bytes. <code>pattern</code> will be used to fill a region
+     *             in <code>buffer</code> starting at <code>svm_ptr</code>
+     *             and is <code>size</code> bytes in size. The data pattern
+     *             must be a scalar or vector integer or floating-point data type. For
+     *             example, if region pointed to by <code>svm_ptr</code>
+     *             is to be filled with a pattern of
+     *             <span>float4</span> values, then <code>pattern</code> will be a pointer
+     *             to a <span>cl_float4</span> value and <code>pattern_size</code>
+     *             will be <code>sizeof(cl_float4)</code>. The maximum value of
+     *             <code>pattern_size</code> is the size of the largest integer
+     *             or floating-point vector data type supported by the OpenCL device.
+     *             The memory associated with <code>pattern</code> can be reused or
+     *             freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> size </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The size in bytes of region being filled starting with <code>svm_ptr</code>
+     *             and must be a multiple of <code>pattern_size</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list
+     *           ,</code>
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before this particular
+     *             command can be executed. If <code>event_wait_list</code>
+     *             is NULL, then this particular command does not wait on any
+     *             event to complete. If <code>event_wait_list</code> is
+     *             NULL, <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular write
+     *             command and can be used to query or queue a wait for this particular
+     *             command to complete. <code>event</code> can be NULL in
+     *             which case it will not be possible for the application to query the
+     *             status of this command or queue a wait for this command to complete.
+     *             <span><span>clEnqueueBarrierWithWaitList</span></span>
+     *             can be used instead.  If the <code>event_wait_list</code>
+     *             and the <code>event</code> arguments are not NULL, the
+     *             <code>event</code> argument should not refer to an element of the
+     *             <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clEnqueueSVMMemFill</code> returns <span>CL_SUCCESS</span> if
+     *       the function is executed successfully. Otherwise, it returns one of the following errors.
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid host command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if the context associated with
+     *           <code>command_queue</code> and events in
+     *           <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>svm_ptr</code> is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if
+     *           <code>svm_ptr</code> is not aligned to <code>pattern_size</code> bytes.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>pattern</code> is NULL
+     *           or if <code>pattern_size</code> is 0 or if <code>pattern_size</code>
+     *           is not one of {1, 2, 4, 8, 16, 32, 64, 128}.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>size</code>
+     *           is not a multiple of <code>pattern_size</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clEnqueueSVMMemFill(cl_command_queue command_queue, Pointer svm_ptr, Pointer pattern, long pattern_size, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_2_0
+        return checkResult(clEnqueueSVMMemFillNative(command_queue, svm_ptr, pattern, pattern_size, size, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueSVMMemFillNative(cl_command_queue command_queue, Pointer svm_ptr, Pointer pattern, long pattern_size, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    /**
+     * <p>
+     *             Enqueues a command that will allow the host to update a region of a SVM buffer.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int <strong>clEnqueueSVMMap</strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_command_queue <var>command_queue</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_bool <var>blocking_map</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_map_flags <var>map_flags</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>void <var>*svm_ptr</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>size_t <var>size</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_uint <var>num_events_in_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const cl_event <var>*event_wait_list</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_event <var>*event</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a valid host command-queue.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> blocking_map </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Indicates if the map operation is <code>blocking</code> or
+     *             <code>non-blocking</code>.
+     *           </p>
+     *           <p>
+     *             If <code>blocking_map</code> is <code>CL_TRUE</code>,
+     *             <code>clEnqueueSVMMap</code> does not return until the application can
+     *             access the contents of the SVM region specified by
+     *             <code>svm_ptr</code> and <code>size</code> on the host.
+     *           </p>
+     *           <p>
+     *             If <code>blocking_map</code> is <code>CL_FALSE</code>
+     *             i.e. map operation is non-blocking, the region specified by
+     *             <code>svm_ptr</code> and <code>size</code>
+     *             cannot be used until the map command has completed.
+     *             The <code>event</code> argument
+     *             returns an event object which can be used to query
+     *             the execution status of the map command.
+     *             When the map command is completed, the application
+     *             can access the contents of the region
+     *             specified by <code>svm_ptr</code> and
+     *             <code>size</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>map_flags</code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A bit-bield with the following supported values.
+     *           </p>
+     *           <div>
+     *             <table border="1">
+     *               <colgroup>
+     *                 <col align="left" />
+     *                 <col align="left" />
+     *               </colgroup>
+     *               <thead>
+     *                 <tr>
+     *                   <th align="left">cl_map_flags</th>
+     *                   <th align="left">Description</th>
+     *                 </tr>
+     *               </thead>
+     *               <tbody>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MAP_READ</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the region being mapped in the memory
+     *                       object is being mapped for reading.
+     *                     </p>
+     *                     <p>
+     *                       The pointer returned by
+     *                       <code>clEnqueueMap{Buffer|Image}</code>
+     *                       is guaranteed to contain
+     *                       the latest bits in the region being
+     *                       mapped when the
+     *                       <code>clEnqueueMap{Buffer|Image}</code>
+     *                       command has completed.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MAP_WRITE</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the region being mapped in the memory
+     *                       object is being mapped for writing.
+     *                     </p>
+     *                     <p>
+     *                       The pointer returned by
+     *                       <code>clEnqueueMap{Buffer|Image}</code>
+     *                       is guaranteed to contain the latest bits in
+     *                       the region being mapped when the
+     *                       <code>clEnqueueMap{Buffer|Image}</code>
+     *                       command has completed.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *                 <tr>
+     *                   <td align="left">
+     *                     <code>CL_MAP_WRITE_INVALIDATE_REGION</code>
+     *                   </td>
+     *                   <td align="left">
+     *                     <p>
+     *                       This flag specifies that the region being mapped in the memory
+     *                       object is being mapped for writing.
+     *                     </p>
+     *                     <p>
+     *                       The contents of the region being mapped are to be discarded.
+     *                       This is typically the case
+     *                       when the region being mapped is overwritten by the host. This
+     *                       flag allows the implementation
+     *                       to no longer guarantee that the pointer returned by
+     *                       <code>clEnqueueMap{Buffer|Image}</code>
+     *                       contains the latest bits in the region being
+     *                       mapped which can be a significant performance enhancement.
+     *                     </p>
+     *                     <p>
+     *                       <code>CL_MAP_READ</code> or <code>CL_MAP_WRITE</code>
+     *                       and <code> CL_MAP_WRITE_INVALIDATE_REGION</code>
+     *                       are mutually exclusive.
+     *                     </p>
+     *                   </td>
+     *                 </tr>
+     *               </tbody>
+     *             </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span><code>svm_ptr</code> and <code>size</code></span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to a memory region and size in bytes
+     *             that will be updated by the
+     *             host. If <code>svm_ptr</code> is allocated using
+     *             <span><span>clSVMAlloc</span></span>
+     *             then it must be allocated from the same context
+     *             from which <code>command_queue</code> was created.
+     *             Otherwise the behavior is undefined.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list,
+     *           </code>
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before this particular
+     *             command can be executed. If <code>event_wait_list</code>
+     *             is NULL, then this particular command does not wait on any
+     *             event to complete. If <code>event_wait_list</code> is
+     *             NULL, <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular command
+     *             and can be used to query or queue a wait for this particular command
+     *             to complete. <code>event</code> can be NULL in which case
+     *             it will not be possible for the application to query the status of
+     *             this command or queue a wait for this command to complete.
+     *             <span><span>clEnqueueBarrierWithWaitList</span></span>
+     *             can be used instead. If the
+     *             <code>event_wait_list</code> and the <code>event</code>
+     *             arguments are not NULL, the <code>event</code> argument should not
+     *             refer to an element of the <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       Note that
+     *       since we are enqueuing a command with a SVM buffer, the region is already mapped in the host
+     *       address space.
+     *     </p>
+     *     <p>
+     *       <span><span>clEnqueueSVMMap</span></span>, and
+     *       <span><span>clEnqueueSVMUnmap</span></span>
+     *       act as synchronization points for the region
+     *       of the SVM buffer specified in these calls.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clEnqueueSVMMap</code> returns <code>CL_SUCCESS</code>
+     *       if the function is executed successfully. Otherwise,
+     *       it returns one of the following errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid host command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if the context associated with
+     *           <code>command_queue</code>
+     *           and events in <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>svm_ptr</code> is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>size</code>
+     *           is 0 or if values specified in <code>map_flags</code> are not valid.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST</span>
+     *           if the map operation is
+     *           blocking and the execution status of any of the
+     *           events in <code>event_wait_list</code> is a negative
+     *           integer value.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clEnqueueSVMMap(cl_command_queue command_queue, boolean blocking_map, long flags, Pointer svm_ptr, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_2_0
+        return checkResult(clEnqueueSVMMapNative(command_queue, blocking_map, flags, svm_ptr, size, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueSVMMapNative(cl_command_queue command_queue, boolean blocking_map, long flags, Pointer svm_ptr, long size, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+    /**
+     * <p>
+     *             Enqueues a command to indicate that the host has completed
+     *             updating the region given by
+     *             <code xmlns="http://www.w3.org/1999/xhtml" class="varname">svm_ptr</code> and which was specified in a
+     *             previous call to clEnqueueSVMMap.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>
+     *             cl_int
+     *             <strong>clEnqueueSVMUnmap </strong>
+     *             (</code>
+     *           </td>
+     *           <td>
+     *             cl_command_queue
+     *              <var>command_queue</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             void
+     *              <var>*svm_ptr</var>,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_uint
+     *              <var>num_events_in_wait_list</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>const
+     *             cl_event
+     *              <var>*event_wait_list</var>
+     *             ,
+     *           </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>
+     *             cl_event
+     *              <var>*event</var>
+     *             <code>)</code>
+     *           </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> command_queue </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Must be a valid host command-queue.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> svm_ptr </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer that was specified in a previous call to
+     *             <span><span>clEnqueueSVMMap</span></span>.
+     *             If <code>svm_ptr</code> is
+     *             allocated using <span><span>clSVMAlloc</span></span>
+     *             then it must be allocated from the same context from which
+     *             <code>command_queue</code> was created.
+     *             Otherwise the behavior is undefined.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           event_wait_list
+     *           ,</code>
+     *           <code>
+     *           num_events_in_wait_list
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specify events that need to complete before
+     *             <code>clEnqueueSVMUnmap</code> can be
+     *             executed. If <code>event_wait_list</code> is NULL, then
+     *             <code>clEnqueueSVMUnmap</code> does not wait on
+     *             any event to complete. If <code>event_wait_list</code>
+     *             is NULL, <code>num_events_in_wait_list</code> must be 0. If
+     *             <code>event_wait_list</code> is not NULL, the list of events
+     *             pointed to by <code>event_wait_list</code> must be valid
+     *             and <code>num_events_in_wait_list</code> must be greater
+     *             than 0. The events specified in <code>event_wait_list</code>
+     *             act as synchronization points. The context associated with events in
+     *             <code>event_wait_list</code> and <code>command_queue</code> must
+     *             be the same. The memory associated with <code>event_wait_list</code>
+     *             can be reused or freed after the function returns.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> event </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an event object that identifies this particular command
+     *             and can be used to query or queue a wait for this particular
+     *             command to complete. <code>event</code> can be NULL in
+     *             which case it will not be possible for the application to query the
+     *             status of this command or queue a wait for this command to complete.
+     *             <span><span>clEnqueueBarrierWithWaitList</span></span>
+     *             can be used instead.
+     *             If the <code>event_wait_list</code> and the <code>event</code> arguments are not NULL,
+     *             the <code>event</code> argument should not refer to an
+     *             element of the <code>event_wait_list</code> array.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       <span><span>clEnqueueSVMMap</span></span>, and
+     *       <span><span>clEnqueueSVMUnmap</span></span>
+     *       act as synchronization points for the region
+     *       of the SVM buffer specified in these calls.
+     *     </p>
+     *     <p>
+     *       If a coarse-grained SVM buffer is currently mapped
+     *       for writing, the application must ensure that
+     *       the SVM buffer is unmapped before any enqueued
+     *       kernels or commands that read from or write
+     *       to this SVM buffer or any of its associated
+     *       <span>cl_mem</span> buffer objects begin execution;
+     *       otherwise the
+     *       behavior is undefined.
+     *     </p>
+     *     <p>
+     *       If a coarse-grained SVM buffer is currently mapped
+     *       for reading, the application must ensure that
+     *       the SVM buffer is unmapped before any enqueued
+     *       kernels or commands that write to this
+     *       memory object or any of its associated
+     *       <span>cl_mem</span> buffer objects begin
+     *       execution; otherwise the
+     *       behavior is undefined.
+     *     </p>
+     *     <p>
+     *       A SVM buffer is considered as mapped if there are
+     *       one or more active mappings for the SVM
+     *       buffer irrespective of whether the mapped
+     *       regions span the entire SVM buffer.
+     *     </p>
+     *     <p>
+     *       The above note does not apply to fine-grained SVM
+     *       buffers (fine-grained buffers allocated using
+     *       <span><span>clSVMAlloc</span></span>
+     *       or fine-grained system allocations).
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       <code>clEnqueueSVMUnmap</code> returns <span>CL_SUCCESS</span>
+     *       if the function is executed successfully. Otherwise, it returns one of the following
+     *       errors:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_COMMAND_QUEUE</span> if <code>command_queue</code>
+     *           is not a valid host command-queue.
+     *         </li>
+     *         <li><span>CL_INVALID_CONTEXT</span> if context associated with
+     *           <code>command_queue</code> and events in
+     *           <code>event_wait_list</code> are not the same.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if <code>svm_ptr</code> is NULL.
+     *         </li>
+     *         <li><span>CL_INVALID_EVENT_WAIT_LIST</span>
+     *           if <code>event_wait_list</code> is NULL and
+     *           <code>num_events_in_wait_list</code> &gt; 0,
+     *           or <code>event_wait_list</code> is not NULL and
+     *           <code>num_events_in_wait_list</code> is 0, or if event objects in
+     *           <code>event_wait_list</code> are not valid events.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>Shared Virtual Memory Functions</span></span>
+     *     </p>
+     *   </div>
+     * </div>
+     */
+    public static int clEnqueueSVMUnmap(cl_command_queue command_queue, Pointer svm_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
+    {
+        // OPENCL_2_0
+        return checkResult(clEnqueueSVMUnmapNative(command_queue, svm_ptr, num_events_in_wait_list, event_wait_list, event));
+    }
+    private static native int clEnqueueSVMUnmapNative(cl_command_queue command_queue, Pointer svm_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+
+
     /**
      * <p>
      *       Enqueues a marker command.
@@ -19241,8 +22865,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueMarker</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -19281,7 +22905,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
-     * @deprecated As of OpenCL 1.2 
+     * @deprecated As of OpenCL 1.2
      */
     public static int clEnqueueMarker(cl_command_queue command_queue, cl_event event)
     {
@@ -19307,8 +22931,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueWaitForEvents</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -19499,7 +23123,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
-     * @deprecated As of OpenCL 1.2 
+     * @deprecated As of OpenCL 1.2
      */
     public static int clEnqueueWaitForEvents(cl_command_queue command_queue, int num_events, cl_event event_list[])
     {
@@ -19524,8 +23148,8 @@ public final class CL
      *             cl_int
      *             <b>clEnqueueBarrier</b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var><code>)</code></td>
      *         </tr>
      *       </table>
      *     </div>
@@ -19558,7 +23182,7 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
-     * @deprecated As of OpenCL 1.2 
+     * @deprecated As of OpenCL 1.2
      */
     public static int clEnqueueBarrier(cl_command_queue command_queue)
     {
@@ -19584,8 +23208,8 @@ public final class CL
      *             clCreateFromGLBuffer
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -19721,9 +23345,785 @@ public final class CL
 
     private static native cl_mem clCreateFromGLBufferNative(cl_context context, long flags, int bufobj, int errcode_ret[]);
 
-    
+
     /**
-     * TODO: Not documented in Khronos OpenCL registry 
+     * <p>
+     *              Creates an OpenCL image object, image array object, or image buffer object from an OpenGL texture object,
+     *              texture array object, texture buffer object, or a single face of an OpenGL cubemap texture object.
+     *         </p>
+     *
+     * <div>
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>cl_mem
+     *             <strong>
+     *             clCreateFromGLTexture
+     *             </strong>
+     *             (</code>
+     *           </td>
+     *           <td>cl_context <var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_mem_flags <var>flags</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>GLenum <var>texture_target</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>GLint <var>miplevel</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>GLuint <var>texture</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td> </td>
+     *           <td>cl_int <var>* errcode_ret</var><code>)</code></td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span> <code> context </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid OpenCL context created from an OpenGL context.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> flags </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A bit-field that is used to
+     *             specify usage information. Refer to the table for
+     *             <span><span>clCreateBuffer</span></span>
+     *             for a description of <code>flags</code>. Only the values
+     *             <code>CL_MEM_READ_ONLY</code>, <code>CL_MEM_WRITE_ONLY</code>
+     *             and <code>CL_MEM_READ_WRITE</code> can be used.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> texture_target </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             <code>texture_target</code>
+     *             This value must be one of <code>GL_TEXTURE_1D</code>,
+     *             <code>GL_TEXTURE_1D_ARRAY</code>,
+     *             <code>GL_TEXTURE_BUFFER</code>, <code>GL_TEXTURE_2D</code>,
+     *             <code>GL_TEXTURE_2D_ARRAY</code>, <code>GL_TEXTURE_3D</code>,
+     *             <code>GL_TEXTURE_CUBE_MAP_POSITIVE_X</code>,
+     *             <code>GL_TEXTURE_CUBE_MAP_POSITIVE_Y</code>,
+     *             <code>GL_TEXTURE_CUBE_MAP_POSITIVE_Z</code>,
+     *             <code>GL_TEXTURE_CUBE_MAP_NEGATIVE_X</code>,
+     *             <code>GL_TEXTURE_CUBE_MAP_NEGATIVE_Y</code>,
+     *             <code>GL_TEXTURE_CUBE_MAP_NEGATIVE_Z</code>, or
+     *             <code>GL_TEXTURE_RECTANGLE</code>.
+     *             (<code>GL_TEXTURE_RECTANGLE</code> requires OpenGL 3.1.
+     *             Alternatively, <code>GL_TEXTURE_RECTANGLE_ARB</code> may be
+     *             specified if the OpenGL extension <code>GL_ARB_texture_rectangle</code> is supported.)
+     *             <code>texture_target</code> is used only to define the image type
+     *             of <code>texture</code>. No reference to a bound GL texture object
+     *             is made or implied by this parameter.
+     *           </p>
+     *           <p>
+     *             If the <span><span>cl_khr_gl_msaa_sharing</span></span>
+     *             extension is enabled, <code>texture_target</code>
+     *             may be
+     *             <code>GL_TEXTURE_2D_MULTISAMPLE</code> or
+     *             <code>GL_TEXTURE_2D_MULTISAMPLE_ARRAY</code>.
+     *           </p>
+     *           <p>
+     *             If <code>texture_target</code> is
+     *             <code>GL_TEXTURE_2D_MULTISAMPLE</code>,
+     *             <code>clCreateFromGLTexture</code>
+     *             creates an
+     *             OpenCL 2D multi-sample image object from
+     *             an OpenGL 2D multi-sample texture
+     *           </p>
+     *           <p>
+     *             If <code>texture_target</code> is
+     *             <code>GL_TEXTURE_2D_MULTISAMPLE_ARRAY</code>,
+     *             <code>clCreateFromGLTexture</code>
+     *             creates an OpenCL 2D multi-sample array
+     *             image object from an OpenGL 2D multi-sample
+     *             texture.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> miplevel </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The mipmap level to be used. If
+     *             <code>texture_target</code> is <code>GL_TEXTURE_BUFFER</code>,
+     *             miplevel must be 0. Implementations may return
+     *             <code>CL_INVALID_OPERATION</code> for miplevel values &gt; 0
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> texture </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The name of a GL 1D, 2D, 3D, 1D array,
+     *             2D array, cubemap, rectangle or buffer texture object. The texture object
+     *             must be a complete texture as per OpenGL rules on texture completeness. The
+     *             <code>texture</code> format and dimensions defined by OpenGL for the
+     *             specified <code>miplevel</code> of the texture will be used to create
+     *             the OpenCL image memory object. Only GL texture objects with an internal
+     *             format that maps to appropriate image channel order and data type specified
+     *             in tables 5.5 and 5.6 (see
+     *             <span><span>cl_image_format</span></span>)
+     *             may be used to create the OpenCL image memory object.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span> <code> errcode_ret </code> </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns an appropriate error code as described
+     *             below.  If <code>errcode_ret</code> is NULL, no error code is returned.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Notes</h2>
+     *     <p>
+     *       If the state of a GL texture object is modified through the GL API
+     *       (e.g. <code>glTexImage2D</code>, <code>glTexImage3D</code> or
+     *       the values of the texture parameters <code>GL_TEXTURE_BASE_LEVEL</code>
+     *       or <code>GL_TEXTURE_MAX_LEVEL</code> are modified) while there exists a
+     *       corresponding CL image object, subsequent use of the CL image object will result in
+     *       undefined behavior.
+     *     </p>
+     *     <p>
+     *       The <span><span>clRetainMemObject</span></span>
+     *       and <span><span>clReleaseMemObject</span></span>
+     *       functions can be used to retain and release the image objects.
+     *     </p>
+     *     <p>
+     *       The OpenCL specification in section 9.7 defines how to
+     *       share data with texture and buffer objects in a parallel OpenGL implementation,
+     *       but does not define how the association between an OpenCL context and an OpenGL
+     *       context or share group is established. This extension defines optional attributes
+     *       to OpenCL context creation routines which associate a GL context or share group
+     *       object with a newly created OpenCL context. If this extension is supported
+     *       by an implementation, the string "cl_khr_gl_sharing" will be present in the
+     *       <code>CL_DEVICE_EXTENSIONS</code>
+     *       string described in the table of allowed values for <code>param_name</code>
+     *       for <span><span>clGetDeviceInfo</span></span>
+     *       or in the <code>CL_PLATFORM_EXTENSIONS</code>
+     *       string described in the table of allowed values for <code>param_name</code>
+     *       for <span><span>clGetPlatformInfo</span></span>.
+     *     </p>
+     *     <p>
+     *       This section discusses OpenCL functions that allow applications
+     *       to use OpenGL buffer, texture, and renderbuffer objects as OpenCL memory objects. This
+     *       allows efficient sharing of data between OpenCL and OpenGL. The OpenCL API may be used
+     *       to execute kernels that read and/or write memory objects that are also OpenGL objects.
+     *     </p>
+     *     <p>
+     *       An OpenCL image object may be created from an OpenGL texture or
+     *       renderbuffer object. An OpenCL buffer object may be created from an OpenGL buffer object.
+     *     </p>
+     *     <p>
+     *       OpenCL memory objects may be created from OpenGL objects
+     *       if and only if the OpenCL context has been created from an OpenGL share group
+     *       object or context. OpenGL share groups and contexts are created using platform
+     *       specific APIs such as EGL, CGL, WGL, and GLX. On MacOS X, an OpenCL context may
+     *       be created from an OpenGL share group object using the OpenCL platform extension
+     *       cl_apple_gl_sharing. On other platforms including Microsoft Windows, Linux/Unix and
+     *       others, an OpenCL context may be created from an OpenGL context using the Khronos
+     *       platform extension <code>cl_khr_gl_sharing</code>. Refer to the platform
+     *       documentation for your OpenCL implementation, or visit the Khronos Registry at
+     *       http://www.khronos.org/registry/cl/ for more information.
+     *     </p>
+     *     <p>
+     *       Any supported OpenGL object defined within the GL share
+     *       group object, or the share group associated with the GL context from which the CL
+     *       context is created, may be shared, with the exception of the default OpenGL objects
+     *       (i.e. objects named zero), which may not be shared.
+     *     </p>
+     *     <h4>OpenGL and Corresponding OpenCL Image Formats</h4>
+     *     <p>
+     *       The table below (Table 9.4) describes
+     *       the list of GL texture internal formats and the corresponding CL image formats. If a GL
+     *       texture object with an internal format from the table below is successfully created by
+     *       OpenGL, then there is guaranteed to be a mapping to one of the corresponding CL image
+     *       format(s) in that table. Texture objects created with other OpenGL internal formats may
+     *       (but are not guaranteed to) have a mapping to a CL image format; if such mappings exist,
+     *       they are guaranteed to preserve all color components, data types, and at least the number
+     *       of bits/component actually allocated by OpenGL for that format.
+     *     </p>
+     *     <div>
+     *       <table border="1">
+     *         <colgroup>
+     *           <col align="center" />
+     *           <col align="center" />
+     *         </colgroup>
+     *         <thead>
+     *           <tr>
+     *             <th align="center">GL internal format</th>
+     *             <th align="center">CL image format (channel order, channel data type)</th>
+     *           </tr>
+     *         </thead>
+     *         <tbody>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA8</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_UNORM_INT8 or CL_BGRA, CL_UNORM_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_SRGBA8_ALPHA8</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_sRGBA, CL_UNORM_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center"><code>GL_RGBA</code>, <code>GL_UNSIGNED_INT_8_8_8_8_REV</code></td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_UNORM_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center"><code>GL_BGRA</code>, <code>GL_UNSIGNED_INT_8_8_8_8_REV</code></td>
+     *             <td align="center">
+     *               <code>CL_BGRA, CL_UNORM_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA8I, GL_RGBA8I_EXT</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_SIGNED_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA16I, GL_RGBA16I_EXT</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_SIGNED_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA32I, GL_RGBA32I_EXT</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_SIGNED_INT32</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA8UI, GL_RGBA8UI_EXT</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_UNSIGNED_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA16UI, GL_RGBA16UI_EXT</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_UNSIGNED_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA32UI, GL_RGBA32UI_EXT</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_UNSIGNED_INT32</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA8_SNORM</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_SNORM_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA16</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_UNORM_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA16_SNORM</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_SNORM_INT166</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA16F, GL_RGBA16F_ARB</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_HALF_FLOAT</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RGBA32F, GL_RGBA32F_ARB</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RGBA, CL_FLOAT</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R8</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_UNORM_INT8 </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R8_SNORM</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_SNORM_INT8 </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R16</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_UNORM_INT16 </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R16_SNORM</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_SNORM_INT16 </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R16F</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_HALF_FLOAT </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R32F</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_FLOAT </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R8I</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_SIGNED_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R16I</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_SIGNED_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R32I</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_SIGNED_INT32</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R8UI</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_UNSIGNED_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R16UI</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_UNSIGNED_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_R32UI</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_R, CL_UNSIGNED_INT32</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG8</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_UNORM_INT8 </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG8_SNORM</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_SNORM_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG16</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_UNORM_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG16_SNORM</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_SNORM_INT16 </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG16F</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_HALF_FLOAT </code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG32F</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_FLOAT</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG8I</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_SIGNED_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG16I</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_SIGNED_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG32I</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_SIGNED_INT32</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG8UI</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_UNSIGNED_INT8</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG16UI</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_UNSIGNED_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_RG32UI</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_RG, CL_UNSIGNED_INT32</code>
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *     <p>
+     *       If the <span><span>cl_khr_gl_depth_images</span></span>
+     *       extension is enabled, the
+     *       following new image formats are added to table 9.4 in section 9.6.3.1 of the OpenCL 2.0
+     *       extension specification. If a GL texture object with an internal format from table 9.4 is
+     *       successfully created by OpenGL, then there is guaranteed to be a mapping to one of the
+     *       corresponding CL image format(s) in that table.
+     *     </p>
+     *     <div>
+     *       <table border="1">
+     *         <colgroup>
+     *           <col align="center" />
+     *           <col align="center" />
+     *         </colgroup>
+     *         <thead>
+     *           <tr>
+     *             <th align="center">GL internal format</th>
+     *             <th align="center">CL image format (channel order, channel data type)</th>
+     *           </tr>
+     *         </thead>
+     *         <tbody>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_DEPTH_COMPONENT32F</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_DEPTH, CL_FLOAT</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_DEPTH_COMPONENT16</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_DEPTH, CL_UNORM_INT16</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_DEPTH24_STENCIL8</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_DEPTH_STENCIL, CL_UNORM_INT24</code>
+     *             </td>
+     *           </tr>
+     *           <tr>
+     *             <td align="center">
+     *               <code>GL_DEPTH32F_STENCIL8</code>
+     *             </td>
+     *             <td align="center">
+     *               <code>CL_DEPTH_STENCIL, CL_FLOAT</code>
+     *             </td>
+     *           </tr>
+     *         </tbody>
+     *       </table>
+     *     </div>
+     *     <h4>Lifetime of [GL] Shared Objects</h4>
+     *     <p>
+     *       An OpenCL memory object created from an OpenGL object
+     *       (hereinafter refered to as a "shared CL/GL object") remains valid as long as the
+     *       corresponding GL object has not been deleted. If the GL object is deleted through the GL
+     *       API (e.g. <code>glDeleteBuffers</code>, <code>glDeleteTextures</code>,
+     *       or <code>glDeleteRenderbuffers</code>), subsequent use of the CL buffer or image
+     *       object will result in undefined behavior, including but not limited to possible CL errors
+     *       and data corruption, but may not result in program termination.
+     *     </p>
+     *     <p>
+     *       The CL context and corresponding command-queues are dependent
+     *       on the existence of the GL share group object, or the share group associated with the
+     *       GL context from which the CL context is created. If the GL share group object or all GL
+     *       contexts in the share group are destroyed, any use of the CL context or command-queue(s)
+     *       will result in undefined behavior, which may include program termination. Applications
+     *       should destroy the CL command-queue(s) and CL context before destroying the corresponding
+     *       GL share group or contexts.
+     *     </p>
+     *     <h4>Synchronizing OpenCL and OpenGL Access</h4>
+     *     <p>
+     *       In order to ensure data integrity, the application is responsible
+     *       for synchronizing access to shared CL/GL objects by their respective APIs.  Failure to
+     *       provide such synchronization may result in race conditions and other undefined behavior
+     *       including non-portability between implementations.
+     *     </p>
+     *     <p>
+     *       Prior to calling <code>clEnqueueAcquireGLObjects</code>,
+     *       the application must ensure that any pending GL operations which access the objects
+     *       specified in <code>mem_objects</code>  have completed.  This may be accomplished
+     *       portably by issuing and waiting for completion of a <code>glFinish</code>
+     *       command on all GL contexts with pending references to these objects.  Implementations
+     *       may offer more efficient synchronization methods; for example on some platforms calling
+     *       <code>glFlush</code> may be sufficient, or synchronization may be implicit within
+     *       a thread, or there may be vendor-specific extensions that enable placing a fence in the
+     *       GL command stream and waiting for completion of that fence in the CL command queue. Note
+     *       that no synchronization methods other than <code>glFinish</code> are portable
+     *       between OpenGL implementations at this time.
+     *     </p>
+     *     <p>
+     *       When the extension
+     *       <span><span>cl_khr_egl_event</span></span>
+     *       is supported: Prior to calling
+     *       <code>clEnqueueAcquireGLObjects</code>,
+     *       the application must ensure that any pending
+     *       EGL or EGL client API operations which access
+     *       the objects specified in <code>mem_objects</code> have
+     *       completed.
+     *       If the
+     *       <span><span>cl_khr_egl_event</span></span>
+     *       extension is supported and the EGL context in question supports fence
+     *       sync objects, <span><em>explicit synchronisation</em></span> can be achieved
+     *       as set out in section 5.7.1.
+     *       If the
+     *       <span><span>cl_khr_egl_event</span></span>
+     *       extension is not supported, completion of EGL client API commands
+     *       may be determined by issuing and waiting for completion of commands such as
+     *       <code>glFinish</code> or
+     *       <code>vgFinish</code> on all client API
+     *       contexts with pending references to these objects. Some
+     *       implementations may offer other efficient
+     *       synchronization methods. If such methods exist they
+     *       will be described in platform-specific documentation.
+     *       Note that no synchronization methods other than
+     *       <code>glFinish</code> and <code>vgFinish</code>
+     *       are portable between all
+     *       EGL client API implementations and all OpenCL
+     *       implementations. While this is the only way to
+     *       ensure completion that is portable to all platforms,
+     *       these are expensive operation and their use
+     *       should be avoided if the
+     *       <span><span>cl_khr_egl_event</span></span> extension
+     *       is supported on a platform.
+     *     </p>
+     *     <p>
+     *       Similarly, after calling
+     *       <code>clEnqueueReleaseGLObjects</code>, the application is responsible
+     *       for ensuring that any pending OpenCL operations which access the objects specified
+     *       in <code>mem_objects</code> have completed prior to executing subsequent GL
+     *       commands which reference these objects. This may be accomplished portably by calling
+     *       <span><span>clWaitForEvents</span></span> with the
+     *       event object returned by <code>clEnqueueReleaseGLObjects</code>, or by calling
+     *       <span><span>clFinish</span></span>.  As above, some
+     *       implementations may offer more efficient methods.
+     *     </p>
+     *     <p>
+     *       The application is responsible for maintaining the proper order
+     *       of operations if the CL and GL contexts are in separate threads.
+     *     </p>
+     *     <p>
+     *       If a GL context is bound to a thread other than the one in which
+     *       <code>clEnqueueReleaseGLObjects</code> is called, changes to any of the objects in
+     *       <code>mem_objects</code> may not be visible to that context without additional steps
+     *       being taken by the application. For an OpenGL 3.1 (or later) context, the requirements
+     *       are described in Appendix D ("Shared Objects and Multiple Contexts") of the OpenGL 3.1
+     *       Specification. For prior versions of OpenGL, the requirements are implementation-dependent.
+     *     </p>
+     *     <p>
+     *       Attempting to access the data store of an OpenGL object after
+     *       it has been acquired by OpenCL and before it has been released will result in undefined
+     *       behavior.  Similarly, attempting to access a shared CL/GL object from OpenCL before it
+     *       has been acquired by the OpenCL command queue, or after it has been released, will result
+     *       in undefined behavior.
+     *     </p>
+     *     <p>
+     *       If the
+     *       <span><span>cl_khr_gl_event</span></span> extension
+     *       is supported, then the OpenCL implementation will ensure that any such pending OpenGL
+     *       operations are complete for an OpenGL context bound to the same thread as the OpenCL
+     *       context. This is referred to as implicit synchronization.
+     *     </p>
+     *   </div>
+     *   <div>
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns a valid non-zero OpenCL image object and <code>errcode_ret</code>
+     *       is set to <span>CL_SUCCESS</span> if the image object is created
+     *       successfully. Otherwise, it returns a NULL value with one of the following error
+     *       values returned in <code>errcode_ret</code>:
+     *     </p>
+     *     <div>
+     *       <ul type="disc">
+     *         <li><span>CL_INVALID_CONTEXT</span> if <code>context</code> is not
+     *           a valid context or was not created from a GL context.
+     *         </li>
+     *         <li><span>CL_INVALID_VALUE</span> if values specified in
+     *           <code>flags</code> are not valid or if value specified in
+     *           <code>texture_target</code> is not one of the values specified in the
+     *           description of <code>texture_target</code>.
+     *         </li>
+     *         <li><span>CL_INVALID_MIP_LEVEL</span> if <code>miplevel</code>
+     *           is less than the value of <code>level<sub>base</sub></code>
+     *           (for OpenGL implementations) or zero (for OpenGL ES implementations); or
+     *           greater than the value of <code>q</code> (for both OpenGL and OpenGL
+     *           ES). <code>level<sub>base</sub></code> and <code>q</code>
+     *           are defined for the texture in section 3.8.10 (Texture Completeness) of the OpenGL
+     *           2.1 specification and section 3.7.10 of the OpenGL ES 2.0.
+     *         </li>
+     *         <li><span>CL_INVALID_MIP_LEVEL</span> if <code>miplevel</code> is
+     *           greater than zero and the OpenGL implementation does not support creating from
+     *           non-zero mipmap levels.
+     *         </li>
+     *         <li><span>CL_INVALID_GL_OBJECT</span> if <code>texture</code> is not
+     *           a GL texture object whose type matches <code>texture_target</code>, if the
+     *           specified <code>miplevel</code> of <code>texture</code> is not defined,
+     *           or if the width or height of the specified <code>miplevel</code> is zero
+     *           or if the GL texture object is incomplete.
+     *         </li>
+     *         <li><span>CL_INVALID_IMAGE_FORMAT_DESCRIPTOR</span> if the OpenGL texture
+     *           internal format does not map to a supported OpenCL image format.
+     *         </li>
+     *         <li><span>CL_INVALID_OPERATION</span> if <code>texture</code> is a GL texture object
+     *           created with a border width value greater than zero.
+     *         </li>
+     *         <li><span>CL_OUT_OF_RESOURCES</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the device.
+     *         </li>
+     *         <li><span>CL_OUT_OF_HOST_MEMORY</span> if there is a failure to allocate
+     *           resources required by the OpenCL implementation on the host.
+     *         </li>
+     *       </ul>
+     *     </div>
+     *   </div>
+     *   <div>
+     *     <h2>Also see</h2>
+     *     <p>
+     *       <span><span>cl_khr_gl_sharing</span></span>,
+     *       <span><span>clCreateBuffer</span></span>,
+     *       <span><span>clCreateFromGLBuffer</span></span>
+     *     </p>
+     *   </div>
+     * </div>
      */
     public static cl_mem clCreateFromGLTexture(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[])
     {
@@ -19745,7 +24145,7 @@ public final class CL
         }
     }
     private static native cl_mem clCreateFromGLTextureNative(cl_context context, long flags, int target, int miplevel, int texture, int errcode_ret[]);
-    
+
     /**
      * <p>
      *       Creates an OpenCL 2D image object from an OpenGL 2D texture object, or a single face of an
@@ -19764,8 +24164,8 @@ public final class CL
      *             clCreateFromGLTexture2D
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -19986,8 +24386,8 @@ public final class CL
      *             clCreateFromGLTexture3D
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -20212,8 +24612,8 @@ public final class CL
      *             clCreateFromGLRenderbuffer
      *             </b>
      *             (</code>
-     *           <td>cl_context<var>context</var>, </td>
      *           </td>
+     *           <td>cl_context<var>context</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -20501,8 +24901,8 @@ public final class CL
      *             clGetGLObjectInfo
      *             </b>
      *             (</code>
-     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -20605,8 +25005,8 @@ public final class CL
      *             clGetGLTextureInfo
      *             </b>
      *             (</code>
-     *           <td>cl_mem<var>memobj</var>, </td>
      *           </td>
+     *           <td>cl_mem<var>memobj</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -20783,8 +25183,8 @@ public final class CL
      *             clEnqueueAcquireGLObjects
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -21044,8 +25444,8 @@ public final class CL
      *             clEnqueueReleaseGLObjects
      *             </b>
      *             (</code>
-     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *           </td>
+     *           <td>cl_command_queue<var>command_queue</var>, </td>
      *         </tr>
      *         <tr valign="top">
      *           <td></td>
@@ -21299,9 +25699,9 @@ public final class CL
      */
     private CL()
     {}
-    
-    
-    
+
+
+
     //========================================================================
     // These fields and methods will become obsolete in the next releases
     /**
@@ -21326,8 +25726,8 @@ public final class CL
      */
     private static ReferenceQueue<ByteBuffer> alignedByteBufferReferenceQueue =
         new ReferenceQueue<ByteBuffer>();
-    
-    
+
+
     /**
      * Creates and starts the daemon thread which will fetch the
      * references to ByteBuffers that have been marked for
@@ -21368,7 +25768,7 @@ public final class CL
         memoryManagementThread.setDaemon(true);
         memoryManagementThread.start();
     }
-    
+
     /**
      * Creates an returns a new direct ByteBuffer with the given size,
      * whose memory has the given alignment, in bytes. The memory
@@ -21378,7 +25778,7 @@ public final class CL
      * @param size The size of the buffer
      * @param alignment The alignment, in bytes
      * @return A new direct ByteBuffer
-     * 
+     *
      * @deprecated This method is not intended (and should not be required)
      * for public use, and will be removed in future releases.
      */
@@ -21401,7 +25801,7 @@ public final class CL
         return byteBuffer;
     }
     private static native ByteBuffer allocateAlignedNative(int size, int alignment, Pointer pointer);
-    
+
 
     /**
      * This method may be used to manually free an aligned ByteBuffer which
@@ -21435,8 +25835,8 @@ public final class CL
     }
     */
     private static native void freeAlignedNative(Pointer pointer);
-    
-    
-    
-    
+
+
+
+
 }

@@ -2,7 +2,7 @@
  * JOCL - Java bindings for OpenCL
  *
  * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -29,7 +29,7 @@
 
 // The pointers to the CL functions. The types of these pointers
 // are defined in the CLFunction.hpp header. The values will be
-// assigned to these pointers when the native library is 
+// assigned to these pointers when the native library is
 // initialized with a call to Java_org_jocl_CL_initNativeLibrary,
 // in the FunctionPointerUtils::initFunctionPointers function.
 
@@ -45,20 +45,24 @@ clCreateContextFromTypeFunctionPointerType clCreateContextFromTypeFP = NULL;
 clRetainContextFunctionPointerType clRetainContextFP = NULL;
 clReleaseContextFunctionPointerType clReleaseContextFP = NULL;
 clGetContextInfoFunctionPointerType clGetContextInfoFP = NULL;
-clCreateCommandQueueFunctionPointerType clCreateCommandQueueFP = NULL;
+clCreateCommandQueueWithPropertiesFunctionPointerType clCreateCommandQueueWithPropertiesFP = NULL;
 clRetainCommandQueueFunctionPointerType clRetainCommandQueueFP = NULL;
 clReleaseCommandQueueFunctionPointerType clReleaseCommandQueueFP = NULL;
 clGetCommandQueueInfoFunctionPointerType clGetCommandQueueInfoFP = NULL;
 clCreateBufferFunctionPointerType clCreateBufferFP = NULL;
 clCreateSubBufferFunctionPointerType clCreateSubBufferFP = NULL;
 clCreateImageFunctionPointerType clCreateImageFP = NULL;
+clCreatePipeFunctionPointerType clCreatePipeFP = NULL;
 clRetainMemObjectFunctionPointerType clRetainMemObjectFP = NULL;
 clReleaseMemObjectFunctionPointerType clReleaseMemObjectFP = NULL;
 clGetSupportedImageFormatsFunctionPointerType clGetSupportedImageFormatsFP = NULL;
 clGetMemObjectInfoFunctionPointerType clGetMemObjectInfoFP = NULL;
 clGetImageInfoFunctionPointerType clGetImageInfoFP = NULL;
+clGetPipeInfoFunctionPointerType clGetPipeInfoFP = NULL;
 clSetMemObjectDestructorCallbackFunctionPointerType clSetMemObjectDestructorCallbackFP = NULL;
-clCreateSamplerFunctionPointerType clCreateSamplerFP = NULL;
+clSVMAllocFunctionPointerType clSVMAllocFP = NULL;
+clSVMFreeFunctionPointerType clSVMFreeFP = NULL;
+clCreateSamplerWithPropertiesFunctionPointerType clCreateSamplerWithPropertiesFP = NULL;
 clRetainSamplerFunctionPointerType clRetainSamplerFP = NULL;
 clReleaseSamplerFunctionPointerType clReleaseSamplerFP = NULL;
 clGetSamplerInfoFunctionPointerType clGetSamplerInfoFP = NULL;
@@ -78,6 +82,8 @@ clCreateKernelsInProgramFunctionPointerType clCreateKernelsInProgramFP = NULL;
 clRetainKernelFunctionPointerType clRetainKernelFP = NULL;
 clReleaseKernelFunctionPointerType clReleaseKernelFP = NULL;
 clSetKernelArgFunctionPointerType clSetKernelArgFP = NULL;
+clSetKernelArgSVMPointerFunctionPointerType clSetKernelArgSVMPointerFP = NULL;
+clSetKernelExecInfoFunctionPointerType clSetKernelExecInfoFP = NULL;
 clGetKernelInfoFunctionPointerType clGetKernelInfoFP = NULL;
 clGetKernelArgInfoFunctionPointerType clGetKernelArgInfoFP = NULL;
 clGetKernelWorkGroupInfoFunctionPointerType clGetKernelWorkGroupInfoFP = NULL;
@@ -109,11 +115,14 @@ clEnqueueMapImageFunctionPointerType clEnqueueMapImageFP = NULL;
 clEnqueueUnmapMemObjectFunctionPointerType clEnqueueUnmapMemObjectFP = NULL;
 clEnqueueMigrateMemObjectsFunctionPointerType clEnqueueMigrateMemObjectsFP = NULL;
 clEnqueueNDRangeKernelFunctionPointerType clEnqueueNDRangeKernelFP = NULL;
-clEnqueueTaskFunctionPointerType clEnqueueTaskFP = NULL;
 clEnqueueNativeKernelFunctionPointerType clEnqueueNativeKernelFP = NULL;
 clEnqueueMarkerWithWaitListFunctionPointerType clEnqueueMarkerWithWaitListFP = NULL;
 clEnqueueBarrierWithWaitListFunctionPointerType clEnqueueBarrierWithWaitListFP = NULL;
-clSetPrintfCallbackFunctionPointerType clSetPrintfCallbackFP = NULL;
+clEnqueueSVMFreeFunctionPointerType clEnqueueSVMFreeFP = NULL;
+clEnqueueSVMMemcpyFunctionPointerType clEnqueueSVMMemcpyFP = NULL;
+clEnqueueSVMMemFillFunctionPointerType clEnqueueSVMMemFillFP = NULL;
+clEnqueueSVMMapFunctionPointerType clEnqueueSVMMapFP = NULL;
+clEnqueueSVMUnmapFunctionPointerType clEnqueueSVMUnmapFP = NULL;
 clGetExtensionFunctionAddressForPlatformFunctionPointerType clGetExtensionFunctionAddressForPlatformFP = NULL;
 clSetCommandQueuePropertyFunctionPointerType clSetCommandQueuePropertyFP = NULL;
 clCreateImage2DFunctionPointerType clCreateImage2DFP = NULL;
@@ -123,6 +132,9 @@ clEnqueueWaitForEventsFunctionPointerType clEnqueueWaitForEventsFP = NULL;
 clEnqueueBarrierFunctionPointerType clEnqueueBarrierFP = NULL;
 clUnloadCompilerFunctionPointerType clUnloadCompilerFP = NULL;
 clGetExtensionFunctionAddressFunctionPointerType clGetExtensionFunctionAddressFP = NULL;
+clCreateCommandQueueFunctionPointerType clCreateCommandQueueFP = NULL;
+clCreateSamplerFunctionPointerType clCreateSamplerFP = NULL;
+clEnqueueTaskFunctionPointerType clEnqueueTaskFP = NULL;
 
 clCreateFromGLBufferFunctionPointerType clCreateFromGLBufferFP = NULL;
 clCreateFromGLTextureFunctionPointerType clCreateFromGLTextureFP = NULL;

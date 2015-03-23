@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2014 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -28,14 +28,14 @@
 package org.jocl;
 
 /**
- * Java port of cl_device_partition_property.
+ * Java port of cl_sampler_properties.
  */
-public final class cl_device_partition_property extends cl_abstract_properties
+public final class cl_sampler_properties extends cl_abstract_properties
 {
     /**
-     * Creates new, empty cl_device_partition_property 
+     * Creates new, empty cl_sampler_properties 
      */
-    public cl_device_partition_property()
+    public cl_sampler_properties()
     {
     }
     
@@ -45,15 +45,26 @@ public final class cl_device_partition_property extends cl_abstract_properties
      * @param id The property ID
      * @param value The property value
      */
-    public void addProperty(long id, cl_platform_id value)
+    public void addProperty(long id, boolean value)
     {
-        addProperty(id, value.getNativePointer());
+        addProperty(id, value ? 1 : 0);
+    }
+
+    /**
+     * Add the specified property to these properties
+     * 
+     * @param id The property ID
+     * @param value The property value
+     */
+    public void addProperty(long id, float value)
+    {
+        addProperty(id, Float.floatToIntBits(value));
     }
     
     @Override
     protected String propertyString(long value)
     {
-        return CL.stringFor_cl_device_partition_property((int)value);
+        return CL.stringFor_cl_sampler_info((int)value);
     }
     
     /**
@@ -64,7 +75,7 @@ public final class cl_device_partition_property extends cl_abstract_properties
     @Override
     public String toString()
     {
-        StringBuilder result = new StringBuilder("cl_device_partition_property[");
+        StringBuilder result = new StringBuilder("cl_sampler_properties[");
         result.append(buildString());
         result.append("]");
         return result.toString();

@@ -1,7 +1,7 @@
 /*
  * JOCL - Java bindings for OpenCL
  *
- * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
+ * Copyright (c) 2009-2015 Marco Hutter - http://www.jocl.org
  * 
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -271,6 +271,8 @@ final class LibUtils
                 return "so";
             case WINDOWS:
                 return "dll";
+            default:
+                break;
         }
         return "";
     }
@@ -293,6 +295,8 @@ final class LibUtils
                 return "lib";
             case WINDOWS:
                 return "";
+            default:
+                break;
         }
         return "";
     }
