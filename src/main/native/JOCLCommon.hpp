@@ -39,9 +39,9 @@
 
 // CL includes
 #if defined(__APPLE__) || defined(__MACOSX)
-    #include <OpenCL/opencl.h>
+    #include <cl/opencl.h>
 #else
-    #include <CL/opencl.h>
+    #include <cl/opencl.h>
     #ifdef _WIN32
         #define WINDOWS_LEAN_AND_MEAN
         #define NOMINMAX

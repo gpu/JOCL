@@ -28,13 +28,13 @@
 package org.jocl;
 
 import java.io.*;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Utility class for detecting the operating system and architecture
  * types, and automatically loading the matching native library
- * as a resource or from a file. <br />
- * <br />
+ * as a resource or from a file. <br>
+ * <br>
  * The architecture and OS detection has been adapted from 
  * http://javablog.co.uk/2007/05/19/making-jni-cross-platform/
  * and extended with http://lopica.sourceforge.net/os.html 
@@ -47,9 +47,9 @@ final class LibUtils
      */
     public static enum OSType
     {
-    	APPLE, LINUX, SUN, WINDOWS, UNKNOWN
+        APPLE, LINUX, SUN, WINDOWS, UNKNOWN
     }
-    
+
     /**
      * Enumeration of common CPU architectures.
      */
@@ -57,7 +57,7 @@ final class LibUtils
     {
         PPC, PPC_64, SPARC, X86, X86_64, ARM, MIPS, RISC, UNKNOWN
     }
-    
+
     /**
      * Loads the specified library. The full name of the library
      * is created by calling {@link LibUtils#createLibName(String)}
@@ -72,98 +72,73 @@ final class LibUtils
      */
     public static void loadLibrary(String baseName)
     {
-        String libName = LibUtils.createLibName(baseName);
+        String libName = createLibName(baseName);
+        
+        log("Loading library");
+        log("    Base name   : "+baseName);
+        log("    Library name: "+libName);
+        
 
-        Throwable throwable = null;
+        // First, try to load the specified library as a file 
+        // that is visible in the default search path
+        Throwable throwableFromFile = null;
         try
         {
+            log("Loading library as a file");
             System.loadLibrary(libName);
-            initNativeLibrary();
+            log("Loading library as a file DONE");
             return;
         }
         catch (Throwable t) 
         {
-        	throwable = t;
+            log("Loading library as a file FAILED");
+            throwableFromFile = t;
         }
-        
+
+        // Now try to load the library by extracting the
+        // corresponding resource from the JAR file
         try
         {
+            log("Loading library as a resource");
             loadLibraryResource(libName);
-            initNativeLibrary();
-        	return;
+            log("Loading library as a resource DONE");
+            return;
         }
-        catch (Throwable t)
+        catch (Throwable throwableFromResource)
         {
+            log("Loading library as a resource FAILED");
+
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            
+
             pw.println("Error while loading native library \"" +
-	        		libName + "\" with base name \""+baseName+"\"");
+                libName + "\" with base name \""+baseName+"\"");
             pw.println("Operating system name: "+
-	        		System.getProperty("os.name"));
+                System.getProperty("os.name"));
             pw.println("Architecture         : "+
-	        		System.getProperty("os.arch"));
+                System.getProperty("os.arch"));
             pw.println("Architecture bit size: "+
-	        		System.getProperty("sun.arch.data.model"));
-	        
+                System.getProperty("sun.arch.data.model"));
+
             pw.println("---(start of nested stack traces)---");
-            pw.println(
-	            "Stack trace from the attempt to " +
-	            "load the library as a file:");
-	        throwable.printStackTrace(pw);
-	        
-	        pw.println(
-        		"Stack trace from the attempt to " +
-        		"load the library as a resource:");
-	        t.printStackTrace(pw);
+            
+            pw.println("Stack trace from the attempt to " +
+                "load the library as a file:");
+            throwableFromFile.printStackTrace(pw);
+
+            pw.println("Stack trace from the attempt to " +
+                "load the library as a resource:");
+            throwableFromResource.printStackTrace(pw);
+            
             pw.println("---(end of nested stack traces)---");
-	        
-	        pw.close();
-	        throw new UnsatisfiedLinkError(sw.toString());
+
+            pw.close();
+            throw new UnsatisfiedLinkError(sw.toString());
         }
     }
-    
-    
-    /**
-     * Initialize the native library by passing the name of the OpenCL
-     * implementation to the {@link CL#initNativeLibrary(String)} 
-     * method.
-     * 
-     * @throws UnsatisfiedLinkError If the implementation library 
-     * could not be loaded.
-     */
-    private static void initNativeLibrary()
-    {
-        String implementationName = createImplementationName();
-        boolean initialized = 
-            CL.initNativeLibrary(implementationName);
-        if (!initialized)
-        {
-            throw new UnsatisfiedLinkError(
-                "Could not initialize native library. Implementation " +
-                "library '"+implementationName+"' could not be loaded");
-        }
-    }
-    
-    /**
-     * Create the name for the OpenCL implementation that will be passed 
-     * to the dlopen/LoadLibrary call on native side. For Windows and
-     * Linux, this will be the name of the OpenCL libary itself.
-     * For MacOS, it will be the path to the OpenCL framework.
-     * 
-     * @return The name of the implementation library
-     */
-    private static String createImplementationName()
-    {
-        OSType osType = calculateOS();
-        if (OSType.APPLE.equals(osType))
-        {
-            return "/System/Library/Frameworks/OpenCL.framework/" +
-            		"Versions/Current/OpenCL";
-        }
-        return createFullName("OpenCL");
-    }
-    
+
+
+
 
     /**
      * Load the library with the given name from a resource. 
@@ -175,78 +150,116 @@ final class LibUtils
     private static void loadLibraryResource(String libName) throws Throwable
     {
         // Build the full name of the library 
-        String fullNameWithExt = createFullName(libName);
+        String libraryFileName = createLibraryFileName(libName);
 
-    	// If a temporary file with the resulting name
-    	// already exists, it can simply be loaded
+        // If a temporary file with the resulting name
+        // already exists, it can simply be loaded
         String tempDirName = System.getProperty("java.io.tmpdir");
-        String tempFileName = tempDirName + File.separator + fullNameWithExt;
+        String tempFileName = 
+            tempDirName + File.separator + libraryFileName;
+        
+        boolean useUniqueNativeLibraries = useUniqueNativeLibraries();
+        if (useUniqueNativeLibraries)
+        {
+            tempFileName = 
+                tempDirName + File.separator + 
+                createLibraryFileName(libName + "-" + UUID.randomUUID());
+        }
         File tempFile = new File(tempFileName);
+        
+        log("Temp file for resource: "+tempFile);
+        
         if (tempFile.exists())
         {
-            //System.out.println("Loading from existing file: "+tempFile);
+            log("Loading from existing file: "+tempFile);
             System.load(tempFile.toString());
             return;
         }
-    	
+
         // No file with the resulting name exists yet. Try to write
         // the library data from the JAR into the temporary file, 
         // and load the newly created file.
-        String resourceName = "/lib/" + fullNameWithExt;
+        String resourceName = "/lib/" + libraryFileName;
         InputStream inputStream = 
-        	LibUtils.class.getResourceAsStream(resourceName);
+            LibUtils.class.getResourceAsStream(resourceName);
         if (inputStream == null)
         {
-        	throw new NullPointerException(
-        			"No resource found with name '"+resourceName+"'");
+            throw new NullPointerException(
+                "No resource found with name '"+resourceName+"'");
         }
+        
+        log("Creating temp file for resource: "+tempFile);
+        
         OutputStream outputStream = null;
         try
         {
-        	outputStream = new FileOutputStream(tempFile);
-	        byte[] buffer = new byte[8192];
-	        while (true)
-	        {
-	        	int read = inputStream.read(buffer);
-	        	if (read < 0)
-	        	{
-	        		break;
-	        	}
-	        	outputStream.write(buffer, 0, read);	
-	        }
-	        outputStream.flush();
-	        outputStream.close();
-	        outputStream = null;
-	        
-            //System.out.println("Loading from newly created file: "+tempFile);
+            outputStream = new FileOutputStream(tempFile);
+            byte[] buffer = new byte[8192];
+            while (true)
+            {
+                int read = inputStream.read(buffer);
+                if (read < 0)
+                {
+                    break;
+                }
+                outputStream.write(buffer, 0, read);    
+            }
+            outputStream.flush();
+            outputStream.close();
+            outputStream = null;
+
+            if (useUniqueNativeLibraries)
+            {
+                LibTracker.track(tempFile);
+            }
+
+            log("Loading from created file: "+tempFile);
             System.load(tempFile.toString());
+            
         }
         finally 
         {
-        	if (outputStream != null)
-        	{
-        		outputStream.close();
-        	}
+            if (outputStream != null)
+            {
+                outputStream.close();
+            }
+            inputStream.close();
         }
     }
-    
-    
+
+    /**
+     * Returns whether the "uniqueLibaryNames" property was set,
+     * and the temporary native libraries should be tracked and
+     * deleted when the application exits.<br>
+     * <br>
+     * PRELIMINARY! 
+     * 
+     * @return Whether the flag was set 
+     */
+    private static boolean useUniqueNativeLibraries()
+    {
+        String uniqueLibraryNames = 
+            System.getProperty("uniqueLibraryNames");
+        return "true".equals(uniqueLibraryNames);
+    }
+
+
     /**
      * Create the full library file name, including the extension
      * and prefix, for the given library name. For example, the
-     * name 'JOCL' will become <br />
-     * JOCL.dll on Windows <br />
-     * libJOCL.so on Linux <br />
-     * JOCL.dylib on MacOS <br />
+     * name 'JOCL' will become <br>
+     * JOCL.dll on Windows <br>
+     * libJOCL.so on Linux <br>
+     * JOCL.dylib on MacOS <br>
      * 
-     * @param libName The library name
+     * @param libraryName The library name
      * @return The full library name, with extension
      */
-    private static String createFullName(String libName)
+    static String createLibraryFileName(String libraryName)
     {
         String libPrefix = createLibPrefix();
         String libExtension = createLibExtension();
-        String fullName = libPrefix + libName + "." + libExtension;
+        String fullName = libPrefix + libraryName + "." + libExtension;
         return fullName;
     }
 
@@ -300,16 +313,16 @@ final class LibUtils
         }
         return "";
     }
-    
-    
+
+
     /**
      * Creates the name for the native library with the given base
      * name for the current operating system and architecture.
-     * The resulting name will be of the form<br />
-     * baseName-OSType-ARCHType<br />
+     * The resulting name will be of the form<br>
+     * baseName-OSType-ARCHType<br>
      * where OSType and ARCHType are the <strong>lower case</strong> Strings
-     * of the respective enum constants. Example: <br />
-     * JOCL-windows-x86<br /> 
+     * of the respective enum constants. Example: <br>
+     * JOCL-windows-x86<br> 
      * 
      * @param baseName The base name of the library
      * @return The library name
@@ -323,7 +336,7 @@ final class LibUtils
         libName += "-" + archType.toString().toLowerCase(Locale.ENGLISH);
         return libName;
     }
-    
+
     /**
      * Calculates the current OSType
      * 
@@ -397,7 +410,18 @@ final class LibUtils
             return ARCHType.RISC;
         }
         return ARCHType.UNKNOWN;
-    }    
+    }
+    
+    /**
+     * Logging method 
+     * 
+     * @param message The log message
+     */
+    private static void log(Object message)
+    {
+        //System.out.println(message);
+    }
+    
 
     /**
      * Private constructor to prevent instantiation.

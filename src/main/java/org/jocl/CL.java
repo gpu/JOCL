@@ -44,7 +44,16 @@ public final class CL
     // Initialization of the native library
     static
     {
-        LibUtils.loadLibrary("JOCL_0_2_0");
+        String libraryName = "JOCL_0_2_0";
+        try
+        {
+            LibUtils.loadLibrary(libraryName);
+            LibInitializer.initNativeLibrary();
+        }
+        catch (UnsatisfiedLinkError e)
+        {
+            throw e;
+        }
     }
 
     /**
