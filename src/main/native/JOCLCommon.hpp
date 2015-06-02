@@ -2,7 +2,7 @@
  * JOCL - Java bindings for OpenCL
  *
  * Copyright (c) 2009-2012 Marco Hutter - http://www.jocl.org
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -39,9 +39,9 @@
 
 // CL includes
 #if defined(__APPLE__) || defined(__MACOSX)
-    #include <cl/opencl.h>
+    #include <CL/opencl.h>
 #else
-    #include <cl/opencl.h>
+    #include <CL/opencl.h>
     #ifdef _WIN32
         #define WINDOWS_LEAN_AND_MEAN
         #define NOMINMAX
@@ -50,8 +50,8 @@
     #include <GL/gl.h>
 #endif // __APPLE__
 
-// Prevent warning of "deprecated conversion from 
-// string constant to ‘char*’"
+// Prevent warning of "deprecated conversion from
+// string constant to *char
 #ifdef __GNUC__
 #  pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
