@@ -500,7 +500,7 @@ void CL_CALLBACK SVMFreeCallbackFunction(cl_command_queue queue, cl_uint num_svn
             // OutOfMemoryError was already thrown
             return;
         }
-		for (unsigned int i=0; i<num_svn_pointers; i++)
+		for (size_t i=0; i<num_svn_pointers; i++)
 		{
 			void *svm_pointer = svm_pointers[i];
 			jobject svm_pointerObject = createJavaPointerObject(env, svm_pointer, 0);
@@ -508,7 +508,7 @@ void CL_CALLBACK SVMFreeCallbackFunction(cl_command_queue queue, cl_uint num_svn
 			{
 				return;
 			}
-			env->SetObjectArrayElement(svm_pointersObjectArray, i, svm_pointerObject);
+            env->SetObjectArrayElement(svm_pointersObjectArray, (jsize)i, svm_pointerObject);
 		}
         env->CallVoidMethod(pfn_notify, SVMFreeFunction_function, queueObject, (jint)num_svn_pointers, svm_pointersObjectArray, user_data);
     }
@@ -599,7 +599,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
     if (platforms != NULL)
     {
         jsize platformsLength = env->GetArrayLength(platforms);
-        nativePlatforms = new cl_platform_id[platformsLength];
+        nativePlatforms = new cl_platform_id[(size_t)platformsLength];
         if (nativePlatforms == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -613,10 +613,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
     // Write back native variable values and clean up
     if (platforms != NULL)
     {
-        unsigned int n = nativeNum_entries < nativeNum_platforms ? nativeNum_entries : nativeNum_platforms;
-        for (unsigned int i=0; i<n; i++)
+        cl_uint n = nativeNum_entries < nativeNum_platforms ? nativeNum_entries : nativeNum_platforms;
+        for (size_t i = 0; i<n; i++)
         {
-            jobject platform = env->GetObjectArrayElement(platforms, i);
+            jobject platform = env->GetObjectArrayElement(platforms, (jsize)i);
             if (env->ExceptionCheck())
             {
                 return CL_INVALID_HOST_PTR;
@@ -628,7 +628,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
                 {
                     return CL_OUT_OF_HOST_MEMORY;
                 }
-                env->SetObjectArrayElement(platforms, i, platform);
+                env->SetObjectArrayElement(platforms, (jsize)i, platform);
                 if (env->ExceptionCheck())
                 {
                     return CL_INVALID_HOST_PTR;
@@ -639,7 +639,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
         }
         delete[] nativePlatforms;
     }
-    if (!set(env, num_platforms, 0, nativeNum_platforms)) return CL_OUT_OF_HOST_MEMORY;
+    if (!set(env, num_platforms, 0, (jint)nativeNum_platforms)) return CL_OUT_OF_HOST_MEMORY;
 
     return result;
 }
@@ -714,7 +714,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
 
     // Native variables declaration
     cl_platform_id nativePlatform = NULL;
-    cl_device_type nativeDevice_type = NULL;
+    cl_device_type nativeDevice_type = 0;
     cl_uint nativeNum_entries = 0;
     cl_device_id *nativeDevices = NULL;
     cl_uint nativeNum_devices;
@@ -729,12 +729,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
     if (devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(devices);
-        nativeDevices = new cl_device_id[devicesLength];
+        nativeDevices = new cl_device_id[(size_t)devicesLength];
         if (nativeDevices == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during devices array creation");
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
 
@@ -743,10 +743,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
     // Write back native variable values and clean up
     if (devices != NULL)
     {
-        unsigned int n = nativeNum_entries < nativeNum_devices ? nativeNum_entries : nativeNum_devices;
-        for (unsigned int i=0; i<n; i++)
+        cl_uint n = nativeNum_entries < nativeNum_devices ? nativeNum_entries : nativeNum_devices;
+        for (size_t i=0; i<n; i++)
         {
-            jobject device = env->GetObjectArrayElement(devices, i);
+            jobject device = env->GetObjectArrayElement(devices, (jsize)i);
             if (device == NULL)
             {
                 device = env->NewObject(cl_device_id_Class, cl_device_id_Constructor);
@@ -754,7 +754,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
                 {
                     return CL_OUT_OF_HOST_MEMORY;
                 }
-                env->SetObjectArrayElement(devices, i, device);
+                env->SetObjectArrayElement(devices, (jsize)i, device);
                 if (env->ExceptionCheck())
                 {
                     return CL_INVALID_HOST_PTR;
@@ -764,7 +764,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
         }
         delete[] nativeDevices;
     }
-    if (!set(env, num_devices, 0, nativeNum_devices)) return CL_OUT_OF_HOST_MEMORY;
+    if (!set(env, num_devices, 0, (jint)nativeNum_devices)) return CL_OUT_OF_HOST_MEMORY;
 
     return result;
 }
@@ -790,7 +790,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceInfoNative
 
     // Native variables declaration
     cl_device_id nativeDevice = NULL;
-    cl_device_info nativeParam_name = NULL;
+    cl_device_info nativeParam_name = 0;
     size_t nativeParam_value_size = 0;
     void *nativeParam_value = NULL;
     size_t nativeParam_value_size_ret;
@@ -854,7 +854,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
     if (out_devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(out_devices);
-        nativeOut_devices = new cl_device_id[devicesLength];
+        nativeOut_devices = new cl_device_id[(size_t)devicesLength];
         if (nativeOut_devices == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -869,10 +869,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
     delete nativeProperties;
     if (out_devices != NULL)
     {
-        unsigned int n = nativeNum_devices_ret < nativeNum_devices ? nativeNum_devices_ret : nativeNum_devices;
-        for (unsigned int i=0; i<n; i++)
+        cl_uint n = nativeNum_devices_ret < nativeNum_devices ? nativeNum_devices_ret : nativeNum_devices;
+        for (size_t i=0; i<n; i++)
         {
-            jobject device = env->GetObjectArrayElement(out_devices, i);
+            jobject device = env->GetObjectArrayElement(out_devices, (jsize)i);
             if (device == NULL)
             {
                 device = env->NewObject(cl_device_id_Class, cl_device_id_Constructor);
@@ -880,7 +880,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
                 {
                     return CL_OUT_OF_HOST_MEMORY;
                 }
-                env->SetObjectArrayElement(out_devices, i, device);
+                env->SetObjectArrayElement(out_devices, (jsize)i, device);
                 if (env->ExceptionCheck())
                 {
                     return CL_INVALID_HOST_PTR;
@@ -1007,7 +1007,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
     if (devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(devices);
-        nativeDevices = new cl_device_id[devicesLength];
+        nativeDevices = new cl_device_id[(size_t)devicesLength];
         if (nativeDevices == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -1090,7 +1090,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextFromTypeNative
 
     // Native variables declaration
     cl_context_properties *nativeProperties = NULL;
-    cl_device_type nativeDevice_type = NULL;
+    cl_device_type nativeDevice_type = 0;
     CreateContextFunctionPointer nativePfn_notify = NULL;
     void *nativeUser_data = NULL;
     cl_int nativeErrcode_ret = 0;
@@ -1219,7 +1219,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetContextInfoNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_context_info nativeParam_name = NULL;
+    cl_context_info nativeParam_name = 0;
     size_t nativeParam_value_size = 0;
     void *nativeParam_value = NULL;
     size_t nativeParam_value_size_ret = 0;
@@ -1445,7 +1445,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetCommandQueueInfoNative
 
     // Native variables declaration
     cl_command_queue nativeCommand_queue = NULL;
-    cl_command_queue_info nativeParam_name = NULL;
+    cl_command_queue_info nativeParam_name = 0;
     size_t nativeParam_value_size = 0;
     void *nativeParam_value = NULL;
     size_t nativeParam_value_size_ret = 0;
@@ -1542,7 +1542,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateBufferNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     size_t nativeSize = 0;
     void *nativeHost_ptr = NULL;
     cl_int nativeErrcode_ret = 0;
@@ -1614,7 +1614,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBufferNative
 
     // Native variables declaration
     cl_mem nativeBuffer = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     cl_buffer_create_type nativeBuffer_create_type = 0;
     void *nativeBuffer_create_info = NULL;
     cl_int nativeErrcode_ret = 0;
@@ -1681,7 +1681,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateSubBuffer2Native
 
     // Native variables declaration
     cl_mem nativeBuffer = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     cl_buffer_create_type nativeBuffer_create_type = 0;
     cl_buffer_region nativeBuffer_create_info;
     cl_int nativeErrcode_ret = 0;
@@ -1748,7 +1748,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImageNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     cl_image_format nativeImage_format;
     cl_image_desc nativeImage_desc;
     void *nativeHost_ptr = NULL;
@@ -1890,7 +1890,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage2DNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     cl_image_format *nativeImage_format = NULL;
     size_t nativeImage_width = 0;
     size_t nativeImage_height = 0;
@@ -1909,7 +1909,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage2DNative
     if (image_format != NULL)
     {
         jsize image_formatLength = env->GetArrayLength(image_format);
-        nativeImage_format = new cl_image_format[image_formatLength];
+        nativeImage_format = new cl_image_format[(size_t)image_formatLength];
         if (nativeImage_format == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -1980,7 +1980,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage3DNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     cl_image_format *nativeImage_format = NULL;
     size_t nativeImage_width = 0;
     size_t nativeImage_height = 0;
@@ -2001,7 +2001,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage3DNative
     if (image_format != NULL)
     {
         jsize image_formatLength = env->GetArrayLength(image_format);
-        nativeImage_format = new cl_image_format[image_formatLength];
+        nativeImage_format = new cl_image_format[(size_t)image_formatLength];
         if (nativeImage_format == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2127,9 +2127,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     cl_mem_object_type nativeImage_type = 0;
-    cl_int nativeNum_entries = 0;
+    cl_uint nativeNum_entries = 0;
     cl_image_format *nativeImage_formats = NULL;
     cl_uint nativeNum_image_formats = 0;
 
@@ -2140,11 +2140,11 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
     }
     nativeFlags = (cl_mem_flags)flags;
     nativeImage_type = (cl_mem_object_type)image_type;
-    nativeNum_entries = (cl_int)num_entries;
+    nativeNum_entries = (cl_uint)num_entries;
     if (image_formats != NULL)
     {
         jsize image_formatsLength = env->GetArrayLength(image_formats);
-        nativeImage_formats = new cl_image_format[image_formatsLength];
+        nativeImage_formats = new cl_image_format[(size_t)image_formatsLength];
         if (nativeImage_formats == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2158,9 +2158,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
     // Write back native variable values and clean up
     if (image_formats != NULL)
     {
-        for (unsigned int i=0; i<nativeNum_image_formats; i++)
+        for (size_t i = 0; i<nativeNum_image_formats; i++)
         {
-            jobject image_format = env->GetObjectArrayElement(image_formats, i);
+            jobject image_format = env->GetObjectArrayElement(image_formats, (jsize)i);
             if (image_format == NULL)
             {
                 image_format = env->NewObject(cl_image_format_Class, cl_image_format_Constructor);
@@ -2168,7 +2168,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
                 {
                     return CL_OUT_OF_HOST_MEMORY;
                 }
-                env->SetObjectArrayElement(image_formats, i, image_format);
+                env->SetObjectArrayElement(image_formats, (jsize)i, image_format);
                 if (env->ExceptionCheck())
                 {
                     return CL_INVALID_HOST_PTR;
@@ -2178,7 +2178,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
         }
         delete nativeImage_formats;
     }
-    if (!set(env, num_image_formats, 0, nativeNum_image_formats)) return CL_OUT_OF_HOST_MEMORY;
+    if (!set(env, num_image_formats, 0, (jint)nativeNum_image_formats)) return CL_OUT_OF_HOST_MEMORY;
 
     return result;
 }
@@ -2367,7 +2367,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetMemObjectDestructorCallbackNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
     }
@@ -2401,7 +2401,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clSVMAllocNative
 
     // Native variables declaration
     cl_context nativeContext = NULL;
-    cl_mem_flags nativeFlags = NULL;
+    cl_mem_flags nativeFlags = 0;
     size_t nativeSize = 0;
     cl_uint nativeAlignment = 0;
     void *nativePointer = NULL;
@@ -2725,7 +2725,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithSourceNative
     if (strings != NULL)
     {
         jsize stringsLength = env->GetArrayLength(strings);
-        nativeStrings = new char*[stringsLength];
+        nativeStrings = new char*[(size_t)stringsLength];
         if (nativeStrings == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2826,7 +2826,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
     nativeNum_devices = (cl_uint)num_devices;
     if (device_list != NULL)
     {
-        nativeDevice_list = createDeviceList(env, device_list, num_devices);
+        nativeDevice_list = createDeviceList(env, device_list, nativeNum_devices);
         if (nativeDevice_list == NULL)
         {
             return NULL;
@@ -2844,7 +2844,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
     if (binaries != NULL)
     {
         jsize binariesLength = env->GetArrayLength(binaries);
-        nativeBinaries = new unsigned char*[binariesLength];
+        nativeBinaries = new unsigned char*[(size_t)binariesLength];
         if (nativeBinaries == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2858,7 +2858,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
             if (binary != NULL)
             {
                 jsize binaryLength = env->GetArrayLength(binary);
-                unsigned char *nativeBinary = new unsigned char[binaryLength];
+                unsigned char *nativeBinary = new unsigned char[(size_t)binaryLength];
                 if (nativeBinary == NULL)
                 {
                     ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2948,7 +2948,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBuiltInKernelsNati
     nativeNum_devices = (cl_uint)num_devices;
     if (device_list != NULL)
     {
-        nativeDevice_list = createDeviceList(env, device_list, num_devices);
+        nativeDevice_list = createDeviceList(env, device_list, nativeNum_devices);
         if (nativeDevice_list == NULL)
         {
             return NULL;
@@ -3073,10 +3073,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
     nativeNum_devices = (cl_uint)num_devices;
     if (device_list != NULL)
     {
-        nativeDevice_list = createDeviceList(env, device_list, num_devices);
+        nativeDevice_list = createDeviceList(env, device_list, nativeNum_devices);
         if (nativeDevice_list == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
     if (options != NULL)
@@ -3093,7 +3093,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
     }
@@ -3147,7 +3147,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
     nativeNum_devices = (cl_uint)num_devices;
     if (device_list != NULL)
     {
-        nativeDevice_list = createDeviceList(env, device_list, num_devices);
+        nativeDevice_list = createDeviceList(env, device_list, nativeNum_devices);
         if (nativeDevice_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -3164,7 +3164,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
     nativeNum_input_headers = (cl_uint)num_input_headers;
     if (input_headers != NULL)
     {
-        nativeInput_headers = createProgramList(env, input_headers, num_input_headers);
+        nativeInput_headers = createProgramList(env, input_headers, nativeNum_input_headers);
         if (nativeInput_headers == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -3173,7 +3173,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
     if (header_include_names != NULL)
     {
         jsize header_include_namesLength = env->GetArrayLength(header_include_names);
-        nativeHeader_include_names = new const char*[header_include_namesLength];
+        nativeHeader_include_names = new const char*[(size_t)header_include_namesLength];
         if (nativeHeader_include_names == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -3265,7 +3265,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
     nativeNum_devices = (cl_uint)num_devices;
     if (devices_list != NULL)
     {
-        nativeDevices_list = createDeviceList(env, devices_list, num_devices);
+        nativeDevices_list = createDeviceList(env, devices_list, nativeNum_devices);
         if (nativeDevices_list == NULL)
         {
             return NULL;
@@ -3282,7 +3282,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
     nativeNum_input_programs = (cl_uint)num_input_programs;
     if (input_programs != NULL)
     {
-        nativeInput_programs = createProgramList(env, input_programs, num_input_programs);
+        nativeInput_programs = createProgramList(env, input_programs, nativeNum_input_programs);
         if (nativeInput_programs == NULL)
         {
             return NULL;
@@ -3581,7 +3581,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during kernels array creation");
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
 
@@ -3590,9 +3590,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
     // Write back native variable values and clean up
     if (kernels != NULL)
     {
-        for (unsigned int i=0; i<nativeNum_kernels_ret; i++)
+        for (size_t i = 0; i<nativeNum_kernels_ret; i++)
         {
-            jobject kernel = env->GetObjectArrayElement(kernels, i);
+            jobject kernel = env->GetObjectArrayElement(kernels, (jsize)i);
             if (kernel == NULL)
             {
                 kernel = env->NewObject(cl_kernel_Class, cl_kernel_Constructor);
@@ -3600,7 +3600,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
                 {
                     return CL_OUT_OF_HOST_MEMORY;
                 }
-                env->SetObjectArrayElement(kernels, i, kernel);
+                env->SetObjectArrayElement(kernels, (jsize)i, kernel);
                 if (env->ExceptionCheck())
                 {
                     return CL_INVALID_HOST_PTR;
@@ -3610,7 +3610,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
         }
         delete[] nativeKernels;
     }
-    if (!set(env, num_kernels_ret, 0, nativeNum_kernels_ret)) return CL_OUT_OF_HOST_MEMORY;
+    if (!set(env, num_kernels_ret, 0, (jint)nativeNum_kernels_ret)) return CL_OUT_OF_HOST_MEMORY;
 
     return result;
 }
@@ -3985,7 +3985,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clWaitForEventsNative
     nativeNum_events = (cl_uint)num_events;
     if (event_list != NULL)
     {
-        nativeEvent_list = createEventList(env, event_list, num_events);
+        nativeEvent_list = createEventList(env, event_list, nativeNum_events);
         if (nativeEvent_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -4225,7 +4225,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clSetEventCallbackNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
     }
@@ -4399,7 +4399,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -4562,7 +4562,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -4663,7 +4663,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -4772,7 +4772,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -4850,7 +4850,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillBufferNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -4923,7 +4923,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5023,7 +5023,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5128,7 +5128,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5226,7 +5226,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5314,7 +5314,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillImageNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5410,7 +5410,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5498,7 +5498,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5584,7 +5584,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5630,7 +5630,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
     cl_bool nativeBlocking_map = CL_TRUE;
     cl_map_flags nativeMap_flags = 0;
     size_t nativeOffset = 0;
-    size_t nativeCb = NULL;
+    size_t nativeCb = 0;
     cl_uint nativeNum_events_in_wait_list = 0;
     cl_event *nativeEvent_wait_list = NULL;
     cl_event nativeEvent = NULL;
@@ -5656,7 +5656,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return NULL;
@@ -5679,7 +5679,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapBufferNative
     {
         return NULL;
     }
-    return env->NewDirectByteBuffer(nativeHostPointer, nativeCb);
+    return env->NewDirectByteBuffer(nativeHostPointer, (jlong)nativeCb);
 }
 
 /*
@@ -5746,7 +5746,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return NULL;
@@ -5762,14 +5762,14 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
     // Write back native variable values and clean up
     delete[] nativeOrigin;
     delete[] nativeRegion;
-    if (!set(env, image_row_pitch, 0, nativeImage_row_pitch)) return NULL;
-    if (!set(env, image_slice_pitch, 0, nativeImage_slice_pitch)) return NULL;
+    if (!set(env, image_row_pitch, 0, (jlong)nativeImage_row_pitch)) return NULL;
+    if (!set(env, image_slice_pitch, 0, (jlong)nativeImage_slice_pitch)) return NULL;
     delete[] nativeEvent_wait_list;
     setNativePointer(env, event, (jlong)nativeEvent);
     if (!set(env, errcode_ret, 0, nativeErrcode_ret)) return NULL;
 
     // Create and return a ByteBuffer for the mapped memory
-    jlong size = 0;
+    size_t size = 0;
     if (nativeRegion != NULL)
     {
         size = nativeImage_row_pitch * nativeRegion[1] + nativeRegion[0];
@@ -5782,7 +5782,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
     {
         return NULL;
     }
-    return env->NewDirectByteBuffer(nativeHostPointer, size);
+    return env->NewDirectByteBuffer(nativeHostPointer, (jlong)size);
 }
 
 /*
@@ -5826,7 +5826,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueUnmapMemObjectNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5884,17 +5884,17 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMigrateMemObjectsNative
     nativeNum_mem_objects = (cl_uint)num_mem_objects;
     if (mem_objects != NULL)
     {
-        nativeMem_objects = createMemList(env, mem_objects, num_mem_objects);
+        nativeMem_objects = createMemList(env, mem_objects, nativeNum_mem_objects);
         if (nativeMem_objects == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
     nativeFlags = (cl_mem_migration_flags)flags;
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -5984,7 +5984,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6046,7 +6046,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueTaskNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6117,7 +6117,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
     nativeNum_mem_objects = (cl_uint)num_mem_objects;
     if (mem_list != NULL)
     {
-        nativeMem_list = createMemList(env, mem_list, num_mem_objects);
+        nativeMem_list = createMemList(env, mem_list, nativeNum_mem_objects);
         if (nativeMem_list == NULL)
         {
             return NULL;
@@ -6126,26 +6126,26 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
     if (args_mem_loc != NULL)
     {
         jsize args_mem_locLength = env->GetArrayLength(args_mem_loc);
-        nativeArgs_mem_loc = new void*[args_mem_locLength];
+        nativeArgs_mem_loc = new void*[(size_t)args_mem_locLength];
         if (nativeArgs_mem_loc == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during args mem loc array creation");
             return CL_OUT_OF_HOST_MEMORY;
         }
-        for (int i=0; i<args_mem_locLength; i++)
+        for (jsize i = 0; i<args_mem_locLength; i++)
         {
             jobject mem_loc = env->GetObjectArrayElement(args_mem_loc, i);
             if (mem_loc != NULL)
             {
-                nativeArgs_mem_loc[i] = (void*)env->GetLongField(mem_loc, NativePointerObject_nativePointer);
+                nativeArgs_mem_loc[(size_t)i] = (void*)env->GetLongField(mem_loc, NativePointerObject_nativePointer);
             }
         }
     }
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6213,7 +6213,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMarkerWithWaitListNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6272,7 +6272,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueBarrierWithWaitListNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6358,10 +6358,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMFreeNative
     nativeNum_svm_pointers = (cl_uint)num_svm_pointers;
     if (svm_pointers != NULL)
     {
-		nativeSvm_pointers = createSvmPointers(env, svm_pointers, num_svm_pointers);
+        nativeSvm_pointers = createSvmPointers(env, svm_pointers, nativeNum_svm_pointers);
         if (nativeSvm_pointers == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
 	CallbackInfo *callbackInfo = NULL;
@@ -6371,14 +6371,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMFreeNative
         callbackInfo = initCallbackInfo(env, pfn_free_func, user_data);
         if (callbackInfo == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
     }
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6444,7 +6444,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMMemcpyNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6509,7 +6509,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMMemFillNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6571,7 +6571,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMMapNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6627,7 +6627,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMUnmapNative
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -6724,7 +6724,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWaitForEventsNative
     nativeNum_events = (cl_uint)num_events;
     if (event_list != NULL)
     {
-        nativeEvent_list = createEventList(env, event_list, num_events);
+        nativeEvent_list = createEventList(env, event_list, nativeNum_events);
         if (nativeEvent_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -7082,7 +7082,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLObjectInfoNative
 
     // Write back native variable values and clean up
     if (!set(env, gl_object_type, 0, (jint)nativeGl_object_type)) return CL_OUT_OF_HOST_MEMORY;
-    if (!set(env, gl_object_name, 0, nativeGl_object_name)) return CL_OUT_OF_HOST_MEMORY;
+    if (!set(env, gl_object_name, 0, (jint)nativeGl_object_name)) return CL_OUT_OF_HOST_MEMORY;
 
     return result;
 }
@@ -7167,16 +7167,16 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
     nativeNum_objects = (cl_uint)num_objects;
     if (mem_objects != NULL)
     {
-        nativeMem_objects = createMemList(env, mem_objects, num_objects);
+        nativeMem_objects = createMemList(env, mem_objects, nativeNum_objects);
         if (nativeMem_objects == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -7230,16 +7230,16 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
     nativeNum_objects = (cl_uint)num_objects;
     if (mem_objects != NULL)
     {
-        nativeMem_objects = createMemList(env, mem_objects, num_objects);
+        nativeMem_objects = createMemList(env, mem_objects, nativeNum_objects);
         if (nativeMem_objects == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
     if (event_wait_list != NULL)
     {
-        nativeEvent_wait_list = createEventList(env, event_wait_list, num_events_in_wait_list);
+        nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
             return CL_OUT_OF_HOST_MEMORY;
@@ -7885,7 +7885,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_allocateAlignedNative
     alignedMemory += alignment - ((intptr_t)alignedMemory & (alignment-1));
     ((void**)alignedMemory)[-1] = memory;
 
-    memset(alignedMemory, 0, size);
+    memset(alignedMemory, 0, (size_t)size);
 
     env->SetLongField(pointer, NativePointerObject_nativePointer, (jlong)alignedMemory);
 
@@ -7928,7 +7928,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoKHRNative
 
     // Native variables declaration
     cl_context_properties *nativeProperties = NULL;
-    cl_context_info nativeParam_name = NULL;
+    cl_context_info nativeParam_name = 0;
     size_t nativeParam_value_size = 0;
     void *nativeParam_value = NULL;
     size_t nativeParam_value_size_ret = 0;

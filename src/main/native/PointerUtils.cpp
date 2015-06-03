@@ -123,8 +123,8 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
         return NULL;
     }
 
-    pointerData->startPointer = NULL;
-    pointerData->pointer = NULL;
+    pointerData->startPointer = (jlong)NULL;
+    pointerData->pointer = (jlong)NULL;
     pointerData->memoryType = NATIVE;
 
     if (pointerObject == NULL)
@@ -166,8 +166,8 @@ PointerData* initPointerData(JNIEnv *env, jobject pointerObject)
         // Create an array containing the native representations of the
         // pointers, and store them as the data of the pointerData
         jsize size = env->GetArrayLength(pointersArray);
-        void **localPointer = new void*[size];
-        PointerData **localPointerDatas = new PointerData*[size];
+        void **localPointer = new void*[(size_t)size];
+        PointerData **localPointerDatas = new PointerData*[(size_t)size];
 
         if (localPointer == NULL)
         {

@@ -54,9 +54,9 @@ bool init(JNIEnv *env, const char *className, jclass &globalCls, jmethodID &cons
 
 void ThrowByName(JNIEnv *env, const char *name, const char *msg);
 
-bool set(JNIEnv *env, jintArray ja, int index, long value);
-bool set(JNIEnv *env, jlongArray ja, int index, long value);
-bool set(JNIEnv *env, jfloatArray ja, int index, float value);
+bool set(JNIEnv *env, jintArray ja, size_t index, jint value);
+bool set(JNIEnv *env, jlongArray ja, size_t index, jlong value);
+bool set(JNIEnv *env, jfloatArray ja, size_t index, float value);
 char *convertString(JNIEnv *env, jstring js, int *length=NULL);
 size_t* convertArray(JNIEnv *env, jlongArray array);
 

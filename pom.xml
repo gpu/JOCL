@@ -120,6 +120,7 @@
                     <excludes>
                         <exclude>**/*.dll</exclude>
                         <exclude>**/*.jnilib</exclude>
+                        <exclude>**/*.dylib</exclude>
                         <exclude>**/*.so</exclude>
                     </excludes>
                 </configuration>
@@ -143,6 +144,7 @@
                     <excludes>
                         <exclude>**/*.dll</exclude>
                         <exclude>**/*.jnilib</exclude>
+                        <exclude>**/*.dylib</exclude>
                         <exclude>**/*.so</exclude>
                     </excludes>
                 </configuration>

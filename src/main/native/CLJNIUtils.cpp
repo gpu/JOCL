@@ -119,10 +119,10 @@ cl_context_properties* createContextPropertiesArray(JNIEnv *env, jobject propert
     {
         return NULL;
     }
-    int javaPropertiesSize = 0;
+    size_t javaPropertiesSize = 0;
     jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
-    int MAX_PROPERTIES = 100;
-    for (int i=0; i<MAX_PROPERTIES; i++)
+    size_t MAX_PROPERTIES = 100;
+    for (size_t i = 0; i<MAX_PROPERTIES; i++)
     {
         if (javaPropertyValues[i] == 0)
         {
@@ -138,7 +138,7 @@ cl_context_properties* createContextPropertiesArray(JNIEnv *env, jobject propert
         return NULL;
     }
 
-    for (int i=0; i<javaPropertiesSize; i++)
+    for (size_t i=0; i<javaPropertiesSize; i++)
     {
         nativeProperties[i] = (cl_context_properties)javaPropertyValues[i];
     }
@@ -168,10 +168,10 @@ cl_queue_properties* createQueuePropertiesArray(JNIEnv *env, jobject properties)
     {
         return NULL;
     }
-    int javaPropertiesSize = 0;
+    size_t javaPropertiesSize = 0;
     jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
-    int MAX_PROPERTIES = 100;
-    for (int i=0; i<MAX_PROPERTIES; i++)
+    size_t MAX_PROPERTIES = 100;
+    for (size_t i = 0; i<MAX_PROPERTIES; i++)
     {
         if (javaPropertyValues[i] == 0)
         {
@@ -187,7 +187,7 @@ cl_queue_properties* createQueuePropertiesArray(JNIEnv *env, jobject properties)
         return NULL;
     }
 
-    for (int i=0; i<javaPropertiesSize; i++)
+    for (size_t i = 0; i<javaPropertiesSize; i++)
     {
         nativeProperties[i] = (cl_queue_properties)javaPropertyValues[i];
     }
@@ -216,10 +216,10 @@ cl_pipe_properties* createPipePropertiesArray(JNIEnv *env, jobject properties)
     {
         return NULL;
     }
-    int javaPropertiesSize = 0;
+    size_t javaPropertiesSize = 0;
     jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
-    int MAX_PROPERTIES = 100;
-    for (int i=0; i<MAX_PROPERTIES; i++)
+    size_t MAX_PROPERTIES = 100;
+    for (size_t i = 0; i<MAX_PROPERTIES; i++)
     {
         if (javaPropertyValues[i] == 0)
         {
@@ -235,7 +235,7 @@ cl_pipe_properties* createPipePropertiesArray(JNIEnv *env, jobject properties)
         return NULL;
     }
 
-    for (int i=0; i<javaPropertiesSize; i++)
+    for (size_t i = 0; i<javaPropertiesSize; i++)
     {
         nativeProperties[i] = (cl_pipe_properties)javaPropertyValues[i];
     }
@@ -264,10 +264,10 @@ cl_sampler_properties* createSamplerPropertiesArray(JNIEnv *env, jobject propert
     {
         return NULL;
     }
-    int javaPropertiesSize = 0;
+    size_t javaPropertiesSize = 0;
     jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
-    int MAX_PROPERTIES = 100;
-    for (int i=0; i<MAX_PROPERTIES; i++)
+    size_t MAX_PROPERTIES = 100;
+    for (size_t i = 0; i<MAX_PROPERTIES; i++)
     {
         if (javaPropertyValues[i] == 0)
         {
@@ -283,7 +283,7 @@ cl_sampler_properties* createSamplerPropertiesArray(JNIEnv *env, jobject propert
         return NULL;
     }
 
-    for (int i=0; i<javaPropertiesSize; i++)
+    for (size_t i = 0; i<javaPropertiesSize; i++)
     {
         nativeProperties[i] = (cl_sampler_properties)javaPropertyValues[i];
     }
@@ -298,8 +298,8 @@ cl_sampler_properties* createSamplerPropertiesArray(JNIEnv *env, jobject propert
  */
 void getCl_image_format(JNIEnv *env, jobject image_format, cl_image_format &nativeImage_format)
 {
-    nativeImage_format.image_channel_order = NULL;
-    nativeImage_format.image_channel_data_type = NULL;
+    nativeImage_format.image_channel_order = 0;
+    nativeImage_format.image_channel_data_type = 0;
     if (image_format != NULL)
     {
         nativeImage_format.image_channel_order     = (cl_channel_order)env->GetIntField(image_format, cl_image_format_image_channel_order);
@@ -315,8 +315,8 @@ void setCl_image_format(JNIEnv *env, jobject image_format, cl_image_format &nati
 {
     if (image_format != NULL)
     {
-        env->SetIntField(image_format, cl_image_format_image_channel_order,     nativeImage_format.image_channel_order);
-        env->SetIntField(image_format, cl_image_format_image_channel_data_type, nativeImage_format.image_channel_data_type);
+        env->SetIntField(image_format, cl_image_format_image_channel_order,     (jint)nativeImage_format.image_channel_order);
+        env->SetIntField(image_format, cl_image_format_image_channel_data_type, (jint)nativeImage_format.image_channel_data_type);
     }
 }
 
@@ -390,10 +390,10 @@ cl_device_partition_property* getCl_device_partition_property (JNIEnv *env, jobj
     {
         return NULL;
     }
-    int javaPropertiesSize = 0;
+    size_t javaPropertiesSize = 0;
     jlong *javaPropertyValues = (jlong*)propertiesPointerData->pointer;
-    int MAX_PROPERTIES = 100;
-    for (int i=0; i<MAX_PROPERTIES; i++)
+    size_t MAX_PROPERTIES = 100;
+    for (size_t i = 0; i<MAX_PROPERTIES; i++)
     {
         if (javaPropertyValues[i] == 0)
         {
@@ -409,7 +409,7 @@ cl_device_partition_property* getCl_device_partition_property (JNIEnv *env, jobj
         return NULL;
     }
 
-    for (int i=0; i<javaPropertiesSize; i++)
+    for (size_t i = 0; i<javaPropertiesSize; i++)
     {
         nativeProperties[i] = (cl_device_partition_property)javaPropertyValues[i];
     }
@@ -447,9 +447,9 @@ cl_event* createEventList(JNIEnv *env, jobjectArray event_list, cl_uint num_even
             "Event list size is smaller than specified number of events");
         return NULL;
     }
-    for (unsigned int i=0; i<num_events; i++)
+    for (size_t i=0; i<num_events; i++)
     {
-        jobject ev = env->GetObjectArrayElement(event_list, i);
+        jobject ev = env->GetObjectArrayElement(event_list, (jsize)i);
         if (env->ExceptionCheck())
         {
             delete[] nativeEvent_list;
@@ -495,9 +495,9 @@ cl_device_id* createDeviceList(JNIEnv *env, jobjectArray device_list, cl_uint nu
             "Device list size is smaller than specified number of devices");
         return NULL;
     }
-    for (unsigned int i=0; i<num_devices; i++)
+    for (size_t i = 0; i<num_devices; i++)
     {
-        jobject device = env->GetObjectArrayElement(device_list, i);
+        jobject device = env->GetObjectArrayElement(device_list, (jsize)i);
         if (env->ExceptionCheck())
         {
             delete[] nativeDevice_list;
@@ -544,9 +544,9 @@ cl_mem* createMemList(JNIEnv *env, jobjectArray mem_list, cl_uint num_mems)
             "Memory object list size is smaller than specified number of memory objects");
         return NULL;
     }
-    for (unsigned int i=0; i<num_mems; i++)
+    for (size_t i = 0; i<num_mems; i++)
     {
-        jobject mem = env->GetObjectArrayElement(mem_list, i);
+        jobject mem = env->GetObjectArrayElement(mem_list, (jsize)i);
         if (env->ExceptionCheck())
         {
             delete[] nativeMem_list;
@@ -593,9 +593,9 @@ void** createSvmPointers(JNIEnv *env, jobjectArray svm_pointers, cl_uint num_svm
             "Pointer array size is smaller than specified number of pointers");
         return NULL;
     }
-    for (unsigned int i=0; i<num_svm_pointers; i++)
+    for (size_t i = 0; i<num_svm_pointers; i++)
     {
-        jobject svm_pointerObject = env->GetObjectArrayElement(svm_pointers, i);
+        jobject svm_pointerObject = env->GetObjectArrayElement(svm_pointers, (jsize)i);
         if (env->ExceptionCheck())
         {
             delete[] nativeSvm_pointers;
@@ -642,9 +642,9 @@ cl_program* createProgramList(JNIEnv *env, jobjectArray program_list, cl_uint nu
             "Program list size is smaller than specified number of programs");
         return NULL;
     }
-    for (unsigned int i=0; i<num_programs; i++)
+    for (size_t i = 0; i<num_programs; i++)
     {
-        jobject ev = env->GetObjectArrayElement(program_list, i);
+        jobject ev = env->GetObjectArrayElement(program_list, (jsize)i);
         if (env->ExceptionCheck())
         {
             delete[] nativeProgram_list;

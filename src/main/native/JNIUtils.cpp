@@ -169,7 +169,7 @@ void ThrowByName(JNIEnv *env, const char *name, const char *msg)
  * the given value. If the array is NULL, nothing is done.
  * Returns 'false' if an OutOfMemoryError occurred.
  */
-bool set(JNIEnv *env, jintArray ja, int index, long value)
+bool set(JNIEnv *env, jintArray ja, size_t index, jint value)
 {
     if (ja == NULL)
     {
@@ -190,7 +190,7 @@ bool set(JNIEnv *env, jintArray ja, int index, long value)
  * the given value. If the array is NULL, nothing is done.
  * Returns 'false' if an OutOfMemoryError occurred.
  */
-bool set(JNIEnv *env, jlongArray ja, int index, long value)
+bool set(JNIEnv *env, jlongArray ja, size_t index, jlong value)
 {
     if (ja == NULL)
     {
@@ -212,7 +212,7 @@ bool set(JNIEnv *env, jlongArray ja, int index, long value)
  * the given value. If the array is NULL, nothing is done.
  * Returns 'false' if an OutOfMemoryError occurred.
  */
-bool set(JNIEnv *env, jfloatArray ja, int index, float value)
+bool set(JNIEnv *env, jfloatArray ja, size_t index, float value)
 {
     if (ja == NULL)
     {
@@ -253,12 +253,12 @@ char *convertString(JNIEnv *env, jstring js, int *length)
     bytes = (jbyteArray)env->CallObjectMethod(js, String_getBytes);
     if (!env->ExceptionCheck())
     {
-        jint len = env->GetArrayLength(bytes);
+        jsize len = env->GetArrayLength(bytes);
         if (length != NULL)
         {
             *length = (int)len;
         }
-        result = new char[len + 1];
+        result = new char[(size_t)(len + 1)];
         if (result == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -283,7 +283,7 @@ char *convertString(JNIEnv *env, jstring js, int *length)
 size_t* convertArray(JNIEnv *env, jlongArray array)
 {
     jsize arrayLength = env->GetArrayLength(array);
-    size_t *result = new size_t[arrayLength];
+    size_t *result = new size_t[(size_t)arrayLength];
     if (result == NULL)
     {
         ThrowByName(env, "java/lang/OutOfMemoryError",

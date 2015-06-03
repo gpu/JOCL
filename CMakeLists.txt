@@ -33,6 +33,10 @@ else()
   set(CMAKE_ARCH "x86")
 endif()
 
+if(MSVC)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall /wd4514 /wd4820 /wd4710 /wd4711 /wd4350 /wd4668")
+endif()
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${PROJECT_SOURCE_DIR}/nativeLibs/Debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/nativeLibs)
 
