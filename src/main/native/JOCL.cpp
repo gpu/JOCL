@@ -6109,7 +6109,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, user_func, args);
         if (callbackInfo == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
         nativeArgs = (void*)callbackInfo;
     }
@@ -6120,7 +6120,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
         nativeMem_list = createMemList(env, mem_list, nativeNum_mem_objects);
         if (nativeMem_list == NULL)
         {
-            return NULL;
+            return CL_OUT_OF_HOST_MEMORY;
         }
     }
     if (args_mem_loc != NULL)
