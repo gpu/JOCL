@@ -42,10 +42,6 @@
         <url>git@github.com:gpu/JOCL.git</url>
     </scm>
 
-    <properties>
-        <skipTests>true</skipTests>
-    </properties>
-
     <build>
         <defaultGoal>package</defaultGoal>
 
@@ -162,9 +158,26 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkMode>once</forkMode>
+                    <argLine>-Djava.library.path=${project.basedir}/nativeLibs</argLine>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
 
 
