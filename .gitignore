@@ -1,8 +1,6 @@
-bin
 target
-Debug
-Release
 JOCL.ncb
 JOCL.sln
 JOCL.suo
 JOCL.vcproj.*
+/nativeLibrary

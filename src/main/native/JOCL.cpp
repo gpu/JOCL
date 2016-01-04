@@ -35,8 +35,9 @@
 #include "JOCLCommon.hpp"
 #include "JNIUtils.hpp"
 #include "PointerUtils.hpp"
-#include "CLFunctions.hpp"
 #include "CLJNIUtils.hpp"
+
+#include "CLFunctions.hpp"
 #include "FunctionPointerUtils.hpp"
 
 // Static method IDs for the "function pointer" interfaces

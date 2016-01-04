@@ -35,12 +35,15 @@ import java.util.*;
  * types, and automatically loading the matching native library
  * as a resource or from a file. <br>
  * <br>
- * The architecture and OS detection has been adapted from 
- * http://javablog.co.uk/2007/05/19/making-jni-cross-platform/
- * and extended with http://lopica.sourceforge.net/os.html 
+ * This class is not intended to be used by clients.<br>
+ * <br>
  */
-final class LibUtils
+public final class LibUtils
 {
+    // The architecture and OS detection has been adapted from 
+    // http://javablog.co.uk/2007/05/19/making-jni-cross-platform/
+    // and extended with http://lopica.sourceforge.net/os.html 
+    
     /**
      * Enumeration of common operating systems, independent of version 
      * or architecture. 
@@ -144,7 +147,7 @@ final class LibUtils
      * Load the library with the given name from a resource. 
      * The extension for the current OS will be appended.
      * 
-     * @param libName The library name
+     * @param libName The library name, e.g. "JOCL-windows-x86"
      * @throws Throwable If the library could not be loaded
      */
     private static void loadLibraryResource(String libName) throws Throwable

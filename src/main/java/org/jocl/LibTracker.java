@@ -78,6 +78,7 @@ class LibTracker
             log("Initializing library shutdown hook");
             shutdownHook = new Thread()
             {
+                @Override
                 public void run()
                 {
                     shutdown();

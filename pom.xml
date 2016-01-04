@@ -52,8 +52,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration> <!-- over convention -->
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
 
@@ -78,7 +78,7 @@
                             <outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/nativeLibs/</directory>
+                                    <directory>${basedir}/nativeLibrary/</directory>
                                     <filtering>false</filtering>
                                     <includes>
                                         <include>*.dll</include>
@@ -88,7 +88,7 @@
                                     </includes>
                                 </resource>
                                 <resource>
-                                    <directory>${basedir}/../../nativeLibs/</directory>
+                                    <directory>${basedir}/../../nativeLibrary/</directory>
                                     <filtering>false</filtering>
                                     <includes>
                                         <include>*.dll</include>
@@ -161,9 +161,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.18.1</version>
                 <configuration>
                     <forkMode>once</forkMode>
-                    <argLine>-Djava.library.path=${project.basedir}/nativeLibs</argLine>
+                    <argLine>-Djava.library.path=${project.basedir}/nativeLibrary</argLine>
                 </configuration>
             </plugin>
 
