@@ -27,8 +27,8 @@ and any compatible target compiler (e.g. Visual Studio or GCC):
 Then, `C:\JOCLRoot\JOCL.build` will contain the build files, e.g. the
 GCC makefiles or the Visual Studio project files. Compiling the
 with these makefiles will place the binaries into a `nativeLibrary`
-subdirectory of the respective project, e.g. into 
-`C:\JCuda\jcublas\JCublasJNI\nativeLibrary`.
+subdirectory of the project, e.g. into 
+`C:\JOCLRoot\JOCL\nativeLibrary`.
 
 
 **Building the Java libraries**
@@ -40,11 +40,10 @@ and execute
 
     mvn clean install
 
-This will copy the native libraries into the target folder for the 
-JARs, compile the Java libraries, run the unit tests, assemble the 
-classes, sources and JavaDocs into JAR files, and finally place all 
-libraries, together with the native libraries, into the 
-`JOCL/target` directory.
+This will compile the Java libraries, run the unit tests, assemble the 
+classes (together with the native library), sources and JavaDocs into 
+JAR files, and finally place all libraries into the  
+`C:\JOCLRoot\JOCL\target` directory.
 
 
    
