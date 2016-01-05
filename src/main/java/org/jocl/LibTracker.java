@@ -29,6 +29,7 @@ package org.jocl;
 import java.io.File;
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Utility class for tracking a set of loaded libraries and
@@ -48,6 +49,12 @@ import java.util.*;
  */
 class LibTracker
 {
+    /**
+     * The logger used in this class
+     */
+    private final static Logger logger = 
+        Logger.getLogger(LibTracker.class.getName());
+    
     /**
      * The tracked library files that will be unloaded
      * and deleted when the application exits
@@ -75,7 +82,7 @@ class LibTracker
         }
         if (shutdownHook == null)
         {
-            log("Initializing library shutdown hook");
+            logger.fine("Initializing library shutdown hook");
             shutdownHook = new Thread()
             {
                 @Override
@@ -93,7 +100,7 @@ class LibTracker
                 // Ignored
             }
         }
-        log("Tracking library file "+libraryFile);
+        logger.fine("Tracking library file "+libraryFile);
         libraryFiles.add(libraryFile);
     }
 
@@ -164,7 +171,7 @@ class LibTracker
                 try
                 {
                     boolean deleted = libraryFile.delete();
-                    log("Deleting " + libraryFile + " " + 
+                    logger.fine("Deleting " + libraryFile + " " + 
                         (deleted ? "DONE" : "FAILED"));
                 }
                 catch (SecurityException e)
@@ -295,16 +302,6 @@ class LibTracker
                 }
             }
         }
-    }
-    
-    /**
-     * Logging method 
-     * 
-     * @param message The log message
-     */
-    private static void log(Object message)
-    {
-        //System.out.println(message);
     }
     
     /**

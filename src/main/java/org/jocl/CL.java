@@ -44,7 +44,9 @@ public final class CL
     // Initialization of the native library
     static
     {
-        String libraryName = "JOCL_0_2_0";
+        String libraryBaseName = "JOCL_0_2_0";
+        String libraryName = 
+            LibUtils.createPlatformLibraryName(libraryBaseName);
         try
         {
             LibUtils.loadLibrary(libraryName);

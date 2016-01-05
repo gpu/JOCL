@@ -27,8 +27,17 @@
 
 package org.jocl;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility class for detecting the operating system and architecture
@@ -45,10 +54,28 @@ public final class LibUtils
     // and extended with http://lopica.sourceforge.net/os.html 
     
     /**
+     * The logger used in this class
+     */
+    private final static Logger logger = 
+        Logger.getLogger(LibUtils.class.getName());
+    
+    /**
+     * The default log level
+     */
+    private static final Level level = Level.FINE;
+
+    /**
+     * The directory where libraries are expected in JAR files,
+     * when they are loaded as resources
+     */
+    private static final String LIBRARY_PATH_IN_JAR = "/lib/";
+    
+    
+    /**
      * Enumeration of common operating systems, independent of version 
      * or architecture. 
      */
-    public static enum OSType
+    static enum OSType
     {
         APPLE, LINUX, SUN, WINDOWS, UNKNOWN
     }
@@ -56,7 +83,7 @@ public final class LibUtils
     /**
      * Enumeration of common CPU architectures.
      */
-    public static enum ARCHType
+    static enum ARCHType
     {
         PPC, PPC_64, SPARC, X86, X86_64, ARM, MIPS, RISC, UNKNOWN
     }
@@ -70,16 +97,17 @@ public final class LibUtils
      * resource (for usage within a JAR).
      *    
      * @param baseName The base name of the library
+     * @param dependentLibraryNames The names of libraries that the library
+     * to load depends on. If the library is loaded as a resource, then 
+     * it will be attempted to also load these libraries as resources. 
      * @throws UnsatisfiedLinkError if the native library 
      * could not be loaded.
      */
-    public static void loadLibrary(String baseName)
+    public static void loadLibrary(
+        String libraryName, String ... dependentLibraryNames)
     {
-        String libName = createLibName(baseName);
-        
-        log("Loading library");
-        log("    Base name   : "+baseName);
-        log("    Library name: "+libName);
+        logger.log(level, "Loading library");
+        logger.log(level, "    Library name: "+libraryName);
         
 
         // First, try to load the specified library as a file 
@@ -87,14 +115,14 @@ public final class LibUtils
         Throwable throwableFromFile = null;
         try
         {
-            log("Loading library as a file");
-            System.loadLibrary(libName);
-            log("Loading library as a file DONE");
+            logger.log(level, "Loading library as a file");
+            System.loadLibrary(libraryName);
+            logger.log(level, "Loading library as a file DONE");
             return;
         }
         catch (Throwable t) 
         {
-            log("Loading library as a file FAILED");
+            logger.log(level, "Loading library as a file FAILED");
             throwableFromFile = t;
         }
 
@@ -102,20 +130,20 @@ public final class LibUtils
         // corresponding resource from the JAR file
         try
         {
-            log("Loading library as a resource");
-            loadLibraryResource(libName);
-            log("Loading library as a resource DONE");
+            logger.log(level, "Loading library as a resource");
+            loadLibraryResource(libraryName, dependentLibraryNames);
+            logger.log(level, "Loading library as a resource DONE");
             return;
         }
         catch (Throwable throwableFromResource)
         {
-            log("Loading library as a resource FAILED");
+            logger.log(level, "Loading library as a resource FAILED");
 
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
 
             pw.println("Error while loading native library \"" +
-                libName + "\" with base name \""+baseName+"\"");
+                libraryName + "\"");
             pw.println("Operating system name: "+
                 System.getProperty("os.name"));
             pw.println("Architecture         : "+
@@ -145,59 +173,136 @@ public final class LibUtils
 
     /**
      * Load the library with the given name from a resource. 
-     * The extension for the current OS will be appended.
      * 
-     * @param libName The library name, e.g. "JOCL-windows-x86"
+     * @param libraryName The library name, e.g. "EXAMPLE-windows-x86"
+     * @param dependentLibraryNames The names of libraries that the library
+     * to load depends on, and that may have to be loaded as resources and
+     * stored as temporary files as well 
      * @throws Throwable If the library could not be loaded
      */
-    private static void loadLibraryResource(String libName) throws Throwable
+    private static void loadLibraryResource(
+        String libraryName, String ... dependentLibraryNames) throws Throwable
     {
-        // Build the full name of the library 
-        String libraryFileName = createLibraryFileName(libName);
-
-        // If a temporary file with the resulting name
-        // already exists, it can simply be loaded
-        String tempDirName = System.getProperty("java.io.tmpdir");
-        String tempFileName = 
-            tempDirName + File.separator + libraryFileName;
-        
         boolean useUniqueNativeLibraries = useUniqueNativeLibraries();
+        boolean trackCreatedTempFiles = useUniqueNativeLibraries; 
+
+        // First try to load all dependent libraries
+        for (String dependentLibraryName : dependentLibraryNames)
+        {
+            // Determine the temporary file for the dependent library
+            String dependentLibraryFileName = 
+                createLibraryFileName(dependentLibraryName);
+            File dependentLibraryTempFile = 
+                createTempFile(dependentLibraryFileName);
+            
+            // If the temporary file for the dependent library does 
+            // not exist, create it
+            if (!dependentLibraryTempFile.exists())
+            {
+                String dependentLibraryResourceName = 
+                    LIBRARY_PATH_IN_JAR + dependentLibraryFileName;
+                logger.log(level, 
+                    "Creating temp file for dependent library resource: "+
+                    dependentLibraryTempFile);
+                writeResourceToFile(
+                    dependentLibraryResourceName, 
+                    dependentLibraryTempFile);
+                if (trackCreatedTempFiles)
+                {
+                    LibTracker.track(dependentLibraryTempFile);
+                }
+            }
+            logger.log(level, 
+                "Loading dependent library "+
+                dependentLibraryTempFile.toString());
+            System.load(dependentLibraryTempFile.toString());
+            logger.log(level, 
+                "Loading dependent library "+
+                dependentLibraryTempFile.toString()+" DONE");
+        }
+        
+        // Now, load the actual library
+        String libraryFileName = createLibraryFileName(libraryName);
+        File libraryTempFile = null;
         if (useUniqueNativeLibraries)
         {
-            tempFileName = 
-                tempDirName + File.separator + 
-                createLibraryFileName(libName + "-" + UUID.randomUUID());
+            String uniqueLibraryFileName = 
+                createLibraryFileName(libraryName + "-" + UUID.randomUUID());
+            libraryTempFile = createTempFile(uniqueLibraryFileName);
         }
-        File tempFile = new File(tempFileName);
-        
-        log("Temp file for resource: "+tempFile);
-        
-        if (tempFile.exists())
+        else
         {
-            log("Loading from existing file: "+tempFile);
-            System.load(tempFile.toString());
-            return;
+            libraryTempFile = createTempFile(libraryFileName);
         }
+        
+        // If the temporary file for the library does not exist, create it
+        if (!libraryTempFile.exists())
+        {
+            String libraryResourceName = 
+                LIBRARY_PATH_IN_JAR + libraryFileName;
+            logger.log(level, 
+                "Creating temp file for library resource: "+
+                libraryTempFile);
+            writeResourceToFile(libraryResourceName, libraryTempFile);
+            if (useUniqueNativeLibraries)
+            {
+                LibTracker.track(libraryTempFile);
+            }
+        }
+        System.load(libraryTempFile.toString());
+    }
 
-        // No file with the resulting name exists yet. Try to write
-        // the library data from the JAR into the temporary file, 
-        // and load the newly created file.
-        String resourceName = "/lib/" + libraryFileName;
+    
+    /**
+     * Create a file object representing the file with the given name
+     * in the default "temp" directory
+     * 
+     * @param name The file name
+     * @return The file
+     */
+    private static File createTempFile(String name)
+    {
+        String tempDirName = System.getProperty("java.io.tmpdir");
+        String tempFileName = tempDirName + File.separator + name;
+        File tempFile = new File(tempFileName);
+        return tempFile;
+    }
+    
+    
+    /**
+     * Obtain an input stream to the resource with the given name, and write 
+     * it to the specified file (which may not be <code>null</code>, and 
+     * may not exist yet)
+     * 
+     * @param resourceName The name of the resource
+     * @param file The file to write to
+     * @throws NullPointerException If the given file is <code>null</code>
+     * @throws IllegalArgumentException If the given file already exists
+     * @throws IOException If an IO error occurs
+     */
+    private static void writeResourceToFile(
+        String resourceName, File file) throws IOException
+    {
+        if (file == null)
+        {
+            throw new NullPointerException("The file may not be null");
+        }
+        if (file.exists())
+        {
+            throw new IllegalArgumentException("File already exists: "+file);
+        }
         InputStream inputStream = 
             LibUtils.class.getResourceAsStream(resourceName);
         if (inputStream == null)
         {
-            throw new NullPointerException(
+            throw new IOException(
                 "No resource found with name '"+resourceName+"'");
         }
-        
-        log("Creating temp file for resource: "+tempFile);
-        
         OutputStream outputStream = null;
         try
         {
-            outputStream = new FileOutputStream(tempFile);
-            byte[] buffer = new byte[8192];
+            outputStream = new FileOutputStream(file);
+            byte[] buffer = new byte[32768];
             while (true)
             {
                 int read = inputStream.read(buffer);
@@ -208,27 +313,31 @@ public final class LibUtils
                 outputStream.write(buffer, 0, read);    
             }
             outputStream.flush();
-            outputStream.close();
-            outputStream = null;
-
-            if (useUniqueNativeLibraries)
-            {
-                LibTracker.track(tempFile);
-            }
-
-            log("Loading from created file: "+tempFile);
-            System.load(tempFile.toString());
-            
         }
         finally 
         {
             if (outputStream != null)
             {
-                outputStream.close();
+                try
+                {
+                    outputStream.close();
+                }
+                catch (IOException e)
+                {
+                    logger.warning(e.getMessage());
+                }
             }
-            inputStream.close();
+            try
+            {
+                inputStream.close();
+            }
+            catch (IOException e)
+            {
+                logger.warning(e.getMessage());
+            }
         }
     }
+    
 
     /**
      * Returns whether the "uniqueLibaryNames" property was set,
@@ -250,18 +359,18 @@ public final class LibUtils
     /**
      * Create the full library file name, including the extension
      * and prefix, for the given library name. For example, the
-     * name 'JOCL' will become <br>
-     * JOCL.dll on Windows <br>
-     * libJOCL.so on Linux <br>
-     * JOCL.dylib on MacOS <br>
+     * name "EXAMPLE" will become <br>
+     * EXAMPLE.dll on Windows <br>
+     * libEXAMPLE.so on Linux <br>
+     * EXAMPLE.dylib on MacOS <br>
      * 
      * @param libraryName The library name
      * @return The full library name, with extension
      */
-    static String createLibraryFileName(String libraryName)
+    public static String createLibraryFileName(String libraryName)
     {
-        String libPrefix = createLibPrefix();
-        String libExtension = createLibExtension();
+        String libPrefix = createLibraryPrefix();
+        String libExtension = createLibraryExtension();
         String fullName = libPrefix + libraryName + "." + libExtension;
         return fullName;
     }
@@ -274,7 +383,7 @@ public final class LibUtils
      * 
      * @return The library extension
      */
-    private static String createLibExtension()
+    private static String createLibraryExtension()
     {
         OSType osType = calculateOS();
         switch (osType) 
@@ -300,7 +409,7 @@ public final class LibUtils
      * 
      * @return The library prefix
      */
-    private static String createLibPrefix()
+    private static String createLibraryPrefix()
     {
         OSType osType = calculateOS();
         switch (osType) 
@@ -319,18 +428,25 @@ public final class LibUtils
 
 
     /**
-     * Creates the name for the native library with the given base
-     * name for the current operating system and architecture.
+     * Creates the name for the native library with the given base name for 
+     * the current platform, by appending strings that indicate the current 
+     * operating system and architecture.<br>
+     * <br>
      * The resulting name will be of the form<br>
-     * baseName-OSType-ARCHType<br>
+     * <code>baseName-OSType-ARCHType</code><br>
      * where OSType and ARCHType are the <strong>lower case</strong> Strings
-     * of the respective enum constants. Example: <br>
-     * JOCL-windows-x86<br> 
+     * of the respective {@link OSType} and {@link ARCHType} enum constants.<br>
+     * <br> 
+     * For example, the library name with the base name "EXAMPLE" may be<br>
+     * <code>EXAMPLE-windows-x86</code><br>
+     * <br>
+     * Note that the resulting name will not include any platform specific
+     * prefixes or extensions for the actual name.  
      * 
      * @param baseName The base name of the library
      * @return The library name
      */
-    public static String createLibName(String baseName)
+    public static String createPlatformLibraryName(String baseName)
     {
         OSType osType = calculateOS();
         ARCHType archType = calculateArch();
@@ -345,7 +461,7 @@ public final class LibUtils
      * 
      * @return The current OSType
      */
-    public static OSType calculateOS()
+    static OSType calculateOS()
     {
         String osName = System.getProperty("os.name");
         osName = osName.toLowerCase(Locale.ENGLISH);
@@ -374,7 +490,7 @@ public final class LibUtils
      * 
      * @return The current ARCHType
      */
-    public static ARCHType calculateArch()
+    private static ARCHType calculateArch()
     {
         String osArch = System.getProperty("os.arch");
         osArch = osArch.toLowerCase(Locale.ENGLISH);
@@ -416,20 +532,10 @@ public final class LibUtils
     }
     
     /**
-     * Logging method 
-     * 
-     * @param message The log message
-     */
-    private static void log(Object message)
-    {
-        //System.out.println(message);
-    }
-    
-
-    /**
      * Private constructor to prevent instantiation.
      */
     private LibUtils()
     {
+        // Private constructor to prevent instantiation.
     }
 }
