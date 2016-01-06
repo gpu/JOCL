@@ -44,7 +44,8 @@ public final class CL
     // Initialization of the native library
     static
     {
-        String libraryBaseName = "JOCL_0_2_0";
+        String versionString = "0_2_0";
+        String libraryBaseName = "JOCL_" + versionString;
         String libraryName = 
             LibUtils.createPlatformLibraryName(libraryBaseName);
         try

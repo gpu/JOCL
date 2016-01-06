@@ -26,9 +26,9 @@ and any compatible target compiler (e.g. Visual Studio or GCC):
 
 Then, `C:\JOCLRoot\JOCL.build` will contain the build files, e.g. the
 GCC makefiles or the Visual Studio project files. Compiling the
-with these makefiles will place the binaries into a `nativeLibrary`
+with these makefiles will place the binaries into a `nativeLibraries`
 subdirectory of the project, e.g. into 
-`C:\JOCLRoot\JOCL\nativeLibrary`.
+`C:\JOCLRoot\JOCL\nativeLibraries`.
 
 
 **Building the Java libraries**
