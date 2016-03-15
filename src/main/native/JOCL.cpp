@@ -49,45 +49,6 @@ static jmethodID EventCallback_function; // (Lorg/jocl/cl_event;ILjava/lang/Obje
 static jmethodID PrintfCallbackFunction_function; // (Lorg/jocl/cl_program;Ljava/lang/Object;)V
 static jmethodID SVMFreeFunction_function; // (Lorg/jocl/cl_command_queue;I[Lorg/jocl/Pointer;Ljava/lang/Object;)V
 
-// Static class and method ID for cl_platform_id and its constructor
-static jclass cl_platform_id_Class;
-static jmethodID cl_platform_id_Constructor;
-
-// Static class and method ID for cl_device_id and its constructor
-static jclass cl_device_id_Class;
-static jmethodID cl_device_id_Constructor;
-
-// Static class and method ID for cl_context and its constructor
-static jclass cl_context_Class;
-static jmethodID cl_context_Constructor;
-
-// Static class and method ID for cl_command_queue and its constructor
-static jclass cl_command_queue_Class;
-static jmethodID cl_command_queue_Constructor;
-
-// Static class and method ID for cl_mem and its constructor
-static jclass cl_mem_Class;
-static jmethodID cl_mem_Constructor;
-
-// Static class and method ID for cl_image_format and its constructor
-static jclass cl_image_format_Class;
-static jmethodID cl_image_format_Constructor;
-
-// Static class and method ID for cl_sampler and its constructor
-static jclass cl_sampler_Class;
-static jmethodID cl_sampler_Constructor;
-
-// Static class and method ID for cl_program and its constructor
-static jclass cl_program_Class;
-static jmethodID cl_program_Constructor;
-
-// Static class and method ID for cl_kernel and its constructor
-static jclass cl_kernel_Class;
-static jmethodID cl_kernel_Constructor;
-
-// Static class and method ID for cl_event and its constructor
-static jclass cl_event_Class;
-static jmethodID cl_event_Constructor;
 
 
 /**
@@ -149,19 +110,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
     // Obtain the methodID for org.jocl.SVMFreeFunction#function
     if (!init(env, cls, "org/jocl/SVMFreeFunction")) return JNI_ERR;
     if (!init(env, cls, SVMFreeFunction_function, "function", "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/Pointer;Ljava/lang/Object;)V")) return JNI_ERR;
-
-    // Obtain the global class references and the constructor methodIDs
-    // for classes which will have to be instantiated
-    if (!init(env, "org/jocl/cl_platform_id",    cl_platform_id_Class,   cl_platform_id_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_device_id",      cl_device_id_Class,     cl_device_id_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_context",        cl_context_Class,       cl_context_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_command_queue",  cl_command_queue_Class, cl_command_queue_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_mem",            cl_mem_Class,           cl_mem_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_image_format",   cl_image_format_Class,  cl_image_format_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_sampler",        cl_sampler_Class,       cl_sampler_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_program",        cl_program_Class,       cl_program_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_kernel",         cl_kernel_Class,        cl_kernel_Constructor)) return JNI_ERR;
-    if (!init(env, "org/jocl/cl_event",          cl_event_Class,         cl_event_Constructor)) return JNI_ERR;
 
     return JNI_VERSION_1_4;
 }
