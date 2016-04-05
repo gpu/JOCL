@@ -8,7 +8,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
    ${CMAKE_CURRENT_SOURCE_DIR}/../JOCLCommon/CMake_c_flag_overrides.cmake)
 set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
    ${CMAKE_CURRENT_SOURCE_DIR}/../JOCLCommon/CMake_cxx_flag_overrides.cmake)
-   
+
 project(JOCL)
 
 
@@ -19,9 +19,15 @@ find_package(JNI REQUIRED)
 add_subdirectory(../JOCLCommon
   ${CMAKE_CURRENT_BINARY_DIR}/JOCLCommon)
 
+#############################################################################
+# Add OpenGL Library and Header paths
+
+find_package(OpenGL REQUIRED)
+link_directories(${OpenGL_LIBRARY_DIRS})
+include_directories(${OpenGL_INCLUDE_DIR})
 
 #############################################################################
-# Set the variables that are later used to build the name of the native 
+# Set the variables that are later used to build the name of the native
 # library, e.g. "JOCL-0_2_0-windows-x86_64.dll"
 
 set(JOCL_VERSION "0_2_0")
@@ -50,6 +56,7 @@ if(MSVC)
 endif()
 set(BUILD_SHARED_LIBS ON)
 
+
 #############################################################################
 # Output directories
 
@@ -59,7 +66,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${PROJECT_SOURCE_DIR}/nativeLibraries
 
 
 #############################################################################
-# Define the include directories and source files 
+# Define the include directories and source files
 
 include_directories(
   src/main/native
@@ -68,15 +75,19 @@ include_directories(
   ${JOCLCommon_SOURCE_DIR}/src/main/native
   ${JNI_INCLUDE_DIRS}
 )
-  
+
 add_library(JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH}
-  src/main/native/JOCL.cpp 
-  src/main/native/CLFunctions.cpp 
-  src/main/native/FunctionPointerUtils.cpp 
-  src/main/native/FunctionPointerUtils_Linux.cpp 
-  src/main/native/FunctionPointerUtils_Win.cpp 
+  src/main/native/JOCL.cpp
+  src/main/native/CLFunctions.cpp
+  src/main/native/FunctionPointerUtils.cpp
+  src/main/native/FunctionPointerUtils_Linux.cpp
+  src/main/native/FunctionPointerUtils_Win.cpp
 )
 
 target_link_libraries(
-  JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH} 
+  JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH}
   JOCLCommon)
+
+#############################################################################
+# Enable C++11 features
+set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH} PROPERTY CXX_STANDARD 11)
