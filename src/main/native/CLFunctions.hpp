@@ -652,7 +652,7 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
 
 typedef CL_API_ENTRY cl_int (CL_API_CALL
 *clEnqueueNativeKernelFunctionPointerType)(cl_command_queue  /* command_queue */,
-                      void (CL_CALLBACK * /*user_func*/)(void *),
+					  void (CL_CALLBACK * /*user_func*/)(void *),
                       void *            /* args */,
                       size_t            /* cb_args */,
                       cl_uint           /* num_mem_objects */,
@@ -796,26 +796,26 @@ typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED void * (CL_API_CALL
 *clGetExtensionFunctionAddressFunctionPointerType)(const char * /* func_name */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
 /* Deprecated OpenCL 2.0 APIs */
-typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_2_0_DEPRECATED cl_command_queue (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_2_DEPRECATED cl_command_queue (CL_API_CALL
 *clCreateCommandQueueFunctionPointerType)(cl_context                     /* context */,
                      cl_device_id                   /* device */,
                      cl_command_queue_properties    /* properties */,
-                     cl_int *                       /* errcode_ret */) CL_EXT_SUFFIX__VERSION_2_0_DEPRECATED;
+                     cl_int *                       /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_2_DEPRECATED;
 
 
-typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_2_0_DEPRECATED cl_sampler (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_2_DEPRECATED cl_sampler (CL_API_CALL
 *clCreateSamplerFunctionPointerType)(cl_context          /* context */,
                 cl_bool             /* normalized_coords */,
                 cl_addressing_mode  /* addressing_mode */,
                 cl_filter_mode      /* filter_mode */,
-                cl_int *            /* errcode_ret */) CL_EXT_SUFFIX__VERSION_2_0_DEPRECATED;
+                cl_int *            /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_2_DEPRECATED;
 
-typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_2_0_DEPRECATED cl_int (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_2_DEPRECATED cl_int (CL_API_CALL
 *clEnqueueTaskFunctionPointerType)(cl_command_queue  /* command_queue */,
               cl_kernel         /* kernel */,
               cl_uint           /* num_events_in_wait_list */,
               const cl_event *  /* event_wait_list */,
-              cl_event *        /* event */) CL_EXT_SUFFIX__VERSION_2_0_DEPRECATED;
+              cl_event *        /* event */) CL_EXT_SUFFIX__VERSION_1_2_DEPRECATED;
 
 
 
@@ -874,8 +874,8 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL
                           cl_event *            /* event */) CL_API_SUFFIX__VERSION_1_0;
 
 
-//#warning CL_USE_DEPRECATED_OPENCL_1_1_APIS is defined. These APIs are unsupported and untested in OpenCL 1.2!
-typedef CL_API_ENTRY cl_mem (CL_API_CALL
+/* Deprecated OpenCL 1.1 APIs */
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem (CL_API_CALL
 *clCreateFromGLTexture2DFunctionPointerType)(cl_context      /* context */,
                         cl_mem_flags    /* flags */,
                         cl_GLenum       /* target */,
@@ -883,7 +883,7 @@ typedef CL_API_ENTRY cl_mem (CL_API_CALL
                         cl_GLuint       /* texture */,
                         cl_int *        /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
-typedef CL_API_ENTRY cl_mem (CL_API_CALL
+typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem (CL_API_CALL
 *clCreateFromGLTexture3DFunctionPointerType)(cl_context      /* context */,
                         cl_mem_flags    /* flags */,
                         cl_GLenum       /* target */,
