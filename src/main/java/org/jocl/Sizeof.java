@@ -352,24 +352,7 @@ public final class Sizeof
      * 
      * @return The size of a pointer, in bytes
      */
-    private static int computePointerSize()
-    {
-        String bits = System.getProperty("sun.arch.data.model");
-        if (bits.equals("32"))
-        {
-            return 4;
-        }
-        else if (bits.equals("64"))
-        {
-            return 8;
-        }
-        else
-        {
-            System.err.println(
-                "Unknown value for sun.arch.data.model - assuming 32 bits");
-            return 4;
-        }
-    }
+    public static native int computePointerSize();
 
 	/**
 	 * Private constructor to prevent instantiation

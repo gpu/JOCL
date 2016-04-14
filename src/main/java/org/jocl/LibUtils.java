@@ -76,7 +76,7 @@ public final class LibUtils
      */
     static enum OSType
     {
-        APPLE, LINUX, SUN, WINDOWS, UNKNOWN
+        ANDROID, APPLE, LINUX, SUN, WINDOWS, UNKNOWN
     }
 
     /**
@@ -440,8 +440,8 @@ public final class LibUtils
         {
             case APPLE:
                 return "dylib";
+            case ANDROID:
             case LINUX:
-                return "so";
             case SUN:
                 return "so";
             case WINDOWS:
@@ -464,6 +464,7 @@ public final class LibUtils
         OSType osType = calculateOS();
         switch (osType) 
         {
+            case ANDROID:
             case APPLE:
             case LINUX:
             case SUN:
@@ -535,6 +536,11 @@ public final class LibUtils
      */
     static OSType calculateOS()
     {
+        String vendor = System.getProperty("java.vendor");
+        if (vendor.equals("The Android Project"))
+        {
+            return OSType.ANDROID;
+        }
         String osName = System.getProperty("os.name");
         osName = osName.toLowerCase(Locale.ENGLISH);
         if (osName.startsWith("mac os"))
@@ -576,6 +582,14 @@ public final class LibUtils
         {
             return ArchType.X86_64;
         }
+        if (osArch.startsWith("arm64"))
+        {
+            return ArchType.ARM64;
+        }
+        if (osArch.startsWith("arm"))
+        {
+            return ArchType.ARM;
+        }
         if (osArch.equals("ppc") || osArch.equals("powerpc"))
         {
             return ArchType.PPC;
@@ -588,9 +602,9 @@ public final class LibUtils
         {
             return ArchType.SPARC;
         }
-        if (osArch.startsWith("arm"))
+        if (osArch.startsWith("mips64"))
         {
-            return ArchType.ARM;
+            return ArchType.MIPS64;
         }
         if (osArch.startsWith("mips"))
         {
