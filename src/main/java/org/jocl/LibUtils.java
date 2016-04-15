@@ -84,7 +84,7 @@ public final class LibUtils
      */
     static enum ArchType
     {
-        PPC, PPC_64, SPARC, X86, X86_64, ARM, MIPS, RISC, UNKNOWN
+        PPC, PPC_64, SPARC, X86, X86_64, ARM, ARM64, MIPS, MIPS64, RISC, UNKNOWN
     }
 
     /**
