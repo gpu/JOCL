@@ -11,20 +11,18 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
 
 project(JOCL)
 
-
 #############################################################################
-# Add the dependencies to JNI and the JOCLCommon project
+# Add the JNI and OpenGL dependencies
+if(NOT ANDROID)
+  find_package(JNI REQUIRED)
+  find_package(OpenGL REQUIRED)
+  link_directories(${OpenGL_LIBRARY_DIRS})
+  include_directories(${OpenGL_INCLUDE_DIR})
+endif()
 
-find_package(JNI REQUIRED)
+# Add the JOCLCommon project as a dependency
 add_subdirectory(../JOCLCommon
   ${CMAKE_CURRENT_BINARY_DIR}/JOCLCommon)
-
-#############################################################################
-# Add OpenGL Library and Header paths
-
-find_package(OpenGL REQUIRED)
-link_directories(${OpenGL_LIBRARY_DIRS})
-include_directories(${OpenGL_INCLUDE_DIR})
 
 #############################################################################
 # Set the variables that are later used to build the name of the native
@@ -32,19 +30,38 @@ include_directories(${OpenGL_INCLUDE_DIR})
 
 set(JOCL_VERSION "0_2_0")
 
-if(CMAKE_HOST_WIN32)
-  set(JOCL_HOST "windows")
+if(ANDROID)
+  set(JOCL_TARGET_OS "android")
+elseif(CMAKE_HOST_WIN32)
+  set(JOCL_TARGET_OS "windows")
 elseif(CMAKE_HOST_APPLE)
-  set(JOCL_HOST "apple")
+  set(JOCL_TARGET_OS "apple")
   set(CMAKE_SKIP_RPATH FALSE)
 elseif(CMAKE_HOST_UNIX)
-  set(JOCL_HOST "linux")
+  set(JOCL_TARGET_OS "linux")
 endif()
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(JOCL_ARCH "x86_64")
+if(ANDROID)
+  # Possible ANDROID_ABI values:
+  # {
+  #   armeabi, armeabi-v7a,
+  #   armeabi-v7a with NEON, armeabi-v7a with VFPV3, armeabi-v6 with VFP,
+  #   arm64-v8a,
+  #   x86, x86_64,
+  #   mips, mips64
+  # }
+  # TODO: Support more than just "arm" in LibUtils
+  if("${ANDROID_ABI}" MATCHES "^armeabi.*")
+    set(JOCL_TARGET_ARCH "arm")
+  elseif("${ANDROID_ABI}" MATCHES "^arm64.*")
+    set(JOCL_TARGET_ARCH "arm64")
+  else()
+    set(JOCL_TARGET_ARCH ANDROID_ABI)
+  endif()
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(JOCL_TARGET_ARCH "x86_64")
 else()
-  set(JOCL_ARCH "x86")
+  set(JOCL_TARGET_ARCH "x86")
 endif()
 
 
@@ -52,17 +69,24 @@ endif()
 # Compiler settings
 
 if(MSVC)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall /wd4514 /wd4820 /wd4710 /wd4711 /wd4350 /wd4668")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall /wd4514 /wd4820 /wd4710 /wd4711 /wd4350 /wd4668")
 endif()
+
 set(BUILD_SHARED_LIBS ON)
 
 
 #############################################################################
 # Output directories
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${PROJECT_SOURCE_DIR}/nativeLibraries/Debug)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/nativeLibraries)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${PROJECT_SOURCE_DIR}/nativeLibraries)
+if(ANDROID)
+  set(JOCL_OUTPUT_DIR nativeLibraries/${ANDROID_ABI})
+else()
+  set(JOCL_OUTPUT_DIR nativeLibraries)
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${PROJECT_SOURCE_DIR}/${JOCL_OUTPUT_DIR}/Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/${JOCL_OUTPUT_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY         ${PROJECT_SOURCE_DIR}/${JOCL_OUTPUT_DIR})
 
 
 #############################################################################
@@ -76,18 +100,19 @@ include_directories(
   ${JNI_INCLUDE_DIRS}
 )
 
-add_library(JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH}
+add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
   src/main/native/JOCL.cpp
   src/main/native/CLFunctions.cpp
   src/main/native/FunctionPointerUtils.cpp
   src/main/native/FunctionPointerUtils_Linux.cpp
   src/main/native/FunctionPointerUtils_Win.cpp
+  src/main/native/Sizeof.cpp
 )
 
 target_link_libraries(
-  JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH}
+  JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
   JOCLCommon)
 
 #############################################################################
 # Enable C++11 features
-set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_HOST}-${JOCL_ARCH} PROPERTY CXX_STANDARD 11)
+set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH} PROPERTY CXX_STANDARD 11)

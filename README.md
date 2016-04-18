@@ -46,4 +46,32 @@ JAR files, and finally place all libraries into the
 `C:\JOCLRoot\JOCL\target` directory.
 
 
-   
+**Building for Android**
+
+Compiling native code for Android is a bit of a pain, so we use [android-cmake](https://github.com/taka-no-me/android-cmake)
+to make our lives a bit easier. We first begin by installing the android-cmake
+toolchain file into our cmake modules path. On Linux, this is likely
+`/usr/share/cmake-3.2/Modules/`.
+
+    cd /usr/share/cmake-3.2/Modules
+    sudo wget https://github.com/taka-no-me/android-cmake/raw/master/android.toolchain.cmake
+
+Next, we want to configure the build for our particular Android target.
+
+    cd JOCL
+    mkdir build
+    cd build
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain \
+          -DANDROID_ABI=armeabi-v7a \
+          -DANDROID_NATIVE_API_LEVEL=21 \
+          -DCMAKE_BUILD_TYPE=Release \
+          ..
+
+This should be enough to get you started. For more advanced configuration,
+refer to the [android-cmake](https://github.com/taka-no-me/android-cmake)
+documentation.
+
+Finally, when building the final .jar file, we would like to avoid running the
+local tests, as the Android native libraries won't run on your local machine.
+
+    mvn clean install -DskipTests

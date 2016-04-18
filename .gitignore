@@ -1,6 +1,9 @@
-target
+target/
 JOCL.ncb
 JOCL.sln
 JOCL.suo
 JOCL.vcproj.*
-/nativeLibrary
+nativeLibraries/
+JOCL.build/
+build/
+.*.sw[po]
