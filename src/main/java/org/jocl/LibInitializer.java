@@ -26,6 +26,9 @@
  */
 package org.jocl;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.jocl.LibUtils.OSType;
 
 /**
@@ -33,6 +36,17 @@ import org.jocl.LibUtils.OSType;
  */
 class LibInitializer
 {
+    /**
+     * The logger used in this class
+     */
+    private final static Logger logger = 
+        Logger.getLogger(LibTracker.class.getName());
+    
+    /**
+     * The default log level
+     */
+    private static final Level level = Level.FINE;
+    
     /**
      * Initialize the native library by passing the name of the OpenCL
      * implementation to the {@link CL#initNativeLibrary(String)}
@@ -43,14 +57,18 @@ class LibInitializer
      */
     static void initNativeLibrary()
     {
-        String[] libCandidates = openCLLibraryCandidates();
+        String[] libCandidates = createImplementationNameCandidates();
 
         boolean initialized = false;
-        for (int i = 0; i < libCandidates.length && !initialized; i++) {
-          System.out.println("Trying library candidate: " + libCandidates[i]);
-          initialized = CL.initNativeLibrary(libCandidates[i]);
+        for (int i = 0; i < libCandidates.length && !initialized; i++) 
+        {
+            logger.log(level, "Trying library candidate: " + libCandidates[i]);
+            initialized = CL.initNativeLibrary(libCandidates[i]);
+            if (initialized)
+            {
+                break;
+            }
         }
-
         if (!initialized)
         {
             throw new UnsatisfiedLinkError(
@@ -66,9 +84,9 @@ class LibInitializer
      * For MacOS, it will be the path to the OpenCL framework. For Android,
      * this will be an absolute path to the shared library.
      *
-     * @return {String[]} A list of candidate paths / names.
+     * @return A list of candidate paths / names.
      */
-    private static String[] openCLLibraryCandidates()
+    private static String[] createImplementationNameCandidates()
     {
         String defaultLibName = LibUtils.createLibraryFileName("OpenCL");
         OSType osType = LibUtils.calculateOS();
@@ -78,7 +96,8 @@ class LibInitializer
                 "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL",
                 defaultLibName
             };
-        } else if (OSType.ANDROID.equals(osType))
+        } 
+        if (OSType.ANDROID.equals(osType))
         {
             return new String[]
             {

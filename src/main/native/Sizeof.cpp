@@ -26,13 +26,14 @@
  */
 
 #include <jni.h>
+#include "JOCLCommon.hpp"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-JNIEXPORT jint JNICALL Java_org_jocl_Sizeof_computePointerSize(
-    JNIEnv *env, jclass cls)
+JNIEXPORT jint JNICALL Java_org_jocl_Sizeof_computePointerSizeNative(
+    JNIEnv* UNUSED(env), jclass UNUSED(cls))
 {
   int ptr_size = sizeof((void*) 0);
   return (jint) ptr_size;

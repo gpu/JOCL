@@ -352,7 +352,11 @@ public final class Sizeof
      * 
      * @return The size of a pointer, in bytes
      */
-    public static native int computePointerSize();
+    private static int computePointerSize()
+    {
+        return computePointerSizeNative();
+    }
+    private static native int computePointerSizeNative();
 
 	/**
 	 * Private constructor to prevent instantiation
