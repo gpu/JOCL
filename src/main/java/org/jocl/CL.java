@@ -41,21 +41,30 @@ import java.util.concurrent.*;
  */
 public final class CL
 {
-    // Initialization of the native library
+    /**
+     * Whether the native library has been loaded
+     */
+    static boolean nativeLibraryLoaded = false;
+    
     static
     {
-        String versionString = "0_2_0";
-        String libraryBaseName = "JOCL_" + versionString;
-        String libraryName = 
-            LibUtils.createPlatformLibraryName(libraryBaseName);
-        try
+        loadNativeLibrary();
+    }
+    
+    /**
+     * Load the native library, if it was not loaded yet
+     */
+    static void loadNativeLibrary()
+    {
+        if (!nativeLibraryLoaded)
         {
+            String versionString = "0_2_0";
+            String libraryBaseName = "JOCL_" + versionString;
+            String libraryName = 
+                LibUtils.createPlatformLibraryName(libraryBaseName);
             LibUtils.loadLibrary(libraryName);
             LibInitializer.initNativeLibrary();
-        }
-        catch (UnsatisfiedLinkError e)
-        {
-            throw e;
+            nativeLibraryLoaded = true;
         }
     }
 
