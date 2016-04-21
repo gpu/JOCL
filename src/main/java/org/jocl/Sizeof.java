@@ -359,7 +359,29 @@ public final class Sizeof
      */
     private static int computePointerSize()
     {
-        return computePointerSizeNative();
+        // Android does not have the "sun.arch.data.model" system property, 
+        // so the pointer size is computed with a native method
+        if (LibUtils.calculateOS() == LibUtils.OSType.ANDROID) 
+        {
+            return computePointerSizeNative();
+        } 
+        
+        // Desktop systems may fail to load the native library for the
+        // initialization of the (constant) fields in this class, so
+        // the pointer size is determined without native methods here.
+        // See https://github.com/gpu/JOCL/issues/5
+        String bits = System.getProperty("sun.arch.data.model");
+        if ("32".equals(bits))
+        {
+            return 4;
+        }
+        if ("64".equals(bits))
+        {
+            return 8;
+        }
+        System.err.println(
+            "Unknown value for sun.arch.data.model - assuming 32 bits");
+        return 4;
     }
     private static native int computePointerSizeNative();
 
