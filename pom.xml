@@ -87,6 +87,16 @@
                                         <include>**/*.so</include>
                                     </includes>
                                 </resource>
+                                <resource>
+                                    <directory>${basedir}/../../nativeLibraries/</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>**/*.dll</include>
+                                        <include>**/*.jnilib</include>
+                                        <include>**/*.dylib</include>
+                                        <include>**/*.so</include>
+                                    </includes>
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>
