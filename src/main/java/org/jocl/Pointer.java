@@ -34,6 +34,62 @@ import java.nio.*;
  */
 public final class Pointer extends NativePointerObject
 {
+
+    /**
+     *
+     */
+    private static final String BUFFER_MAY_NOT_BE_NULL = "Buffer may not be null and must have an array or be direct";
+
+    /**
+     * Creates a new (null) Pointer
+     */
+    public Pointer()
+    {
+        super();
+    }
+
+    /**
+     * Creates a Pointer to the given Buffer
+     *
+     * @param buffer The buffer to point to
+     */
+    protected Pointer(Buffer buffer)
+    {
+        super(buffer);
+    }
+
+    /**
+     * Creates a Pointer to the given array of pointers
+     *
+     * @param pointers The array the pointer points to
+     */
+    private Pointer(NativePointerObject[] pointers)
+    {
+        super(pointers);
+    }
+
+    /**
+     * Copy constructor
+     *
+     * @param other The other Pointer
+     */
+    protected Pointer(Pointer other)
+    {
+        super(other);
+    }
+
+    /**
+     * Creates a copy of the given pointer, with an
+     * additional byte offset
+     *
+     * @param other The other pointer
+     * @param byteOffset The additional byte offset
+     */
+    protected Pointer(Pointer other, long byteOffset)
+    {
+        super(other, byteOffset);
+    }
+
     /**
      * Creates a new Pointer to the given values.
      * The values may not be null.
@@ -41,7 +97,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(byte values[])
+    public static Pointer to(byte[] values)
     {
         return new Pointer(ByteBuffer.wrap(values));
     }
@@ -53,7 +109,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(char values[])
+    public static Pointer to(char[] values)
     {
         return new Pointer(CharBuffer.wrap(values));
     }
@@ -65,7 +121,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(short values[])
+    public static Pointer to(short[] values)
     {
         return new Pointer(ShortBuffer.wrap(values));
     }
@@ -77,7 +133,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(int values[])
+    public static Pointer to(int[] values)
     {
         return new Pointer(IntBuffer.wrap(values));
     }
@@ -89,7 +145,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(float values[])
+    public static Pointer to(float[] values)
     {
         return new Pointer(FloatBuffer.wrap(values));
     }
@@ -101,7 +157,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(long values[])
+    public static Pointer to(long[] values)
     {
         return new Pointer(LongBuffer.wrap(values));
     }
@@ -113,7 +169,7 @@ public final class Pointer extends NativePointerObject
      * @param values The values the pointer should point to 
      * @return The pointer
      */
-    public static Pointer to(double values[])
+    public static Pointer to(double[] values)
     {
         return new Pointer(DoubleBuffer.wrap(values));
     }
@@ -154,7 +210,7 @@ public final class Pointer extends NativePointerObject
         if (buffer == null || (!buffer.isDirect() && !buffer.hasArray()))
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return new Pointer(buffer);
     }
@@ -212,7 +268,7 @@ public final class Pointer extends NativePointerObject
      */
     private static Pointer computePointer(ByteBuffer buffer)
     {
-        Pointer result = null;
+        Pointer result;
         if (buffer.isDirect())
         {
             int oldPosition = buffer.position();
@@ -231,7 +287,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return result;
     }
@@ -248,7 +304,7 @@ public final class Pointer extends NativePointerObject
      */
     private static Pointer computePointer(ShortBuffer buffer)
     {
-        Pointer result = null;
+        Pointer result;
         if (buffer.isDirect())
         {
             int oldPosition = buffer.position();
@@ -267,7 +323,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return result;
     }
@@ -284,7 +340,7 @@ public final class Pointer extends NativePointerObject
      */
     private static Pointer computePointer(IntBuffer buffer)
     {
-        Pointer result = null;
+        Pointer result;
         if (buffer.isDirect())
         {
             int oldPosition = buffer.position();
@@ -303,7 +359,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return result;
     }
@@ -320,7 +376,7 @@ public final class Pointer extends NativePointerObject
      */
     private static Pointer computePointer(LongBuffer buffer)
     {
-        Pointer result = null;
+        Pointer result;
         if (buffer.isDirect())
         {
             int oldPosition = buffer.position();
@@ -339,7 +395,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return result;
     }
@@ -356,7 +412,7 @@ public final class Pointer extends NativePointerObject
      */
     private static Pointer computePointer(FloatBuffer buffer)
     {
-        Pointer result = null;
+        Pointer result;
         if (buffer.isDirect())
         {
             int oldPosition = buffer.position();
@@ -375,7 +431,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return result;
     }
@@ -392,7 +448,7 @@ public final class Pointer extends NativePointerObject
      */
     private static Pointer computePointer(DoubleBuffer buffer)
     {
-        Pointer result = null;
+        Pointer result;
         if (buffer.isDirect())
         {
             int oldPosition = buffer.position();
@@ -411,7 +467,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                "Buffer may not be null and must have an array or be direct");
+                    BUFFER_MAY_NOT_BE_NULL);
         }
         return result;
     }
@@ -458,56 +514,6 @@ public final class Pointer extends NativePointerObject
         return new Pointer(pointers);
     }
     
-    
-    /**
-     * Creates a new (null) Pointer
-     */
-    public Pointer()
-    {
-        super();
-    }
-
-    /**
-     * Creates a Pointer to the given Buffer
-     * 
-     * @param buffer The buffer to point to
-     */
-    protected Pointer(Buffer buffer)
-    {
-        super(buffer);
-    }
-
-    /**
-     * Creates a Pointer to the given array of pointers
-     * 
-     * @param pointers The array the pointer points to
-     */
-    private Pointer(NativePointerObject pointers[])
-    {
-        super(pointers);
-    }
-    
-    /**
-     * Copy constructor
-     * 
-     * @param other The other Pointer
-     */
-    protected Pointer(Pointer other)
-    {
-        super(other);
-    }
-
-    /**
-     * Creates a copy of the given pointer, with an 
-     * additional byte offset
-     * 
-     * @param other The other pointer 
-     * @param byteOffset The additional byte offset
-     */
-    protected Pointer(Pointer other, long byteOffset)
-    {
-        super(other, byteOffset);
-    }
     
     /**
      * Returns whether this Pointer is a Pointer to a direct Buffer.
