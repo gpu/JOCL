@@ -34,11 +34,21 @@ import java.nio.*;
  */
 public final class Pointer extends NativePointerObject
 {
+    /**
+     * The error message that will be part of the IllegalArgumentException
+     * when a <code>null</code> buffer is passed to the {@link #to(Buffer)}
+     * or {@link #toBuffer(Buffer)} method
+     */
+    private static final String BUFFER_MAY_NOT_BE_NULL = 
+        "The buffer may not be null";
 
     /**
-     *
+     * The error message that will be part of the IllegalArgumentException
+     * when a buffer is passed to the {@link #toBuffer(Buffer)} method 
+     * neither has an array nor is direct 
      */
-    private static final String BUFFER_MAY_NOT_BE_NULL = "Buffer may not be null and must have an array or be direct";
+    private static final String BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT = 
+        "The buffer must have an array or be direct";
 
     /**
      * Creates a new (null) Pointer
@@ -180,8 +190,8 @@ public final class Pointer extends NativePointerObject
      * <b>NOTE:</b> This method does not take into account the position
      * and array offset of the given buffer. In order to create a 
      * pointer that takes the position and array offset into account, 
-     * use the {@link #toBuffer(Buffer)} method. <br />
-     * <br />
+     * use the {@link #toBuffer(Buffer)} method. <br>
+     * <br>
      * 
      * If the given buffer has a backing array, then the returned 
      * pointer will in any case point to the start of the array, 
@@ -192,11 +202,11 @@ public final class Pointer extends NativePointerObject
      * <code>slice</code> method, then this will be the actual start 
      * of the slice. Although this implies a different treatment of 
      * direct- and non direct buffers, the method is kept for 
-     * backward compatibility. <br /> 
-     * <br />
+     * backward compatibility. <br> 
+     * <br>
      * In both cases, for direct and array-based buffers, this method 
-     * does not take into account the position of the given buffer. <br />
-     * <br />   
+     * does not take into account the position of the given buffer. <br>
+     * <br>   
      * The buffer must not be null, and either be a direct buffer, or 
      * have a backing array
      * 
@@ -207,17 +217,21 @@ public final class Pointer extends NativePointerObject
      */
     public static Pointer to(Buffer buffer)
     {
-        if (buffer == null || (!buffer.isDirect() && !buffer.hasArray()))
+        if (buffer == null)
+        {
+            throw new IllegalArgumentException(BUFFER_MAY_NOT_BE_NULL);
+        }
+        if (!buffer.isDirect() && !buffer.hasArray())
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return new Pointer(buffer);
     }
 
     /**
-     * Creates a new Pointer to the given buffer.<br /> 
-     * <br />
+     * Creates a new Pointer to the given buffer.<br> 
+     * <br>
      * Note that this method takes into account the array offset and position 
      * of the given buffer, in contrast to the {@link #to(Buffer)} method.  
      * 
@@ -228,6 +242,10 @@ public final class Pointer extends NativePointerObject
      */
     public static Pointer toBuffer(Buffer buffer)
     {
+        if (buffer == null)
+        {
+            throw new IllegalArgumentException(BUFFER_MAY_NOT_BE_NULL);
+        }
         if (buffer instanceof ByteBuffer) 
         {
             return computePointer((ByteBuffer)buffer);
@@ -264,7 +282,7 @@ public final class Pointer extends NativePointerObject
      * @param buffer The buffer
      * @return The pointer
      * @throws IllegalArgumentException If the given buffer
-     * is null or is neither direct nor has a backing array
+     * is neither direct nor has a backing array
      */
     private static Pointer computePointer(ByteBuffer buffer)
     {
@@ -287,7 +305,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return result;
     }
@@ -300,7 +318,7 @@ public final class Pointer extends NativePointerObject
      * @param buffer The buffer
      * @return The pointer
      * @throws IllegalArgumentException If the given buffer
-     * is null or is neither direct nor has a backing array
+     * is neither direct nor has a backing array
      */
     private static Pointer computePointer(ShortBuffer buffer)
     {
@@ -323,7 +341,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return result;
     }
@@ -336,7 +354,7 @@ public final class Pointer extends NativePointerObject
      * @param buffer The buffer
      * @return The pointer
      * @throws IllegalArgumentException If the given buffer
-     * is null or is neither direct nor has a backing array
+     * is neither direct nor has a backing array
      */
     private static Pointer computePointer(IntBuffer buffer)
     {
@@ -359,7 +377,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return result;
     }
@@ -372,7 +390,7 @@ public final class Pointer extends NativePointerObject
      * @param buffer The buffer
      * @return The pointer
      * @throws IllegalArgumentException If the given buffer
-     * is null or is neither direct nor has a backing array
+     * is neither direct nor has a backing array
      */
     private static Pointer computePointer(LongBuffer buffer)
     {
@@ -395,7 +413,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return result;
     }
@@ -408,7 +426,7 @@ public final class Pointer extends NativePointerObject
      * @param buffer The buffer
      * @return The pointer
      * @throws IllegalArgumentException If the given buffer
-     * is null or is neither direct nor has a backing array
+     * is neither direct nor has a backing array
      */
     private static Pointer computePointer(FloatBuffer buffer)
     {
@@ -431,7 +449,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return result;
     }
@@ -444,7 +462,7 @@ public final class Pointer extends NativePointerObject
      * @param buffer The buffer
      * @return The pointer
      * @throws IllegalArgumentException If the given buffer
-     * is null or is neither direct nor has a backing array
+     * is neither direct nor has a backing array
      */
     private static Pointer computePointer(DoubleBuffer buffer)
     {
@@ -467,7 +485,7 @@ public final class Pointer extends NativePointerObject
         else
         {
             throw new IllegalArgumentException(
-                    BUFFER_MAY_NOT_BE_NULL);
+                BUFFER_MUST_HAVE_ARRAY_OR_BE_DIRECT);
         }
         return result;
     }
@@ -542,11 +560,11 @@ public final class Pointer extends NativePointerObject
 
     /**
      * Returns a ByteBuffer that corresponds to the specified
-     * segment of the memory that this pointer points to.<br />
-     * <br />
+     * segment of the memory that this pointer points to.<br>
+     * <br>
      * This function is solely intended for pointers that that
      * have been allocated with {@link CL#clSVMAlloc}.
-     * <br />
+     * <br>
      * (It will work for all pointers to ByteBuffers, but for 
      * other pointer types, <code>null</code> will be returned)
      *
