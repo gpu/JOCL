@@ -41,7 +41,7 @@ public final class Sizeof
      * The logger used in this class
      */
     private static final Logger logger =
-            Logger.getLogger(Sizeof.class.getName());
+        Logger.getLogger(Sizeof.class.getName());
 
     static
     {
@@ -388,7 +388,8 @@ public final class Sizeof
         {
             return 8;
         }
-        logger.log(Level.SEVERE, "Unknown value for sun.arch.data.model - assuming 32 bits");
+        logger.log(Level.SEVERE, 
+            "Unknown value for sun.arch.data.model - assuming 32 bits");
         return 4;
     }
     private static native int computePointerSizeNative();
