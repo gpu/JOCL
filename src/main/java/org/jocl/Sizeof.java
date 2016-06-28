@@ -28,11 +28,21 @@
 package org.jocl;
 
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Size constants for scalar and vector data types.
  */
 public final class Sizeof 
 {
+
+    /**
+     * The logger used in this class
+     */
+    private static final Logger logger =
+        Logger.getLogger(Sizeof.class.getName());
+
     static
     {
         CL.loadNativeLibrary();
@@ -349,9 +359,8 @@ public final class Sizeof
      * Size of a cl_sampler, in bytes
      */
     public static final int cl_sampler = POINTER;
-    
 
-    
+
     /**
      * Computes the size of a pointer, in bytes
      * 
@@ -379,16 +388,9 @@ public final class Sizeof
         {
             return 8;
         }
-        System.err.println(
+        logger.log(Level.SEVERE, 
             "Unknown value for sun.arch.data.model - assuming 32 bits");
         return 4;
     }
     private static native int computePointerSizeNative();
-
-    /**
-     * Private constructor to prevent instantiation
-     */
-    private Sizeof()
-    {
-    }
 }
