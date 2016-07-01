@@ -56,7 +56,7 @@ public final class LibUtils
     /**
      * The logger used in this class
      */
-    private final static Logger logger = 
+    private static final Logger logger =
         Logger.getLogger(LibUtils.class.getName());
     
     /**
@@ -74,7 +74,7 @@ public final class LibUtils
      * Enumeration of common operating systems, independent of version 
      * or architecture. 
      */
-    static enum OSType
+    enum OSType
     {
         ANDROID, APPLE, LINUX, SUN, WINDOWS, UNKNOWN
     }
@@ -82,9 +82,17 @@ public final class LibUtils
     /**
      * Enumeration of common CPU architectures.
      */
-    static enum ArchType
+    enum ArchType
     {
         PPC, PPC_64, SPARC, X86, X86_64, ARM, ARM64, MIPS, MIPS64, RISC, UNKNOWN
+    }
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private LibUtils()
+    {
+        // Private constructor to prevent instantiation.
     }
 
     /**
@@ -129,7 +137,7 @@ public final class LibUtils
 
         // First, try to load the specified library as a file 
         // that is visible in the default search path
-        Throwable throwableFromFile = null;
+        Throwable throwableFromFile;
         try
         {
             logger.log(level, "Loading library as a file");
@@ -137,7 +145,7 @@ public final class LibUtils
             logger.log(level, "Loading library as a file DONE");
             return;
         }
-        catch (Throwable t) 
+        catch (Throwable t)
         {
             logger.log(level, "Loading library as a file FAILED");
             throwableFromFile = t;
@@ -155,7 +163,7 @@ public final class LibUtils
         }
         catch (Throwable throwableFromResource)
         {
-            logger.log(level, "Loading library as a resource FAILED");
+            logger.log(level, "Loading library as a resource FAILED", throwableFromResource);
 
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -234,7 +242,7 @@ public final class LibUtils
         
         // Now, prepare loading the actual library
         String libraryFileName = createLibraryFileName(libraryName);
-        File libraryTempFile = null;
+        File libraryTempFile;
         if (useUniqueLibraryNames())
         {
             String uniqueLibraryFileName = 
@@ -358,7 +366,7 @@ public final class LibUtils
                 }
                 catch (IOException e)
                 {
-                    logger.warning(e.getMessage());
+                    logger.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
             try
@@ -367,7 +375,7 @@ public final class LibUtils
             }
             catch (IOException e)
             {
-                logger.warning(e.getMessage());
+                logger.log(Level.SEVERE, e.getMessage(), e);
             }
         }
     }
@@ -537,12 +545,20 @@ public final class LibUtils
     static OSType calculateOS()
     {
         String vendor = System.getProperty("java.vendor");
-        if (vendor.equals("The Android Project"))
+        if ("The Android Project".equals(vendor))
         {
             return OSType.ANDROID;
         }
         String osName = System.getProperty("os.name");
         osName = osName.toLowerCase(Locale.ENGLISH);
+        OSType name = getOsType(osName);
+        if (name != null) {
+            return name;
+        }
+        return OSType.UNKNOWN;
+    }
+
+    private static OSType getOsType(String osName) {
         if (osName.startsWith("mac os"))
         {
             return OSType.APPLE;
@@ -559,7 +575,7 @@ public final class LibUtils
         {
             return OSType.SUN;
         }
-        return OSType.UNKNOWN;
+        return null;
     }
 
 
@@ -572,9 +588,9 @@ public final class LibUtils
     {
         String osArch = System.getProperty("os.arch");
         osArch = osArch.toLowerCase(Locale.ENGLISH);
-        if (osArch.equals("i386") || 
-            osArch.equals("x86")  || 
-            osArch.equals("i686"))
+        if ("i386".equals(osArch) ||
+            "x86".equals(osArch)  ||
+            "i686".equals(osArch))
         {
             return ArchType.X86; 
         }
@@ -590,7 +606,7 @@ public final class LibUtils
         {
             return ArchType.ARM;
         }
-        if (osArch.equals("ppc") || osArch.equals("powerpc"))
+        if ("ppc".equals(osArch) || "powerpc".equals(osArch))
         {
             return ArchType.PPC;
         }
@@ -615,13 +631,5 @@ public final class LibUtils
             return ArchType.RISC;
         }
         return ArchType.UNKNOWN;
-    }
-    
-    /**
-     * Private constructor to prevent instantiation.
-     */
-    private LibUtils()
-    {
-        // Private constructor to prevent instantiation.
     }
 }
