@@ -163,7 +163,8 @@ public final class LibUtils
         }
         catch (Throwable throwableFromResource)
         {
-            logger.log(level, "Loading library as a resource FAILED", throwableFromResource);
+            logger.log(level, "Loading library as a resource FAILED", 
+                throwableFromResource);
 
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -551,14 +552,6 @@ public final class LibUtils
         }
         String osName = System.getProperty("os.name");
         osName = osName.toLowerCase(Locale.ENGLISH);
-        OSType name = getOsType(osName);
-        if (name != null) {
-            return name;
-        }
-        return OSType.UNKNOWN;
-    }
-
-    private static OSType getOsType(String osName) {
         if (osName.startsWith("mac os"))
         {
             return OSType.APPLE;
@@ -575,7 +568,7 @@ public final class LibUtils
         {
             return OSType.SUN;
         }
-        return null;
+        return OSType.UNKNOWN;
     }
 
 
