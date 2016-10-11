@@ -2023,11 +2023,14 @@ public final class CL
      *
      * @param event The event to wait for
      * @param object The object to which a reference should be kept
-     * @param doReleaseEvent Whether the event was solely created
-     * for this method and should be released here
+     * @param doRetainEvent Whether the event was given to the calling method
+     * from outside. If this is <code>true</code>, then the event has to be
+     * retained (in order to increase its reference count), so that it will
+     * not become invalid when the user calls <code>clReleaseEvent</code>
+     * on it before the waiting operation started.
      */
     private static void scheduleReferenceRelease(
-        final cl_event event, final Object object, final boolean doReleaseEvent)
+        final cl_event event, final Object object, final boolean doRetainEvent)
     {
         Runnable runnable = new Runnable()
         {
@@ -2041,12 +2044,13 @@ public final class CL
             public void run()
             {
                 clWaitForEvents(1, new cl_event[]{event});
-                if (doReleaseEvent)
-                {
-                    clReleaseEvent(event);
-                }
+                clReleaseEvent(event);
             }
         };
+        if (doRetainEvent)
+        {
+            clRetainEvent(event);
+        }
         referenceReleaseExecutor.execute(runnable);
 
     }
@@ -16365,10 +16369,10 @@ public final class CL
         }
         else
         {
-            boolean doReleaseEvent = false;
+            boolean doRetainEvent = true;
             if (event == null)
             {
-                doReleaseEvent = true;
+                doRetainEvent = false;
                 event = new cl_event();
             }
             int result = clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
@@ -16917,17 +16921,17 @@ public final class CL
         }
         else
         {
-            boolean doReleaseEvent = false;
+            boolean doRetainEvent = true;
             if (event == null)
             {
-                doReleaseEvent = true;
+                doRetainEvent = false;
                 event = new cl_event();
             }
             int result = clEnqueueWriteBufferNative(command_queue, buffer, blocking_write, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
             // Only schedule the reference release if the enqueue succeeds.
             if (result == CL_SUCCESS)
             {
-                scheduleReferenceRelease(event, ptr, doReleaseEvent);
+                scheduleReferenceRelease(event, ptr, doRetainEvent);
             }
             return checkResult(result);
         }
@@ -18528,17 +18532,17 @@ public final class CL
         }
         else
         {
-            boolean doReleaseEvent = false;
+            boolean doRetainEvent = true;
             if (event == null)
             {
-                doReleaseEvent = true;
+                doRetainEvent = false;
                 event = new cl_event();
             }
             int result = clEnqueueWriteImageNative(command_queue, image, blocking_write, origin, region, input_row_pitch, input_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event);
             // Only schedule the reference release if the enqueue succeeds.
             if (result == CL_SUCCESS)
             {
-                scheduleReferenceRelease(event, ptr, doReleaseEvent);
+                scheduleReferenceRelease(event, ptr, doRetainEvent);
             }
             return checkResult(result);
         }
@@ -20231,17 +20235,17 @@ public final class CL
      */
     public static int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, ByteBuffer mapped_ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
-        boolean doReleaseEvent = false;
+        boolean doRetainEvent = true;
         if (event == null)
         {
-            doReleaseEvent = true;
+            doRetainEvent = false;
             event = new cl_event();
         }
         int result = clEnqueueUnmapMemObjectNative(command_queue, memobj, mapped_ptr, num_events_in_wait_list, event_wait_list, event);
         // Only schedule the reference release if the enqueue succeeds.
         if (result == CL_SUCCESS)
         {
-            scheduleReferenceRelease(event, mapped_ptr, doReleaseEvent);
+            scheduleReferenceRelease(event, mapped_ptr, doRetainEvent);
         }
         return checkResult(result);
     }
