@@ -112,7 +112,7 @@ public final class Sizeof
      * Size of a cl_char4, in bytes
      */
     public static final int cl_char4 = 8 * 4 / 8;
-
+    
     /**
      * Size of a cl_char8, in bytes
      */
@@ -123,6 +123,14 @@ public final class Sizeof
      */
     public static final int cl_char16 = 8 * 16 / 8;
 
+    /**
+     * Size of a cl_char3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_char4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_char3 = cl_char4;
+    
     /**
      * Size of a cl_uchar2, in bytes
      */
@@ -144,6 +152,14 @@ public final class Sizeof
     public static final int cl_uchar16 = 8 * 16 / 8;
 
     /**
+     * Size of a cl_uchar3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_uchar4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_uchar3 = cl_uchar4;
+    
+    /**
      * Size of a cl_short2, in bytes
      */
     public static final int cl_short2 = 16 * 2 / 8;
@@ -163,6 +179,14 @@ public final class Sizeof
      */
     public static final int cl_short16 = 16 * 16 / 8;
 
+    /**
+     * Size of a cl_short3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_short4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_short3 = cl_short4;
+    
     /**
      * Size of a cl_ushort2, in bytes
      */
@@ -184,6 +208,14 @@ public final class Sizeof
     public static final int cl_ushort16 = 16 * 16 / 8;
 
     /**
+     * Size of a cl_ushort3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_ushort4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_ushort3 = cl_ushort4;
+    
+    /**
      * Size of a cl_int2, in bytes
      */
     public static final int cl_int2 = 32 * 2 / 8;
@@ -203,6 +235,14 @@ public final class Sizeof
      */
     public static final int cl_int16 = 32 * 16 / 8;
 
+    /**
+     * Size of a cl_int3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_int4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_int3 = cl_int4;
+    
     /**
      * Size of a cl_uint2, in bytes
      */
@@ -224,6 +264,14 @@ public final class Sizeof
     public static final int cl_uint16 = 32 * 16 / 8;
 
     /**
+     * Size of a cl_uint3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_uint4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_uint3 = cl_uint4;
+    
+    /**
      * Size of a cl_long2, in bytes
      */
     public static final int cl_long2 = 64 * 2 / 8;
@@ -243,6 +291,14 @@ public final class Sizeof
      */
     public static final int cl_long16 = 64 * 16 / 8;
 
+    /**
+     * Size of a cl_long3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_long4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_long3 = cl_long4;
+    
     /**
      * Size of a cl_ulong2, in bytes
      */
@@ -264,6 +320,14 @@ public final class Sizeof
     public static final int cl_ulong16 = 64 * 16 / 8;
 
     /**
+     * Size of a cl_ulong3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_ulong4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_ulong3 = cl_ulong4;
+    
+    /**
      * Size of a cl_float2, in bytes
      */
     public static final int cl_float2 = 32 * 2 / 8;
@@ -284,6 +348,14 @@ public final class Sizeof
     public static final int cl_float16 = 32 * 16 / 8;
 
     /**
+     * Size of a cl_float3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_float4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_float3 = cl_float4;
+    
+    /**
      * Size of a cl_double2, in bytes
      */
     public static final int cl_double2 = 64 * 2 / 8;
@@ -303,6 +375,14 @@ public final class Sizeof
      */
     public static final int cl_double16 = 64 * 16 / 8;
 
+    /**
+     * Size of a cl_double3, in bytes.<br>
+     * <br>
+     * This is the same as the size of a cl_double4, according to the OpenCL
+     * specification, version 1.1, section 6.1.5
+     */
+    public static final int cl_double3 = cl_double4;
+    
     /**
      * Size of a native pointer, in bytes
      */
