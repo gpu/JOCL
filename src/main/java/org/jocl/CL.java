@@ -2000,22 +2000,35 @@ public final class CL
 
 
 
-
     /*
-     * Implementation note concerning non-blocking writes:
-     *
-     * When a non-blocking write operation is scheduled, it might happen that
-     * the source data (which is about to be written to an OpenCL memory
-     * object) is garbage collected before the write operation is complete.
-     * This could cause highly undeterministic errors, possibly crashes or
-     * function calls that silently work on bogus data.
-     *
-     * To avoid this, for each non-blocking write operation, a Runnable is
-     * started (in an own thread), which only contains a reference to the
-     * data and waits for the OpenCL event that is associated with the write
-     * operation. Thus, it keeps the reference alive and prevents the data
-     * from being garbage collected until the write operation is finished.
+     * Implementation note concerning non-blocking operations:
+     * NON_BLOCKING_OPERATIONS
+     * 
+     * Non-blocking operations are not supported for pointers to Java arrays. 
+     * The Java array may be garbage collected if there no longer exists a
+     * reference to the array. But even if a reference is retained, the JVM 
+     * memory management is allowed to move the memory of a Java array, 
+     * at any time, unless the memory is "pinned" by calling
+     * GetPrimitiveArrayCritical. But this pinning cannot be done across 
+     * multiple function calls. 
      */
+    
+    /*
+     * Implementation note concerning non-blocking operations:
+     *
+     * When a non-blocking operation is scheduled, it might happen that
+     * the Java data (a direct buffer which is about to be filled from or 
+     * written to an OpenCL memory object) is garbage collected before the 
+     * operation is complete. This could cause highly undeterministic errors, 
+     * possibly crashes or function calls that silently work on bogus data.
+     *
+     * To avoid this, for each non-blocking operation, a Runnable is started 
+     * (in an own thread), which only contains a reference to the data and 
+     * waits for the OpenCL event that is associated with the operation. 
+     * Thus, it keeps the reference alive and prevents the data from being 
+     * garbage collected until the operation is finished.
+     */
+    
     /**
      * Keep a reference to the given object, to prevent it from
      * being garbage collected, until waiting for the given
@@ -6028,25 +6041,19 @@ public final class CL
      */
     public static cl_mem clCreateBuffer(cl_context context, long flags, long size, Pointer host_ptr, int errcode_ret[])
     {
+        if (exceptionsEnabled && errcode_ret == null)
+        {
+            errcode_ret = new int[1];
+        }
+        cl_mem result = clCreateBufferNative(context, flags, size, host_ptr, errcode_ret);
         if (exceptionsEnabled)
         {
-            if (errcode_ret == null)
-            {
-                errcode_ret = new int[1];
-            }
-            cl_mem result = clCreateBufferNative(context, flags, size, host_ptr, errcode_ret);
             checkResult(errcode_ret[0]);
-            return result;
         }
-        else
-        {
-            cl_mem result = clCreateBufferNative(context, flags, size, host_ptr, errcode_ret);
-            return result;
-        }
+        return result;
     }
 
     private static native cl_mem clCreateBufferNative(cl_context context, long flags, long size, Pointer host_ptr, int errcode_ret[]);
-
 
     /**
      * @deprecated The buffer_create_info that has to be passed to this function
@@ -6810,25 +6817,27 @@ public final class CL
      *   </div>
      * </div>
      * @since OpenCL 1.2
+     * <u>Note:</u> If the given flags contain <code>CL_MEM_USE_HOST_PTR</code>, 
+     * then the given Pointer must be a Pointer to a direct buffer. Otherwise, 
+     * an IllegalArgumentException will be thrown.
+     *
+     * @throws IllegalArgumentException If the given mapping flags contain
+     * <code>CL_MEM_USE_HOST_PTR</code>, and the given Pointer is <i>not</i> 
+     * a Pointer to a direct buffer.
      */
     public static cl_mem clCreateImage(cl_context context, long flags, cl_image_format image_format, cl_image_desc image_desc, Pointer host_ptr, int errcode_ret[])
     {
         // OPENCL_1_2
+        if (exceptionsEnabled && errcode_ret == null)
+        {
+            errcode_ret = new int[1];
+        }
+        cl_mem result = clCreateImageNative(context, flags, image_format, image_desc, host_ptr, errcode_ret);
         if (exceptionsEnabled)
         {
-            if (errcode_ret == null)
-            {
-                errcode_ret = new int[1];
-            }
-            cl_mem result = clCreateImageNative(context, flags, image_format, image_desc, host_ptr, errcode_ret);
             checkResult(errcode_ret[0]);
-            return result;
         }
-        else
-        {
-            cl_mem result = clCreateImageNative(context, flags, image_format, image_desc, host_ptr, errcode_ret);
-            return result;
-        }
+        return result;
     }
     private static native cl_mem clCreateImageNative(cl_context context, long flags, cl_image_format image_format, cl_image_desc image_desc, Pointer host_ptr, int errcode_ret[]);
 
@@ -16339,48 +16348,43 @@ public final class CL
      *   </div>
      * </div>
      * <br />
-     * <u>Note:</u> For non-blocking read operations, the given Pointer must be a
-     * Pointer to a direct buffer. Otherwise, an IllegalArgumentException will
-     * be thrown.
+     * <u>Note:</u> For non-blocking read operations, the given Pointer must be 
+     * a Pointer to a direct buffer. Otherwise, an IllegalArgumentException 
+     * will be thrown.
      *
-     * @throws IllegalArgumentException If <code>blocking_read==false</code> and
-     * the given Pointer is <i>not</i> a Pointer to a direct buffer.
+     * @throws IllegalArgumentException If <code>blocking_read==false</code> 
+     * and the given Pointer is <i>not</i> a Pointer to a direct buffer.
      */
     public static int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
-
-        if (!blocking_read && !ptr.isDirectBufferPointer())
-        {
-            throw new IllegalArgumentException(
-                "Non-blocking read operations may only be " +
-                "performed using pointers to direct buffers");
-        }
-
-        return checkResult(clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
-
-        // NON_BLOCKING_READ
-        /*
-        //blocking_read = true;
-
         if (blocking_read)
         {
-            int result = clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
-            return checkResult(result);
+            return checkResult(clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
         }
         else
         {
+            // See implementation notes about NON_BLOCKING_OPERATIONS
+            if (!blocking_read && !ptr.isDirectBufferPointer())
+            {
+                throw new IllegalArgumentException(
+                    "Non-blocking read operations may only be " +
+                    "performed using pointers to direct buffers");
+            }
+
             boolean doRetainEvent = true;
             if (event == null)
             {
                 doRetainEvent = false;
                 event = new cl_event();
             }
-            int result = clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event);
-            clEnqueueMarker(command_queue, event);
-            schedulePointerDataRelease(event);
+            int result = checkResult(clEnqueueReadBufferNative(command_queue, buffer, blocking_read, offset, cb, ptr, num_events_in_wait_list, event_wait_list, event));
+            // Only schedule the reference release if the enqueue succeeds.
+            if (result == CL_SUCCESS)
+            {
+                scheduleReferenceRelease(event, ptr, doRetainEvent);
+            }
             return checkResult(result);
         }
-        */
     }
 
     private static native int clEnqueueReadBufferNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
@@ -16650,17 +16654,45 @@ public final class CL
      *   </div>
      * </div>
      * @since OpenCL 1.1
+     * 
+     * <u>Note:</u> For non-blocking read operations, the given Pointer must be 
+     * a Pointer to a direct buffer. Otherwise, an IllegalArgumentException 
+     * will be thrown.
+     *
+     * @throws IllegalArgumentException If <code>blocking_read==false</code> 
+     * and the given Pointer is <i>not</i> a Pointer to a direct buffer.
      */
     public static int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long[] buffer_offset, long[] host_offset, long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
         // OPENCL_1_1
-        if (!blocking_read && !ptr.isDirectBufferPointer())
+        if (blocking_read)
         {
-            throw new IllegalArgumentException(
-                "Non-blocking read operations may only be " +
-                "performed using pointers to direct buffers");
+            return checkResult(clEnqueueReadBufferRectNative(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
         }
-        return checkResult(clEnqueueReadBufferRectNative(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+        else
+        {
+            // See implementation notes about NON_BLOCKING_OPERATIONS
+            if (!blocking_read && !ptr.isDirectBufferPointer())
+            {
+                throw new IllegalArgumentException(
+                    "Non-blocking read operations may only be " +
+                    "performed using pointers to direct buffers");
+            }
+
+            boolean doRetainEvent = true;
+            if (event == null)
+            {
+                doRetainEvent = false;
+                event = new cl_event();
+            }
+            int result = checkResult(clEnqueueReadBufferRectNative(command_queue, buffer, blocking_read, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+            // Only schedule the reference release if the enqueue succeeds.
+            if (result == CL_SUCCESS)
+            {
+                scheduleReferenceRelease(event, ptr, doRetainEvent);
+            }
+            return checkResult(result);
+        }
     }
 
     private static native int clEnqueueReadBufferRectNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_read, long[] buffer_offset, long[] host_offset, long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
@@ -16912,6 +16944,13 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * 
+     * <u>Note:</u> For non-blocking write operations, the given Pointer must be 
+     * a Pointer to a direct buffer. Otherwise, an IllegalArgumentException 
+     * will be thrown.
+     *
+     * @throws IllegalArgumentException If <code>blocking_write==false</code> 
+     * and the given Pointer is <i>not</i> a Pointer to a direct buffer.
      */
     public static int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long offset, long cb, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
@@ -16921,6 +16960,14 @@ public final class CL
         }
         else
         {
+            // See implementation notes about NON_BLOCKING_WRITE
+            if (!blocking_write && !ptr.isDirectBufferPointer())
+            {
+                throw new IllegalArgumentException(
+                    "Non-blocking write operations may only be " +
+                    "performed using pointers to direct buffers");
+            }
+            
             boolean doRetainEvent = true;
             if (event == null)
             {
@@ -17219,7 +17266,34 @@ public final class CL
     public static int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event)
     {
         // OPENCL_1_1
-        return checkResult(clEnqueueWriteBufferRectNative(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+        if (blocking_write)
+        {
+            return checkResult(clEnqueueWriteBufferRectNative(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+        }
+        else
+        {
+            // See implementation notes about NON_BLOCKING_WRITE
+            if (!blocking_write && !ptr.isDirectBufferPointer())
+            {
+                throw new IllegalArgumentException(
+                    "Non-blocking write operations may only be " +
+                    "performed using pointers to direct buffers");
+            }
+
+            boolean doRetainEvent = true;
+            if (event == null)
+            {
+                doRetainEvent = false;
+                event = new cl_event();
+            }
+            int result = checkResult(clEnqueueWriteBufferRectNative(command_queue, buffer, blocking_write, buffer_offset, host_offset, region, buffer_row_pitch, buffer_slice_pitch, host_row_pitch, host_slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+            // Only schedule the reference release if the enqueue succeeds.
+            if (result == CL_SUCCESS)
+            {
+                scheduleReferenceRelease(event, ptr, doRetainEvent);
+            }
+            return checkResult(result);
+        }
     }
 
     private static native int clEnqueueWriteBufferRectNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_write, long buffer_offset[], long host_offset[], long[] region, long buffer_row_pitch, long buffer_slice_pitch, long host_row_pitch, long host_slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event[] event_wait_list, cl_event event);
@@ -18224,18 +18298,43 @@ public final class CL
      *     </div>
      *   </div>
      * </div>
+     * <u>Note:</u> For non-blocking read operations, the given Pointer must be 
+     * a Pointer to a direct buffer. Otherwise, an IllegalArgumentException 
+     * will be thrown.
+     *
+     * @throws IllegalArgumentException If <code>blocking_read==false</code> 
+     * and the given Pointer is <i>not</i> a Pointer to a direct buffer.
      */
     public static int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event)
     {
-        if (!blocking_read && !ptr.isDirectBufferPointer())
+        if (blocking_read)
         {
-            throw new IllegalArgumentException(
-                "Non-blocking read operations may only be " +
-                "performed using pointers to direct buffers");
+            return checkResult(clEnqueueReadImageNative(command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
         }
-        // NON_BLOCKING_READ (see clEnqueueReadBuffer)
+        else
+        {
+            // See implementation notes about NON_BLOCKING_OPERATIONS
+            if (!blocking_read && !ptr.isDirectBufferPointer())
+            {
+                throw new IllegalArgumentException(
+                    "Non-blocking read operations may only be " +
+                    "performed using pointers to direct buffers");
+            }
 
-        return checkResult(clEnqueueReadImageNative(command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+            boolean doRetainEvent = true;
+            if (event == null)
+            {
+                doRetainEvent = false;
+                event = new cl_event();
+            }
+            int result = checkResult(clEnqueueReadImageNative(command_queue, image, blocking_read, origin, region, row_pitch, slice_pitch, ptr, num_events_in_wait_list, event_wait_list, event));
+            // Only schedule the reference release if the enqueue succeeds.
+            if (result == CL_SUCCESS)
+            {
+                scheduleReferenceRelease(event, ptr, doRetainEvent);
+            }
+            return checkResult(result);
+        }
     }
 
     private static native int clEnqueueReadImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_read, long origin[], long region[], long row_pitch, long slice_pitch, Pointer ptr, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
@@ -18532,6 +18631,14 @@ public final class CL
         }
         else
         {
+            // See implementation notes about NON_BLOCKING_WRITE
+            if (!blocking_write && !ptr.isDirectBufferPointer())
+            {
+                throw new IllegalArgumentException(
+                    "Non-blocking write operations may only be " +
+                    "performed using pointers to direct buffers");
+            }
+
             boolean doRetainEvent = true;
             if (event == null)
             {
@@ -19715,21 +19822,16 @@ public final class CL
      */
     public static ByteBuffer clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, boolean blocking_map, long map_flags, long offset, long cb, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[])
     {
+        if (exceptionsEnabled && errcode_ret == null)
+        {
+            errcode_ret = new int[1];
+        }
+        ByteBuffer result = clEnqueueMapBufferNative(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
         if (exceptionsEnabled)
         {
-            if (errcode_ret == null)
-            {
-                errcode_ret = new int[1];
-            }
-            ByteBuffer result = clEnqueueMapBufferNative(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
             checkResult(errcode_ret[0]);
-            return result;
         }
-        else
-        {
-            ByteBuffer result = clEnqueueMapBufferNative(command_queue, buffer, blocking_map, map_flags, offset, cb, num_events_in_wait_list, event_wait_list, event, errcode_ret);
-            return result;
-        }
+        return result;
     }
 
     private static native ByteBuffer clEnqueueMapBufferNative(cl_command_queue command_queue, cl_mem buffer, boolean blocking_map, long map_flags, long offset, long cb, int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[]);
@@ -20045,21 +20147,16 @@ public final class CL
      */
     public static ByteBuffer clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, boolean blocking_map, long map_flags, long origin[], long region[], long image_row_pitch[], long image_slice_pitch[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[])
     {
+        if (exceptionsEnabled && errcode_ret == null)
+        {
+            errcode_ret = new int[1];
+        }
+        ByteBuffer result = clEnqueueMapImageNative(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
         if (exceptionsEnabled)
         {
-            if (errcode_ret == null)
-            {
-                errcode_ret = new int[1];
-            }
-            ByteBuffer result = clEnqueueMapImageNative(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
             checkResult(errcode_ret[0]);
-            return result;
         }
-        else
-        {
-            ByteBuffer result = clEnqueueMapImageNative(command_queue, image, blocking_map, map_flags, origin, region, image_row_pitch, image_slice_pitch, num_events_in_wait_list, event_wait_list, event, errcode_ret);
-            return result;
-        }
+        return result;
     }
 
     private static native ByteBuffer clEnqueueMapImageNative(cl_command_queue command_queue, cl_mem image, boolean blocking_map, long map_flags, long origin[], long region[], long image_row_pitch[], long image_slice_pitch[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event, int errcode_ret[]);
@@ -25829,39 +25926,41 @@ public final class CL
 
 
     /**
-     * This method may be used to manually free an aligned ByteBuffer which
+     * This method will free the memory of an aligned ByteBuffer which
      * was allocated with {@link CL#allocateAligned(int, int)}.
      *
-     * @param byteBuffer The byte buffer
+     * @param pointer The pointer whose nativePointer value is the address
+     * of the native, aligned byte buffer that was set in the native 
+     * implementation of {@link CL#allocateAligned(int, int)}
      */
-    // This is not required, and might be error-prone because of
-    // making the given Buffer invalid.
-    /*
-    private static synchronized void freeAligned(ByteBuffer byteBuffer)
+    private static native void freeAlignedNative(Pointer pointer);
+
+    
+    // Method to validate a combination of flags and a given pointer.
+    // This is not used until now, but might become necessary in view
+    // of https://github.com/gpu/JOCL/issues/7
+    private static void validateHostPointerFlags(long flags, Pointer pointer)
     {
-        if (byteBuffer == null)
+        if ((flags & CL_MEM_USE_HOST_PTR) == 0)
         {
             return;
         }
-        for (Map.Entry<WeakReference<ByteBuffer>, Pointer> entry : alignedByteBufferMap.entrySet())
+        if (pointer == null)
         {
-            WeakReference<ByteBuffer> reference = entry.getKey();
-            if (reference.get() == byteBuffer)
-            {
-                Pointer pointer = entry.getValue();
-                if (pointer != null)
-                {
-                    freeAlignedNative(pointer);
-                }
-                alignedByteBufferMap.remove(reference);
-                return;
-            }
+            // This will cause an OpenCL error later
+            return;
+        }
+        if ((flags & CL_MEM_WRITE_ONLY) != 0)
+        {
+            return;
+        }
+        if (!pointer.isDirectBufferPointer())
+        {
+            throw new IllegalArgumentException(
+                "The CL_MEM_USE_HOST_PTR flag may only be used with " +
+                "read-only pointers to Java arrays, or with pointers " + 
+                "to direct buffers");
         }
     }
-    */
-    private static native void freeAlignedNative(Pointer pointer);
-
-
-
-
+    
 }
