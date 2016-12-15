@@ -764,14 +764,31 @@ public final class CL
     /**
      * The executor which will manage the threads that prevent
      * objects from being garbage collected during non-blocking
-     * write operations
+     * operations.
      */
     private static Executor referenceReleaseExecutor =
         new ThreadPoolExecutor(0, Integer.MAX_VALUE,
         10, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-        daemonThreadFactory);
+        daemonThreadFactory)
+    {
+        @Override
+        protected void afterExecute(Runnable r, Throwable t) 
+        {
+            // See the implementation notes in 
+            // scheduleReferenceRelease(cl_event, Object, boolean)
+            if (referenceReleaseCounter++ == Long.MAX_VALUE)
+            {
+                // This is never supposed to happen
+                System.out.println(String.valueOf(r)); 
+            }
+        };
+    };
 
-
+    /**
+     * A counter for the released references. See the implementation notes 
+     * in {@link #scheduleReferenceRelease(cl_event, Object, boolean)}
+     */
+    private static long referenceReleaseCounter = 0;
 
 
 
@@ -2013,22 +2030,6 @@ public final class CL
      * multiple function calls. 
      */
     
-    /*
-     * Implementation note concerning non-blocking operations:
-     *
-     * When a non-blocking operation is scheduled, it might happen that
-     * the Java data (a direct buffer which is about to be filled from or 
-     * written to an OpenCL memory object) is garbage collected before the 
-     * operation is complete. This could cause highly undeterministic errors, 
-     * possibly crashes or function calls that silently work on bogus data.
-     *
-     * To avoid this, for each non-blocking operation, a Runnable is started 
-     * (in an own thread), which only contains a reference to the data and 
-     * waits for the OpenCL event that is associated with the operation. 
-     * Thus, it keeps the reference alive and prevents the data from being 
-     * garbage collected until the operation is finished.
-     */
-    
     /**
      * Keep a reference to the given object, to prevent it from
      * being garbage collected, until waiting for the given
@@ -2045,15 +2046,44 @@ public final class CL
     private static void scheduleReferenceRelease(
         final cl_event event, final Object object, final boolean doRetainEvent)
     {
+        // Implementation notes:
+        // 
+        // When a non-blocking operation is scheduled, it might happen that
+        // the Java 'object' (a direct buffer which is about to be filled from 
+        // or written to an OpenCL memory object) is garbage collected before 
+        // the operation is complete. This could cause highly undeterministic 
+        // errors, possibly crashes or function calls that silently work 
+        // on bogus data.
+        // 
+        // To avoid this, for each non-blocking operation, a Runnable is 
+        // started (in an own thread), which only contains a reference to 
+        // the 'object' and waits for the OpenCL event that is associated with 
+        // the operation.
+        // 
+        // But without further precautions, there are no guarantees that the
+        // Runnable (and thus, the 'object') are NOT reclaimed by the garbage
+        // collector - even if the 'run()' method of the runnable is still
+        // being executed!
+        // 
+        // Thus, the 'referenceReleaseExecutor' has to make sure that the 
+        // reference is kept alive long enough: It has an overridden 
+        // 'afterExecute' method that will use the Runnable in an operation 
+        // that is not supposed to be executed, but still prevents the 
+        // Runnable from being garbage collected.
+        // 
+        // Right now, there is no possibility for introducing an ordering
+        // for strong reachability regarding garbage collection. This issue
+        // will be solved with Java 9, where the new method
+        // 'Reference.reachabilityFence(obj)' will allow to establish
+        // such an ordering.
+        // 
+        // For details, see http://stackoverflow.com/q/41147212/3182664
         Runnable runnable = new Runnable()
         {
-            // Could the compiler detect that the object
-            // is not really required and perform optimizations
-            // that cause the object to be GC'ed too early?
-
             @SuppressWarnings("unused")
-            private Object localObject = object;
-
+            private final Object localObject = object;
+            
+            @Override
             public void run()
             {
                 clWaitForEvents(1, new cl_event[]{event});
