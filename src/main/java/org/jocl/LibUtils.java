@@ -84,7 +84,7 @@ public final class LibUtils
      */
     enum ArchType
     {
-        PPC, PPC_64, SPARC, X86, X86_64, ARM, ARM64, MIPS, MIPS64, RISC, UNKNOWN
+        PPC, PPC_64, SPARC, X86, X86_64, ARM, ARMV7, ARM64, MIPS, MIPS64, RISC, UNKNOWN
     }
 
     /**
@@ -591,13 +591,17 @@ public final class LibUtils
         {
             return ArchType.X86_64;
         }
-        if (osArch.startsWith("arm64"))
+        if (osArch.startsWith("arm64") || osArch.startsWith("aarch64"))
         {
             return ArchType.ARM64;
         }
-        if (osArch.startsWith("arm"))
+        if (osArch.startsWith("armv5tel"))
         {
             return ArchType.ARM;
+        }
+        if (osArch.startsWith("armv7hl"))
+        {
+            return ArchType.ARMV7;
         }
         if ("ppc".equals(osArch) || "powerpc".equals(osArch))
         {
