@@ -595,13 +595,13 @@ public final class LibUtils
         {
             return ArchType.ARM64;
         }
-        if (osArch.startsWith("armv5tel"))
-        {
-            return ArchType.ARM;
-        }
-        if (osArch.startsWith("armv7hl"))
+        if (osArch.startsWith("armv7"))
         {
             return ArchType.ARMV7;
+        }
+        if (osArch.startsWith("armv"))
+        {
+            return ArchType.ARM;
         }
         if ("ppc".equals(osArch) || "powerpc".equals(osArch))
         {
