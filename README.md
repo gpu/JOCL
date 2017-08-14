@@ -112,11 +112,26 @@ Next, we want to configure the build for our particular Android target.
     cd JOCL
     mkdir build
     cd build
-    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain \
-          -DANDROID_ABI=armeabi-v7a \
-          -DANDROID_NATIVE_API_LEVEL=21 \
-          -DCMAKE_BUILD_TYPE=Release \
-          ..
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=armeabi-v7a -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
+    rm -rf *
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=armeabi -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
+    rm -rf *
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=x86 -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
+    rm -rf *
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=arm64-v8a -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
+    rm -rf *
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=x86_64 -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
+    rm -rf *
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=mips -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
+    rm -rf *
+    cmake -DCMAKE_TOOLCHAIN_FILE=android.toolchain -DANDROID_ABI=mips64 -DANDROID_NATIVE_API_LEVEL=21 -DCMAKE_BUILD_TYPE=Release ../
+    make
 
 This should be enough to get you started. For more advanced configuration,
 refer to the [android-cmake](https://github.com/taka-no-me/android-cmake)
