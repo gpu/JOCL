@@ -509,7 +509,11 @@ public final class LibUtils
      */
     public static String createPlatformLibraryName(String baseName)
     {
-        return baseName + "-" + osString() + "-" + archString();
+        String osString = osString();
+        if(osString.equals("android"))
+            return baseName + "-" + osString;
+        else
+            return baseName + "-" + osString + "-" + archString();
     }
     
     /**
