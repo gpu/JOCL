@@ -42,26 +42,16 @@ elseif(CMAKE_HOST_UNIX)
 endif()
 
 if(ANDROID)
-  # Possible ANDROID_ABI values:
-  # {
-  #   armeabi, armeabi-v7a,
-  #   armeabi-v7a with NEON, armeabi-v7a with VFPV3, armeabi-v6 with VFP,
-  #   arm64-v8a,
-  #   x86, x86_64,
-  #   mips, mips64
-  # }
-  # TODO: Support more than just "arm" in LibUtils
-  if("${ANDROID_ABI}" MATCHES "^armeabi.*")
-    set(JOCL_TARGET_ARCH "arm")
-  elseif("${ANDROID_ABI}" MATCHES "^arm64.*")
-    set(JOCL_TARGET_ARCH "arm64")
-  else()
-    set(JOCL_TARGET_ARCH ANDROID_ABI)
-  endif()
+  # On Android, the architecture part will be omitted. The library will
+  # always have the same name, but written to an output directory that
+  # depends on the ANDROID_ABI (see below). The architecture will then 
+  # be determined by the application, which will then load the native
+  # library from the matching subdirectory.
+  set(JOCL_TARGET_ARCH "")
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(JOCL_TARGET_ARCH "x86_64")
+  set(JOCL_TARGET_ARCH "-x86_64")
 else()
-  set(JOCL_TARGET_ARCH "x86")
+  set(JOCL_TARGET_ARCH "-x86")
 endif()
 
 
@@ -100,7 +90,7 @@ include_directories(
   ${JNI_INCLUDE_DIRS}
 )
 
-add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
+add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}${JOCL_TARGET_ARCH}
   src/main/native/JOCL.cpp
   src/main/native/CLFunctions.cpp
   src/main/native/FunctionPointerUtils.cpp
@@ -110,9 +100,9 @@ add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
 )
 
 target_link_libraries(
-  JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
+  JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}${JOCL_TARGET_ARCH}
   JOCLCommon)
 
 #############################################################################
 # Enable C++11 features
-set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH} PROPERTY CXX_STANDARD 11)
+set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}${JOCL_TARGET_ARCH} PROPERTY CXX_STANDARD 11)

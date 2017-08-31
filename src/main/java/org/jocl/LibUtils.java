@@ -2,7 +2,7 @@
  * JOCL - Java bindings for OpenCL
  *
  * Copyright (c) 2009-2015 Marco Hutter - http://www.jocl.org
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -11,10 +11,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -49,16 +49,16 @@ import java.util.logging.Logger;
  */
 public final class LibUtils
 {
-    // The architecture and OS detection has been adapted from 
+    // The architecture and OS detection has been adapted from
     // http://javablog.co.uk/2007/05/19/making-jni-cross-platform/
-    // and extended with http://lopica.sourceforge.net/os.html 
-    
+    // and extended with http://lopica.sourceforge.net/os.html
+
     /**
      * The logger used in this class
      */
     private static final Logger logger =
         Logger.getLogger(LibUtils.class.getName());
-    
+
     /**
      * The default log level
      */
@@ -69,10 +69,10 @@ public final class LibUtils
      * when they are loaded as resources
      */
     private static final String LIBRARY_PATH_IN_JAR = "/lib";
-    
+
     /**
-     * Enumeration of common operating systems, independent of version 
-     * or architecture. 
+     * Enumeration of common operating systems, independent of version
+     * or architecture.
      */
     enum OSType
     {
@@ -84,7 +84,8 @@ public final class LibUtils
      */
     enum ArchType
     {
-        PPC, PPC_64, SPARC, X86, X86_64, ARM, ARM64, MIPS, MIPS64, RISC, UNKNOWN
+        PPC, PPC_64, SPARC, X86, X86_64, ARM, 
+        ARMV7, ARM64, MIPS, MIPS64, RISC, UNKNOWN
     }
 
     /**
@@ -98,36 +99,36 @@ public final class LibUtils
     /**
      * Loads the specified library. <br>
      * <br>
-     * The method will attempt to load the library using the usual 
-     * <code>System.loadLibrary</code> call. In this case, the specified 
-     * dependent libraries are ignored, because they are assumed to be 
+     * The method will attempt to load the library using the usual
+     * <code>System.loadLibrary</code> call. In this case, the specified
+     * dependent libraries are ignored, because they are assumed to be
      * loaded automatically in the same way as the main library.<br>
-     * <br> 
-     * If the library can <b>not</b> be loaded with the 
+     * <br>
+     * If the library can <b>not</b> be loaded with the
      * <code>System.loadLibrary</code> call, then this method will attempt
      * to load the file as a resource (usually one that is contained in
      * a JAR file). In this case, the library is assumed to be located
-     * in subdirectory called <code>"/lib"</code> inside the JAR file. 
-     * The method will try to load a resource that has the platform-specific 
-     * {@link #createLibraryFileName(String) library file name} from 
+     * in subdirectory called <code>"/lib"</code> inside the JAR file.
+     * The method will try to load a resource that has the platform-specific
+     * {@link #createLibraryFileName(String) library file name} from
      * this directory, extract it into the default directory for temporary
      * files, and load the library from there. <br>
      * <br>
-     * In this case, the specified dependent libraries may also be loaded 
+     * In this case, the specified dependent libraries may also be loaded
      * as resources. They are assumed to be located in subdirectories
-     * that are named according to the {@link #osString()} and 
+     * that are named according to the {@link #osString()} and
      * {@link #archString()} of the executing platform. For example, such
      * a library may be located in a directory inside the JAR that is
-     * called <code>"/lib/windows/x86_64"</code>. These dependent libraries 
-     * will be extracted and loaded before the main library is loaded. 
-     *    
+     * called <code>"/lib/windows/x86_64"</code>. These dependent libraries
+     * will be extracted and loaded before the main library is loaded.
+     *
      * @param libraryName The name of the library (without a platform specific
      * prefix or file extension)
      * @param dependentLibraryNames The names of libraries that the library
-     * to load depends on. If the library is loaded as a resource, then 
+     * to load depends on. If the library is loaded as a resource, then
      * it will be attempted to also load these libraries as resources, as
-     * described above 
-     * @throws UnsatisfiedLinkError if the native library 
+     * described above
+     * @throws UnsatisfiedLinkError if the native library
      * could not be loaded.
      */
     public static void loadLibrary(
@@ -135,7 +136,7 @@ public final class LibUtils
     {
         logger.log(level, "Loading library: " + libraryName);
 
-        // First, try to load the specified library as a file 
+        // First, try to load the specified library as a file
         // that is visible in the default search path
         Throwable throwableFromFile;
         try
@@ -156,14 +157,14 @@ public final class LibUtils
         try
         {
             logger.log(level, "Loading library as a resource");
-            loadLibraryResource(LIBRARY_PATH_IN_JAR, 
+            loadLibraryResource(LIBRARY_PATH_IN_JAR,
                 libraryName, "", dependentLibraryNames);
             logger.log(level, "Loading library as a resource DONE");
             return;
         }
         catch (Throwable throwableFromResource)
         {
-            logger.log(level, "Loading library as a resource FAILED", 
+            logger.log(level, "Loading library as a resource FAILED",
                 throwableFromResource);
 
             StringWriter sw = new StringWriter();
@@ -179,7 +180,7 @@ public final class LibUtils
                 System.getProperty("sun.arch.data.model"));
 
             pw.println("---(start of nested stack traces)---");
-            
+
             pw.println("Stack trace from the attempt to " +
                 "load the library as a file:");
             throwableFromFile.printStackTrace(pw);
@@ -187,7 +188,7 @@ public final class LibUtils
             pw.println("Stack trace from the attempt to " +
                 "load the library as a resource:");
             throwableFromResource.printStackTrace(pw);
-            
+
             pw.println("---(end of nested stack traces)---");
 
             pw.close();
@@ -199,8 +200,8 @@ public final class LibUtils
 
 
     /**
-     * Load the library with the given name from a resource. 
-     * 
+     * Load the library with the given name from a resource.
+     *
      * @param resourceSubdirectoryName The subdirectory where the resource
      * is expected
      * @param libraryName The library name, e.g. "EXAMPLE-windows-x86"
@@ -209,7 +210,7 @@ public final class LibUtils
      * should be stored
      * @param dependentLibraryNames The names of libraries that the library
      * to load depends on, and that may have to be loaded as resources and
-     * stored as temporary files as well 
+     * stored as temporary files as well
      * @throws Throwable If the library could not be loaded
      */
     private static void loadLibraryResource(
@@ -221,32 +222,32 @@ public final class LibUtils
         // First try to load all dependent libraries, recursively
         for (String dependentLibraryName : dependentLibraryNames)
         {
-            logger.log(level, 
-                "Library " + libraryName + 
+            logger.log(level,
+                "Library " + libraryName +
                 " depends on " + dependentLibraryName);
-            
+
             String dependentResourceSubdirectoryName =
-                resourceSubdirectoryName + "/" + 
-                osString() + "/" + 
+                resourceSubdirectoryName + "/" +
+                osString() + "/" +
                 archString();
 
             String dependentLibraryTempSubDirectoryName =
-                libraryName+"_dependents" + File.separator + 
+                libraryName+"_dependents" + File.separator +
                 osString() + File.separator +
                 archString() + File.separator;
-            
+
             loadLibraryResource(
                 dependentResourceSubdirectoryName,
-                dependentLibraryName, 
+                dependentLibraryName,
                 dependentLibraryTempSubDirectoryName);
         }
-        
+
         // Now, prepare loading the actual library
         String libraryFileName = createLibraryFileName(libraryName);
         File libraryTempFile;
         if (useUniqueLibraryNames())
         {
-            String uniqueLibraryFileName = 
+            String uniqueLibraryFileName =
                 createLibraryFileName(libraryName + "-" + UUID.randomUUID());
             libraryTempFile = createTempFile(
                 tempSubdirectoryName, uniqueLibraryFileName);
@@ -256,15 +257,15 @@ public final class LibUtils
             libraryTempFile = createTempFile(
                 tempSubdirectoryName, libraryFileName);
         }
-        
+
         // If the temporary file for the library does not exist, create it
         if (!libraryTempFile.exists())
         {
-            String libraryResourceName = 
+            String libraryResourceName =
                 resourceSubdirectoryName + "/" + libraryFileName;
-            logger.log(level, 
+            logger.log(level,
                 "Writing resource  " + libraryResourceName);
-            logger.log(level, 
+            logger.log(level,
                 "to temporary file " + libraryTempFile);
             writeResourceToFile(libraryResourceName, libraryTempFile);
             if (trackCreatedTempFiles())
@@ -272,19 +273,19 @@ public final class LibUtils
                 LibTracker.track(libraryTempFile);
             }
         }
-        
+
         // Finally, try to load the library from the temporary file
         logger.log(level, "Loading library " + libraryTempFile);
         System.load(libraryTempFile.toString());
         logger.log(level, "Loading library " + libraryTempFile + " DONE");
     }
-    
+
 
     /**
      * Create a file object representing the file with the given name
-     * in the specified subdirectory of the default "temp" directory. 
-     * If the specified subdirectory does not exist yet, it is created. 
-     * 
+     * in the specified subdirectory of the default "temp" directory.
+     * If the specified subdirectory does not exist yet, it is created.
+     *
      * @param name The file name
      * @return The file
      * @throws IOException If the subdirectory can not be created
@@ -293,7 +294,7 @@ public final class LibUtils
         String tempSubdirectoryName, String name) throws IOException
     {
         String tempDirName = System.getProperty("java.io.tmpdir");
-        File tempSubDirectory = 
+        File tempSubDirectory =
             new File(tempDirName + File.separator + tempSubdirectoryName);
         if (!tempSubDirectory.exists())
         {
@@ -301,7 +302,7 @@ public final class LibUtils
             if (!createdDirectory)
             {
                 throw new IOException(
-                    "Could not create directory for temporary file: " + 
+                    "Could not create directory for temporary file: " +
                      tempSubDirectory);
             }
         }
@@ -309,13 +310,13 @@ public final class LibUtils
         File tempFile = new File(tempFileName);
         return tempFile;
     }
-    
-    
+
+
     /**
-     * Obtain an input stream to the resource with the given name, and write 
-     * it to the specified file (which may not be <code>null</code>, and 
+     * Obtain an input stream to the resource with the given name, and write
+     * it to the specified file (which may not be <code>null</code>, and
      * may not exist yet)
-     * 
+     *
      * @param resourceName The name of the resource
      * @param file The file to write to
      * @throws NullPointerException If the given file is <code>null</code>
@@ -334,7 +335,7 @@ public final class LibUtils
             throw new IllegalArgumentException(
                 "Target file already exists: "+file);
         }
-        InputStream inputStream = 
+        InputStream inputStream =
             LibUtils.class.getResourceAsStream(resourceName);
         if (inputStream == null)
         {
@@ -353,11 +354,11 @@ public final class LibUtils
                 {
                     break;
                 }
-                outputStream.write(buffer, 0, read);    
+                outputStream.write(buffer, 0, read);
             }
             outputStream.flush();
         }
-        finally 
+        finally
         {
             if (outputStream != null)
             {
@@ -380,7 +381,7 @@ public final class LibUtils
             }
         }
     }
-    
+
 
     /**
      * Returns whether the "uniqueLibaryNames" property was set,
@@ -388,13 +389,13 @@ public final class LibUtils
      * loaded as resources should receive a different name each
      * time that they are loaded.<br>
      * <br>
-     * PRELIMINARY! 
-     * 
-     * @return Whether the temporary files should receive unique names 
+     * PRELIMINARY!
+     *
+     * @return Whether the temporary files should receive unique names
      */
     private static boolean useUniqueLibraryNames()
     {
-        String uniqueLibraryNames = 
+        String uniqueLibraryNames =
             System.getProperty("uniqueLibraryNames");
         return "true".equals(uniqueLibraryNames);
     }
@@ -403,16 +404,16 @@ public final class LibUtils
      * Returns whether all temporary files that are created should
      * be tracked with a {@link LibTracker}
      * <br>
-     * PRELIMINARY! 
-     * 
-     * @return Whether the files should be tracked 
+     * PRELIMINARY!
+     *
+     * @return Whether the files should be tracked
      */
     private static boolean trackCreatedTempFiles()
     {
         // Currently, this is only done when unique library names are used
         return useUniqueLibraryNames();
     }
-    
+
 
     /**
      * Create the full library file name, including the extension
@@ -421,7 +422,7 @@ public final class LibUtils
      * EXAMPLE.dll on Windows <br>
      * libEXAMPLE.so on Linux <br>
      * EXAMPLE.dylib on MacOS <br>
-     * 
+     *
      * @param libraryName The library name
      * @return The full library name, with extension
      */
@@ -436,16 +437,16 @@ public final class LibUtils
 
     /**
      * Returns the extension for dynamically linked libraries on the
-     * current OS. That is, returns <code>"dylib"</code> on Apple, 
-     * <code>"so"</code> on Linux and Sun, and <code>"dll"</code> 
+     * current OS. That is, returns <code>"dylib"</code> on Apple,
+     * <code>"so"</code> on Linux and Sun, and <code>"dll"</code>
      * on Windows.
-     * 
+     *
      * @return The library extension
      */
     private static String createLibraryExtension()
     {
         OSType osType = calculateOS();
-        switch (osType) 
+        switch (osType)
         {
             case APPLE:
                 return "dylib";
@@ -463,15 +464,15 @@ public final class LibUtils
 
     /**
      * Returns the prefix for dynamically linked libraries on the
-     * current OS. That is, returns <code>"lib"</code> on Apple, 
+     * current OS. That is, returns <code>"lib"</code> on Apple,
      * Linux and Sun, and the empty String on Windows.
-     * 
+     *
      * @return The library prefix
      */
     private static String createLibraryPrefix()
     {
         OSType osType = calculateOS();
-        switch (osType) 
+        switch (osType)
         {
             case ANDROID:
             case APPLE:
@@ -488,35 +489,43 @@ public final class LibUtils
 
 
     /**
-     * Creates the name for the native library with the given base name for 
-     * the current platform, by appending strings that indicate the current 
+     * Creates the name for the native library with the given base name for
+     * the current platform, by appending strings that indicate the current
      * operating system and architecture.<br>
      * <br>
      * The resulting name will be of the form<br>
      * <code>baseName-OSType-ArchType</code><br>
      * where OSType and ArchType are the <strong>lower case</strong> Strings
-     * of the respective {@link LibUtils.OSType OSType} and 
+     * of the respective {@link LibUtils.OSType OSType} and
      * {@link LibUtils.ArchType ArcType} enum constants.<br>
-     * <br> 
+     * <br>
      * For example, the library name with the base name "EXAMPLE" may be<br>
      * <code>EXAMPLE-windows-x86</code><br>
      * <br>
      * Note that the resulting name will not include any platform specific
-     * prefixes or extensions for the actual name.  
-     * 
+     * prefixes or extensions for the actual name. Also note that on
+     * android, the OSType part will be omitted, because the path that
+     * contains the library is selected automatically by the application 
+     * environment.
+     *
      * @param baseName The base name of the library
      * @return The library name
      */
     public static String createPlatformLibraryName(String baseName)
     {
-        return baseName + "-" + osString() + "-" + archString();
+        String osString = osString();
+        if (osString.equals("android"))
+        {
+            return baseName + "-" + osString;
+        }
+        return baseName + "-" + osString + "-" + archString();
     }
-    
+
     /**
      * Returns a the <strong>lower case</strong> String representation of
-     * the {@link #calculateOS() OSType} of this platform. E.g. 
+     * the {@link #calculateOS() OSType} of this platform. E.g.
      * <code>"windows"</code>.
-     * 
+     *
      * @return The string describing the operating system
      */
     private static String osString()
@@ -524,12 +533,12 @@ public final class LibUtils
         OSType osType = calculateOS();
         return osType.toString().toLowerCase(Locale.ENGLISH);
     }
-    
+
     /**
      * Returns a the <strong>lower case</strong> String representation of
-     * the {@link #calculateArch() ArchType} of this platform. E.g. 
+     * the {@link #calculateArch() ArchType} of this platform. E.g.
      * <code>"x86_64"</code>.
-     * 
+     *
      * @return The string describing the architecture
      */
     private static String archString()
@@ -540,7 +549,7 @@ public final class LibUtils
 
     /**
      * Calculates the current OSType
-     * 
+     *
      * @return The current OSType
      */
     static OSType calculateOS()
@@ -574,7 +583,7 @@ public final class LibUtils
 
     /**
      * Calculates the current ARCHType
-     * 
+     *
      * @return The current ARCHType
      */
     private static ArchType calculateArch()
@@ -585,15 +594,19 @@ public final class LibUtils
             "x86".equals(osArch)  ||
             "i686".equals(osArch))
         {
-            return ArchType.X86; 
+            return ArchType.X86;
         }
         if (osArch.startsWith("amd64") || osArch.startsWith("x86_64"))
         {
             return ArchType.X86_64;
         }
-        if (osArch.startsWith("arm64"))
+        if (osArch.startsWith("arm64") || osArch.startsWith("aarch64"))
         {
             return ArchType.ARM64;
+        }
+        if (osArch.startsWith("armv7"))
+        {
+            return ArchType.ARMV7;
         }
         if (osArch.startsWith("arm"))
         {
