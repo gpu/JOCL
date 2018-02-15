@@ -130,8 +130,12 @@ local tests, as the Android native libraries won't run on your local machine.
 
 ## Building on a virtual machine
 
-JOCL for Linux can be built in a virtual machine using Vagrant. After
-installing [Vagrant](https://www.vagrantup.com/), copy the 
+JOCL for Linux can be built in a virtual machine using Vagrant. 
+[Lewis Cowles](https://github.com/Lewiscowles1986) has provided
+a Vagrantfile that contains the complete JOCL build in its
+provisioning script. 
+
+After installing [Vagrant](https://www.vagrantup.com/), copy the 
 [Vagrantfile](Vagrantfile) into a working directory and execute 
 
     vagrant up
