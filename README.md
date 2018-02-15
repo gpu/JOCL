@@ -2,8 +2,7 @@
 
 JOCL - Java Bindings for OpenCL - http://jocl.org
 
-Build instructions
-------------------
+## Build instructions
 
 In order to build JOCL, create a local working directory, e.g.
 `C:\JOCLRoot`, and clone the required repositories into this
@@ -13,7 +12,7 @@ directory:
     git clone https://github.com/gpu/JOCLCommon.git
     
    
-**Building the native libraries**
+### Building the native libraries
 
 The native libraries of JOCL can be built with [CMake](http://www.cmake.org/)
 and any compatible target compiler (e.g. Visual Studio or GCC):
@@ -31,7 +30,7 @@ subdirectory of the project, e.g. into
 `C:\JOCLRoot\JOCL\nativeLibraries`.
 
 
-**Building and packaging the external native library dependencies**
+### Building and packaging the external native library dependencies
 
 JOCL itself does not have external dependencies, except for the run-time
 dependency to the OpenCL implementation. If you only want to compile 
@@ -82,7 +81,7 @@ as described in the next section.
 
 
 
-**Building the Java libraries**
+### Building the Java libraries
 
 The actual Java libraries can be built with 
 [Apache Maven](https://maven.apache.org/). After the native libraries
@@ -97,7 +96,7 @@ JAR files, and finally place all libraries into the
 `C:\JOCLRoot\JOCL\target` directory.
 
 
-**Building for Android**
+### Building for Android
 
 Compiling native code for Android is a bit of a pain, so we use [android-cmake](https://github.com/taka-no-me/android-cmake)
 to make our lives a bit easier. We first begin by installing the android-cmake
@@ -126,3 +125,29 @@ Finally, when building the final .jar file, we would like to avoid running the
 local tests, as the Android native libraries won't run on your local machine.
 
     mvn clean install -DskipTests
+
+
+
+## Building on a virtual machine
+
+JOCL for Linux can be built in a virtual machine using Vagrant. After
+installing [Vagrant](https://www.vagrantup.com/), copy the 
+[Vagrantfile](Vagrantfile) into a working directory and execute 
+
+    vagrant up
+    vagrant provision
+    
+The provisioning script will install all required packages, clone
+the latest state of JOCL from GitHub, build the native library
+using CMake and gcc, and the JARs using Maven. The resulting
+JAR files will be in the `/tmp/JOCL/target/` folder of the
+virtual machine. Type
+
+    vagrant ssh
+    
+to open an ssh connection to the virtual machine, and 
+    
+    cp /tmp/JOCL/target/*.jar /vagrant/
+    
+to copy the JAR files into the working directory of the host machine.
+
