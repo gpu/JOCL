@@ -151,7 +151,8 @@ virtual machine. Type
     
 to open an ssh connection to the virtual machine, and 
     
-    cp /tmp/JOCL/target/*.jar /vagrant/
+    # vagrant plugin install vagrant-scp
+    vagrant scp default:/tmp/JOCL/target/*.jar .
     
 to copy the JAR files into the working directory of the host machine.
 
