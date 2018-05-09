@@ -131,27 +131,34 @@ local tests, as the Android native libraries won't run on your local machine.
 ## Building on a virtual machine
 
 JOCL for Linux can be built in a virtual machine using Vagrant. 
-[Lewis Cowles](https://github.com/Lewiscowles1986) has provided
+[Lewis Cowles](https://github.com/Lewiscowles1986) and
+[Alex Zhukov](https://github.com/zhuker) have provided
 a Vagrantfile that contains the complete JOCL build in its
 provisioning script. 
 
-After installing [Vagrant](https://www.vagrantup.com/), copy the 
-[Vagrantfile](Vagrantfile) into a working directory and execute 
+**Preparing to build JOCL using Vagrant:**
+
+- Install [VirtualBox](https://www.virtualbox.org/) (tested with version 5.2.10)
+- Install [Vagrant](https://www.vagrantup.com/) (tested with version 2.0.1)
+- Install the vagrant Virtual Box Guest additions plugin with
+
+        vagrant plugin install vagrant-vbguest
+
+
+**Building JOCL using Vagrant:**
+
+Copy the [Vagrantfile](Vagrantfile) into a working directory and execute 
 
     vagrant up
-    vagrant provision
-    
+
 The provisioning script will install all required packages, clone
 the latest state of JOCL from GitHub, build the native library
-using CMake and gcc, and the JARs using Maven. The resulting
-JAR files will be in the `/tmp/JOCL/target/` folder of the
-virtual machine. Type
+using CMake and gcc, and the JARs using Maven. 
 
-    vagrant ssh
-    
-to open an ssh connection to the virtual machine, and 
-    
-    cp /tmp/JOCL/target/*.jar /vagrant/
-    
-to copy the JAR files into the working directory of the host machine.
+The resulting JAR files will be placed in the working directory.
+
+In order to remove the machine that has been created for building
+JOCL, execute
+
+    vagrant destroy 
 
