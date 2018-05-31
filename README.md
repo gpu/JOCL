@@ -2,6 +2,18 @@
 
 JOCL - Java Bindings for OpenCL - http://jocl.org
 
+## Maven Coordinates
+
+JOCL is available in [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.jocl%22) under the following coordinates:
+
+    <dependency>
+        <groupId>org.jocl</groupId>
+        <artifactId>jocl</artifactId>
+        <version>2.0.1</version>
+    </dependency>
+
+
+
 ## Build instructions
 
 In order to build JOCL, create a local working directory, e.g.
@@ -129,6 +141,8 @@ local tests, as the Android native libraries won't run on your local machine.
 
 
 ## Building on a virtual machine
+
+**Note:** This section has to be updated. See [issue 23](https://github.com/gpu/JOCL/issues/23).
 
 JOCL for Linux can be built in a virtual machine using Vagrant. 
 [Lewis Cowles](https://github.com/Lewiscowles1986) and
