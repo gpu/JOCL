@@ -128,7 +128,7 @@ public class NativePointerObject
      * 
      * @return The native pointer value
      */
-    protected long getNativePointer()
+    public long getNativePointer()
     {
         return nativePointer;
     }
