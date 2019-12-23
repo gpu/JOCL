@@ -123,7 +123,7 @@ public class NativePointerObject
     
     
     /**
-     * Package-private method to obtain the native
+     * Public method to obtain the native
      * pointer value.
      * 
      * @return The native pointer value
