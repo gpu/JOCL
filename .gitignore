@@ -7,3 +7,6 @@ nativeLibraries/
 JOCL.build/
 build/
 .*.sw[po]
+/.project
+/.classpath
+/.settings
