@@ -120,15 +120,16 @@ public class NativePointerObject
         this.byteOffset += byteOffset;
     }
 
-    
-    
     /**
-     * Package-private method to obtain the native
-     * pointer value.
-     * 
+     * Method to obtain the native pointer value.
+     *
+     * Clients should usually not use this pointer value directly.
+     * It is only intended for interoperability with other JNI based
+     * libraries.
+     *
      * @return The native pointer value
      */
-    protected long getNativePointer()
+    public long getNativePointer()
     {
         return nativePointer;
     }
