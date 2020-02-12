@@ -84,7 +84,7 @@ public final class LibUtils
      */
     enum ArchType
     {
-        PPC, PPC_64, SPARC, X86, X86_64, ARM, ARM64, MIPS, MIPS64, RISC, UNKNOWN
+        PPC, PPC_64, SPARC, X86, X86_64, ARM, ARMV7, ARM64, MIPS, MIPS64, RISC, UNKNOWN
     }
 
     /**
@@ -509,7 +509,11 @@ public final class LibUtils
      */
     public static String createPlatformLibraryName(String baseName)
     {
-        return baseName + "-" + osString() + "-" + archString();
+        String osString = osString();
+        if(osString.equals("android"))
+            return baseName + "-" + osString;
+        else
+            return baseName + "-" + osString + "-" + archString();
     }
     
     /**
@@ -591,11 +595,15 @@ public final class LibUtils
         {
             return ArchType.X86_64;
         }
-        if (osArch.startsWith("arm64"))
+        if (osArch.startsWith("arm64") || osArch.startsWith("aarch64"))
         {
             return ArchType.ARM64;
         }
-        if (osArch.startsWith("arm"))
+        if (osArch.startsWith("armv7"))
+        {
+            return ArchType.ARMV7;
+        }
+        if (osArch.startsWith("armv"))
         {
             return ArchType.ARM;
         }

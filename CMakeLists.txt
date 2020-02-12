@@ -51,17 +51,11 @@ if(ANDROID)
   #   mips, mips64
   # }
   # TODO: Support more than just "arm" in LibUtils
-  if("${ANDROID_ABI}" MATCHES "^armeabi.*")
-    set(JOCL_TARGET_ARCH "arm")
-  elseif("${ANDROID_ABI}" MATCHES "^arm64.*")
-    set(JOCL_TARGET_ARCH "arm64")
-  else()
-    set(JOCL_TARGET_ARCH ANDROID_ABI)
-  endif()
+  set(JOCL_TARGET_ARCH "")
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(JOCL_TARGET_ARCH "x86_64")
+  set(JOCL_TARGET_ARCH "-x86_64")
 else()
-  set(JOCL_TARGET_ARCH "x86")
+  set(JOCL_TARGET_ARCH "-x86")
 endif()
 
 
@@ -100,7 +94,7 @@ include_directories(
   ${JNI_INCLUDE_DIRS}
 )
 
-add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
+add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}${JOCL_TARGET_ARCH}
   src/main/native/JOCL.cpp
   src/main/native/CLFunctions.cpp
   src/main/native/FunctionPointerUtils.cpp
@@ -110,9 +104,9 @@ add_library(JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
 )
 
 target_link_libraries(
-  JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH}
+  JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}${JOCL_TARGET_ARCH}
   JOCLCommon)
 
 #############################################################################
 # Enable C++11 features
-set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}-${JOCL_TARGET_ARCH} PROPERTY CXX_STANDARD 11)
+set_property(TARGET JOCL_${JOCL_VERSION}-${JOCL_TARGET_OS}${JOCL_TARGET_ARCH} PROPERTY CXX_STANDARD 11)
