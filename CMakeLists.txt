@@ -28,7 +28,7 @@ add_subdirectory(../JOCLCommon
 # Set the variables that are later used to build the name of the native
 # library, e.g. "JOCL-0_2_0-windows-x86_64.dll"
 
-set(JOCL_VERSION "2_0_1")
+set(JOCL_VERSION "2_0_2")
 
 if(ANDROID)
   set(JOCL_TARGET_OS "android")
