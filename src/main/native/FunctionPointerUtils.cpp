@@ -157,5 +157,7 @@ void initFunctionPointers()
     initFunctionPointer(&clCreateFromGLTexture2DFP, "clCreateFromGLTexture2D");
     initFunctionPointer(&clCreateFromGLTexture3DFP, "clCreateFromGLTexture3D");
 
+    initFunctionPointer(&clGetGLContextInfoAPPLEFP, "clGetGLContextInfoAPPLE");
+
 
 }

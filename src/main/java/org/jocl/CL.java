@@ -734,6 +734,12 @@ public final class CL
     public static final int CL_WGL_HDC_KHR                  = 0x200B;
     public static final int CL_CGL_SHAREGROUP_KHR           = 0x200C;
 
+    // cl_APPLE_gl_sharing
+    public static final int CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE = 0x10000000;
+    public static final int CL_CGL_DEVICE_FOR_CURRENT_VIRTUAL_SCREEN_APPLE = 0x10000002;
+    public static final int CL_CGL_DEVICES_FOR_SUPPORTED_VIRTUAL_SCREENS_APPLE = 0x10000003;
+    public static final int CL_INVALID_GL_CONTEXT_APPLE = -1000;
+
     /**
      * Indicates whether exceptions are enabled. When exceptions are
      * enabled, CLException is thrown if a method is about to return
@@ -1109,6 +1115,7 @@ public final class CL
             case CL_GLX_DISPLAY_KHR: return "CL_GLX_DISPLAY_KHR";
             case CL_WGL_HDC_KHR: return "CL_WGL_HDC_KHR";
             case CL_CGL_SHAREGROUP_KHR: return "CL_CGL_SHAREGROUP_KHR";
+            case CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE: return "CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE";
         }
         return "INVALID cl_context_properties: " + n;
     }
@@ -1713,6 +1720,22 @@ public final class CL
             case CL_CGL_SHAREGROUP_KHR: return "CL_CGL_SHAREGROUP_KHR";
         }
         return "INVALID cl_khr_gl_sharing: " + n;
+    }
+
+    /**
+     * Returns the string identifying the given cl_gl_platform_info
+     * 
+     * @param n A cl_gl_platform_info value
+     * @return The String for the given cl_gl_platform_info
+     */
+    public static String stringFor_cl_gl_platform_info(int n)
+    {
+        switch (n)
+        {
+            case CL_CGL_DEVICE_FOR_CURRENT_VIRTUAL_SCREEN_APPLE: return "CL_CGL_DEVICE_FOR_CURRENT_VIRTUAL_SCREEN_APPLE";
+            case CL_CGL_DEVICES_FOR_SUPPORTED_VIRTUAL_SCREENS_APPLE: return "CL_CGL_DEVICES_FOR_SUPPORTED_VIRTUAL_SCREENS_APPLE";
+        }
+        return "INVALID cl_gl_platform_info: " + n;
     }
 
 
@@ -25831,7 +25854,190 @@ public final class CL
     }
 
     private static native int clEnqueueReleaseGLObjectsNative(cl_command_queue command_queue, int num_objects, cl_mem mem_objects[], int num_events_in_wait_list, cl_event event_wait_list[], cl_event event);
+    
+    /**
+     * <p>
+     *       Apple extension for retrieving OpenGL context information for a CL context.
+     *   </p>
+     *
+     * <div title="clGetGLContextInfoAPPLE">
+     *   <div>
+     *     <h2></h2>
+     *     <div>
+     *       <table border="0" summary="Function synopsis" cellspacing="0" cellpadding="0">
+     *         <tr valign="bottom">
+     *           <td>
+     *             <code>cl_int
+     *             <b>
+     *             clGetGLContextInfoAPPLE
+     *             </b>
+     *             (</code>
+     *           </td>
+     *           <td>cl_context<var>context</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>size_t<var>platform_gl_ctx</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>cl_gl_platform_info<var>param_name</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>size_t<var>param_value_size</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>void<var>*param_value</var>, </td>
+     *         </tr>
+     *         <tr valign="top">
+     *           <td></td>
+     *           <td>size_t<var>*param_value_size_ret</var>, </td>
+     *         </tr>
+     *       </table>
+     *     </div>
+     *   </div>
+     *   <div title="Parameters">
+     *     <h2>Parameters</h2>
+     *     <div>
+     *       <dl>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           context
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A valid cl_context created with <code>CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           platform_gl_ctx
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             The CGL context provided to <code>clCreateContext</code>.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           param_name
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             An enumeration constant that specifies the information to query.
+     *             The valid values for <code>param_name</code> are:
+     *           </p>
+     *           <div>
+     *               <table border="1">
+     *                   <colgroup>
+     *                       <col align="left" />
+     *                       <col align="left" />
+     *                       <col align="left" />
+     *                   </colgroup>
+     *                   <thead>
+     *                       <tr>
+     *                           <th align="left">cl_gl_platform_info</th>
+     *                           <th align="left">Return Type</th>
+     *                           <th align="left">Information returned in param_value</th>
+     *                       </tr>
+     *                   </thead>
+     *                   <tbody>
+     *                       <tr>
+     *                           <td align="left">
+     *                               <code>CL_CGL_DEVICE_FOR_CURRENT_VIRTUAL_SCREEN_APPLE</code>
+     *                           </td>
+     *                           <td align="left">cl_device_id</td>
+     *                           <td align="left">
+     *                               Returns a <code>cl_device_id</code> for the CL device
+     *                               associated with the virtual screen for the given
+     *                               CGL context.
+     *                           </td>
+     *                       </tr>
+     *                       <tr>
+     *                           <td align="left">
+     *                               <code>CL_CGL_DEVICES_FOR_SUPPORTED_VIRTUAL_SCREENS_APPLE</code>
+     *                           </td>
+     *                           <td align="left">cl_device_id[]</td>
+     *                           <td align="left">
+     *                               Returns an array of cl_device_ids for the CL device(s) corresponding to
+     *                               the virtual screen(s) for the given CGL context.
+     *                           </td>
+     *                       </tr>
+     *                   </tbody>
+     *               </table>
+     *           </div>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           param_size
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Specifies the size in bytes of memory pointed to by <code>param_value</code>. This size must be greater than or equal to the size of return type as described in the table above.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           param_value
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             A pointer to memory where the appropriate result being queried is returned. If <code>param_value</code> is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *         <dt>
+     *           <span>
+     *           <code>
+     *           param_value_size_ret
+     *           </code>
+     *           </span>
+     *         </dt>
+     *         <dd>
+     *           <p>
+     *             Returns the actual size in bytes of data being queried by <code>param_value</code>. If
+     *             <code>param_value_size_ret</code> is NULL, it is ignored.
+     *           </p>
+     *         </dd>
+     *       </dl>
+     *     </div>
+     *   </div>
+     *   <div title="Errors">
+     *     <h2>Errors</h2>
+     *     <p>
+     *       Returns <span>CL_SUCCESS</span> if the function executed successfully,
+     *       or one of the errors below:
+     *     </p>
+     *     <div>
+     *         <ul type="disc">
+     *             <li><span>CL_INVALID_GL_CONTEXT_APPLE</span> if <code>platform_gl_ctx</code> is invalid.</li>
+     *         </ul>
+     *     </div>
+     *   </div>
+     * </div>
+     */
+    public static int clGetGLContextInfoAPPLE(cl_context context, long platform_gl_ctx, int param_name, long param_value_size, Pointer param_value, long[] param_value_size_ret)
+    {
+        return checkResult(clGetGLContextInfoAPPLENative(context, platform_gl_ctx, param_name, param_value_size, param_value, param_value_size_ret));
+    }
 
+    private static native int clGetGLContextInfoAPPLENative(cl_context context, long platform_gl_ctx, int param_name, long param_value_size, Pointer param_value, long[] param_value_size_ret);
 
 
     /**

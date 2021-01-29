@@ -7209,6 +7209,54 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
     return result;
 }
 
+/*
+ * Class:     org_jocl_CL
+ * Method:    clGetGLContextInfoAPPLENative
+ * Signature: (Lorg/jocl/cl_context;JIJLorg/jocl/Pointer;[J)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoAPPLENative
+(JNIEnv *env, jclass UNUSED(cls), jobject context, jlong glContext, jint param_name, jlong param_value_size, jobject param_value, jlongArray param_value_size_ret)
+{
+    Logger::log(LOG_TRACE, "Executing clGetGLContextInfoAPPLE\n");
+    if (clGetGLContextInfoAPPLEFP == NULL)
+    {
+        ThrowByName(env, "java/lang/UnsupportedOperationException",
+            "The function clGetGLContextInfoAPPLE is not supported");
+        return CL_INVALID_OPERATION;
+    }
+
+    // Native variables declaration
+    cl_context nativeContext = NULL;
+    void *nativeParam_glContext = 0;
+    long nativeParam_name = 0;
+    size_t nativeParam_value_size = 0;
+    void *nativeParam_value = NULL;
+    size_t nativeParam_value_size_ret = 0;
+
+    // Obtain native variable values
+    if (context != NULL)
+    {
+        nativeContext = (cl_context)env->GetLongField(context, NativePointerObject_nativePointer);
+    }
+    nativeParam_glContext = (void *)glContext;
+    nativeParam_name = (cl_gl_platform_info)param_name;
+    nativeParam_value_size = (size_t)param_value_size;
+    PointerData *param_valuePointerData = initPointerData(env, param_value);
+    if (param_valuePointerData == NULL)
+    {
+        return CL_INVALID_HOST_PTR;
+    }
+    nativeParam_value = (void*)param_valuePointerData->pointer;
+
+    int result = (clGetGLContextInfoAPPLEFP)(nativeContext, nativeParam_glContext, nativeParam_name, nativeParam_value_size, nativeParam_value, &nativeParam_value_size_ret);
+
+    // Write back native variable values and clean up
+    if (!releasePointerData(env, param_valuePointerData)) return CL_INVALID_HOST_PTR;
+    if (!set(env, param_value_size_ret, 0, (long)nativeParam_value_size_ret)) return CL_OUT_OF_HOST_MEMORY;
+
+    return result;
+}
+
 
 /**
  * Register all native methods that are used in JOCL
@@ -7808,6 +7856,11 @@ void registerAllNatives(JNIEnv *env, jclass cls)
     nativeMethod.signature = "(Lorg/jocl/cl_command_queue;I[Lorg/jocl/cl_mem;I[Lorg/jocl/cl_event;Lorg/jocl/cl_event;)I";
     env->RegisterNatives(cls, &nativeMethod, 1);
 #endif
+
+nativeMethod.name = "clGetGLContextInfoAPPLENative";
+nativeMethod.fnPtr = (void*)Java_org_jocl_CL_clGetGLContextInfoAPPLENative;
+nativeMethod.signature = "(Lorg/jocl/cl_context;JIJLorg/jocl/Pointer;[J)I";
+env->RegisterNatives(cls, &nativeMethod, 1);
 
 }
 

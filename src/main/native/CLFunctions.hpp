@@ -891,6 +891,14 @@ typedef CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem (CL_API_CALL
                         cl_GLuint       /* texture */,
                         cl_int *        /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 
+typedef CL_API_ENTRY cl_int (CL_API_CALL
+*clGetGLContextInfoAPPLEFunctionPointerType)(cl_context /* context */,
+                                         void * /* platform_gl_ctx */,
+                                         cl_gl_platform_info /* param_name */,
+                                         size_t             /* param_value_size */,
+                                         void *             /* param_value */,
+                                         size_t *           /* param_value_size_ret */) CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED;
+
 
 
 // The definitions of the function pointers, which are contained
@@ -1008,6 +1016,8 @@ extern clEnqueueAcquireGLObjectsFunctionPointerType clEnqueueAcquireGLObjectsFP;
 extern clEnqueueReleaseGLObjectsFunctionPointerType clEnqueueReleaseGLObjectsFP;
 extern clCreateFromGLTexture2DFunctionPointerType clCreateFromGLTexture2DFP;
 extern clCreateFromGLTexture3DFunctionPointerType clCreateFromGLTexture3DFP;
+
+extern clGetGLContextInfoAPPLEFunctionPointerType clGetGLContextInfoAPPLEFP;
 
 
 #endif

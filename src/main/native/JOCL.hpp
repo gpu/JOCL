@@ -1873,6 +1873,14 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
  */
 JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
   (JNIEnv *, jclass, jobject, jint, jobjectArray, jint, jobjectArray, jobject);
+  
+/*
+ * Class:     org_jocl_CL
+ * Method:    clGetGLContextInfoAPPLENative
+ * Signature: (Lorg/jocl/cl_context;JIJLorg/jocl/Pointer;[J)I
+ */
+JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoAPPLENative
+(JNIEnv *, jclass, jobject, jlong, jint, jlong, jobject, jlongArray);
 
 /*
  * Class:     org_jocl_CL

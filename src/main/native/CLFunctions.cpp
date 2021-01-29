@@ -145,3 +145,5 @@ clEnqueueAcquireGLObjectsFunctionPointerType clEnqueueAcquireGLObjectsFP = NULL;
 clEnqueueReleaseGLObjectsFunctionPointerType clEnqueueReleaseGLObjectsFP = NULL;
 clCreateFromGLTexture2DFunctionPointerType clCreateFromGLTexture2DFP = NULL;
 clCreateFromGLTexture3DFunctionPointerType clCreateFromGLTexture3DFP = NULL;
+
+clGetGLContextInfoAPPLEFunctionPointerType clGetGLContextInfoAPPLEFP = NULL;
