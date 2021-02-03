@@ -548,7 +548,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetPlatformIDsNative
     if (platforms != NULL)
     {
         jsize platformsLength = env->GetArrayLength(platforms);
-        nativePlatforms = new cl_platform_id[(size_t)platformsLength];
+        nativePlatforms = new (std::nothrow) cl_platform_id[(size_t)platformsLength];
         if (nativePlatforms == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -678,7 +678,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetDeviceIDsNative
     if (devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(devices);
-        nativeDevices = new cl_device_id[(size_t)devicesLength];
+        nativeDevices = new (std::nothrow) cl_device_id[(size_t)devicesLength];
         if (nativeDevices == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -803,11 +803,12 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
     if (out_devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(out_devices);
-        nativeOut_devices = new cl_device_id[(size_t)devicesLength];
+        nativeOut_devices = new (std::nothrow) cl_device_id[(size_t)devicesLength];
         if (nativeOut_devices == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during devices array creation");
+            delete nativeProperties;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -827,11 +828,13 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateSubDevicesNative
                 device = env->NewObject(cl_device_id_Class, cl_device_id_Constructor);
                 if (env->ExceptionCheck())
                 {
+                    delete[] nativeOut_devices;
                     return CL_OUT_OF_HOST_MEMORY;
                 }
                 env->SetObjectArrayElement(out_devices, (jsize)i, device);
                 if (env->ExceptionCheck())
                 {
+                    delete[] nativeOut_devices;
                     return CL_INVALID_HOST_PTR;
                 }
             }
@@ -956,7 +959,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
     if (devices != NULL)
     {
         jsize devicesLength = env->GetArrayLength(devices);
-        nativeDevices = new cl_device_id[(size_t)devicesLength];
+        nativeDevices = new (std::nothrow) cl_device_id[(size_t)devicesLength];
         if (nativeDevices == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -969,11 +972,17 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
             jobject device = env->GetObjectArrayElement(devices, i);
             if (env->ExceptionCheck())
             {
+                delete[] nativeDevices;
+                delete[] nativeProperties;
                 return NULL;
             }
             if (device != NULL)
             {
                 nativeDevices[i] = (cl_device_id)env->GetLongField(device, NativePointerObject_nativePointer);
+            }
+            else
+            {
+                nativeDevices[i] = nullptr;
             }
         }
     }
@@ -984,6 +993,8 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextNative
         callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
+            delete[] nativeDevices;
+            delete[] nativeProperties;
             return NULL;
         }
         nativeUser_data = (void*)callbackInfo;
@@ -1055,6 +1066,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateContextFromTypeNative
         callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
+            delete[] nativeProperties;
             return NULL;
         }
         nativeUser_data = (void*)callbackInfo;
@@ -1785,14 +1797,14 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreatePipeNative
     nativeFlags = (cl_mem_flags)flags;
     nativePipe_packet_size = (cl_uint)pipe_packet_size;
     nativePipe_max_packets = (cl_uint)pipe_max_packets;
-	if (properties != NULL)
-	{
-		nativeProperties = createPipePropertiesArray(env, properties);
+    if (properties != NULL)
+    {
+        nativeProperties = createPipePropertiesArray(env, properties);
         if (nativeProperties == NULL)
         {
             return NULL;
         }
-	}
+    }
 
     nativeMem = (clCreatePipeFP)(nativeContext, nativeFlags, nativePipe_packet_size, nativePipe_max_packets, nativeProperties, &nativeErrcode_ret);
 
@@ -1858,7 +1870,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage2DNative
     if (image_format != NULL)
     {
         jsize image_formatLength = env->GetArrayLength(image_format);
-        nativeImage_format = new cl_image_format[(size_t)image_formatLength];
+        nativeImage_format = new (std::nothrow) cl_image_format[(size_t)image_formatLength];
         if (nativeImage_format == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -1877,6 +1889,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage2DNative
     PointerData *host_ptrPointerData = initPointerData(env, host_ptr);
     if (host_ptrPointerData == NULL)
     {
+        delete[] nativeImage_format;
         return NULL;
     }
     nativeHost_ptr = (void*)host_ptrPointerData->pointer;
@@ -1950,7 +1963,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage3DNative
     if (image_format != NULL)
     {
         jsize image_formatLength = env->GetArrayLength(image_format);
-        nativeImage_format = new cl_image_format[(size_t)image_formatLength];
+        nativeImage_format = new (std::nothrow) cl_image_format[(size_t)image_formatLength];
         if (nativeImage_format == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -1971,6 +1984,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateImage3DNative
     PointerData *host_ptrPointerData = initPointerData(env, host_ptr);
     if (host_ptrPointerData == NULL)
     {
+        delete[] nativeImage_format;
         return NULL;
     }
     nativeHost_ptr = (void*)host_ptrPointerData->pointer;
@@ -2093,7 +2107,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
     if (image_formats != NULL)
     {
         jsize image_formatsLength = env->GetArrayLength(image_formats);
-        nativeImage_formats = new cl_image_format[(size_t)image_formatsLength];
+        nativeImage_formats = new (std::nothrow) cl_image_format[(size_t)image_formatsLength];
         if (nativeImage_formats == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2115,17 +2129,19 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetSupportedImageFormatsNative
                 image_format = env->NewObject(cl_image_format_Class, cl_image_format_Constructor);
                 if (env->ExceptionCheck())
                 {
+                    delete[] nativeImage_formats;
                     return CL_OUT_OF_HOST_MEMORY;
                 }
                 env->SetObjectArrayElement(image_formats, (jsize)i, image_format);
                 if (env->ExceptionCheck())
                 {
+                    delete[] nativeImage_formats;
                     return CL_INVALID_HOST_PTR;
                 }
             }
             setCl_image_format(env, image_format, nativeImage_formats[i]);
         }
-        delete nativeImage_formats;
+        delete[] nativeImage_formats;
     }
     if (!set(env, num_image_formats, 0, (jint)nativeNum_image_formats)) return CL_OUT_OF_HOST_MEMORY;
 
@@ -2674,7 +2690,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithSourceNative
     if (strings != NULL)
     {
         jsize stringsLength = env->GetArrayLength(strings);
-        nativeStrings = new char*[(size_t)stringsLength];
+        nativeStrings = new (std::nothrow) char*[(size_t)stringsLength];
         if (nativeStrings == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -2690,6 +2706,9 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithSourceNative
                 char *s = convertString(env, js);
                 if (s == NULL)
                 {
+                    for (int j = 0; j < i; j++)
+                        delete[] nativeStrings[j];
+                    delete[] nativeStrings;
                     return NULL;
                 }
                 nativeStrings[i] = s;
@@ -2705,6 +2724,10 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithSourceNative
         nativeLengths = convertArray(env, lengths);
         if (nativeLengths == NULL)
         {
+            jsize stringsLength = env->GetArrayLength(strings);
+            for (int i=0; i<stringsLength; i++)
+                delete[] nativeStrings[i];
+            delete[] nativeStrings;
             return NULL;
         }
     }
@@ -2786,6 +2809,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
         nativeLengths = convertArray(env, lengths);
         if (nativeLengths == NULL)
         {
+            delete[] nativeDevice_list;
             return NULL;
         }
     }
@@ -2793,11 +2817,13 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
     if (binaries != NULL)
     {
         jsize binariesLength = env->GetArrayLength(binaries);
-        nativeBinaries = new unsigned char*[(size_t)binariesLength];
+        nativeBinaries = new (std::nothrow) unsigned char*[(size_t)binariesLength];
         if (nativeBinaries == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during binaries array creation");
+            delete[] nativeDevice_list;
+            delete[] nativeLengths;
             return NULL;
         }
 
@@ -2807,16 +2833,26 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
             if (binary != NULL)
             {
                 jsize binaryLength = env->GetArrayLength(binary);
-                unsigned char *nativeBinary = new unsigned char[(size_t)binaryLength];
+                unsigned char *nativeBinary = new (std::nothrow) unsigned char[(size_t)binaryLength];
                 if (nativeBinary == NULL)
                 {
                     ThrowByName(env, "java/lang/OutOfMemoryError",
                         "Out of memory during binary array creation");
+                    delete[] nativeDevice_list;
+                    delete[] nativeLengths;
+                    for (int j = 0; j < i; ++j)
+                        delete[] nativeBinaries[j];
+                    delete[] nativeBinaries;
                     return NULL;
                 }
                 unsigned char *binaryArray = (unsigned char*)env->GetPrimitiveArrayCritical(binary, NULL);
                 if (binaryArray == NULL)
                 {
+                    delete[] nativeDevice_list;
+                    delete[] nativeLengths;
+                    for (int j = 0; j < i; ++j)
+                        delete[] nativeBinaries[j];
+                    delete[] nativeBinaries;
                     return NULL;
                 }
                 for (int j=0; j<binaryLength; j++)
@@ -2825,6 +2861,10 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clCreateProgramWithBinaryNative
                 }
                 env->ReleasePrimitiveArrayCritical(binary, binaryArray, JNI_ABORT);
                 nativeBinaries[i] = nativeBinary;
+            }
+            else
+            {
+                nativeBinaries[i] = nullptr;
             }
         }
     }
@@ -3033,6 +3073,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
         nativeOptions = convertString(env, options);
         if (nativeOptions == NULL)
         {
+            delete[] nativeDevice_list;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -3042,6 +3083,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clBuildProgramNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
+            delete[] nativeDevice_list;
+            delete[] nativeOptions;
             return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
@@ -3107,6 +3150,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
         nativeOptions = convertString(env, options);
         if (nativeOptions == NULL)
         {
+            delete[] nativeDevice_list;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -3116,15 +3160,20 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
         nativeInput_headers = createProgramList(env, input_headers, nativeNum_input_headers);
         if (nativeInput_headers == NULL)
         {
+            delete[] nativeDevice_list;
+            delete[] nativeOptions;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
     if (header_include_names != NULL)
     {
         jsize header_include_namesLength = env->GetArrayLength(header_include_names);
-        nativeHeader_include_names = new const char*[(size_t)header_include_namesLength];
+        nativeHeader_include_names = new (std::nothrow) const char*[(size_t)header_include_namesLength];
         if (nativeHeader_include_names == NULL)
         {
+            delete[] nativeDevice_list;
+            delete[] nativeOptions;
+            delete[] nativeInput_headers;
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during string array creation");
             return CL_OUT_OF_HOST_MEMORY;
@@ -3135,11 +3184,21 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
             jobject header_include_name = env->GetObjectArrayElement(header_include_names, i);
             if (env->ExceptionCheck())
             {
+                delete[] nativeDevice_list;
+                delete[] nativeOptions;
+                delete[] nativeInput_headers;
+                for (int j = 0; j < i; j++)
+                    delete[] nativeHeader_include_names[j];
+                delete[] nativeHeader_include_names;
                 return CL_OUT_OF_HOST_MEMORY;
             }
             if (header_include_name != NULL)
             {
                 nativeHeader_include_names[i] = convertString(env, (jstring)header_include_name);
+            }
+            else
+            {
+                nativeHeader_include_names[i] = nullptr;
             }
         }
     }
@@ -3149,6 +3208,18 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
+            delete[] nativeDevice_list;
+            delete[] nativeOptions;
+            delete[] nativeInput_headers;
+            if (header_include_names != NULL)
+            {
+                jsize header_include_namesLength = env->GetArrayLength(header_include_names);
+                for (int i=0; i<header_include_namesLength; i++)
+                {
+                    delete[] nativeHeader_include_names[i];
+                }
+                delete[] nativeHeader_include_names;
+            }
             return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
@@ -3167,6 +3238,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCompileProgramNative
         {
             delete[] nativeHeader_include_names[i];
         }
+        delete[] nativeHeader_include_names;
     }
 
     return result;
@@ -3225,6 +3297,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
         nativeOptions = convertString(env, options);
         if (nativeOptions == NULL)
         {
+            delete[] nativeDevices_list;
             return NULL;
         }
     }
@@ -3234,6 +3307,8 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
         nativeInput_programs = createProgramList(env, input_programs, nativeNum_input_programs);
         if (nativeInput_programs == NULL)
         {
+            delete[] nativeDevices_list;
+            delete[] nativeOptions;
             return NULL;
         }
     }
@@ -3243,6 +3318,9 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clLinkProgramNative
         CallbackInfo *callbackInfo = initCallbackInfo(env, pfn_notify, user_data);
         if (callbackInfo == NULL)
         {
+            delete[] nativeDevices_list;
+            delete[] nativeOptions;
+            delete[] nativeInput_programs;
             return NULL;
         }
         nativeUser_data = (void*)callbackInfo;
@@ -3525,7 +3603,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clCreateKernelsInProgramNative
     nativeNum_kernels = (cl_uint)num_kernels;
     if (kernels != NULL)
     {
-        nativeKernels = new cl_kernel[nativeNum_kernels];
+        nativeKernels = new (std::nothrow) cl_kernel[nativeNum_kernels];
         if (nativeKernels == NULL)
         {
             ThrowByName(env, "java/lang/OutOfMemoryError",
@@ -4487,6 +4565,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
         nativeHost_offset = convertArray(env, host_offset);
         if (nativeHost_offset == NULL)
         {
+            delete[] nativeBuffer_offset;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4495,6 +4574,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeBuffer_offset;
+            delete[] nativeHost_offset;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4505,6 +4586,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
     PointerData *ptrPointerData = initPointerData(env, ptr);
     if (ptrPointerData == NULL)
     {
+        delete[] nativeBuffer_offset;
+        delete[] nativeHost_offset;
+        delete[] nativeRegion;
         return CL_INVALID_HOST_PTR;
     }
     nativePtr = (void*)ptrPointerData->pointer;
@@ -4514,6 +4598,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadBufferRectNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeBuffer_offset;
+            delete[] nativeHost_offset;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4696,6 +4783,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
         nativeHost_offset = convertArray(env, host_offset);
         if (nativeHost_offset == NULL)
         {
+            delete[] nativeBuffer_offset;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4704,6 +4792,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeBuffer_offset;
+            delete[] nativeHost_offset;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4715,6 +4805,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
     PointerData *ptrPointerData = initPointerData(env, ptr);
     if (ptrPointerData == NULL)
     {
+        delete[] nativeBuffer_offset;
+        delete[] nativeHost_offset;
+        delete[] nativeRegion;
         return CL_INVALID_HOST_PTR;
     }
     nativePtr = (void*)ptrPointerData->pointer;
@@ -4724,6 +4817,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteBufferRectNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeBuffer_offset;
+            delete[] nativeHost_offset;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4954,6 +5050,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
         nativeDst_origin = convertArray(env, dst_origin);
         if (nativeDst_origin == NULL)
         {
+            delete[] nativeSrc_origin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4962,6 +5059,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeSrc_origin;
+            delete[] nativeDst_origin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -4975,6 +5074,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferRectNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeSrc_origin;
+            delete[] nativeDst_origin;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5063,6 +5165,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeOrigin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5071,6 +5174,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReadImageNative
     PointerData *ptrPointerData = initPointerData(env, ptr);
     if (ptrPointerData == NULL)
     {
+        delete[] nativeOrigin;
+        delete[] nativeRegion;
         return CL_INVALID_HOST_PTR;
     }
     nativePtr = (void*)ptrPointerData->pointer;
@@ -5161,6 +5266,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeOrigin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5169,6 +5275,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueWriteImageNative
     PointerData *ptrPointerData = initPointerData(env, ptr);
     if (ptrPointerData == NULL)
     {
+        delete[] nativeOrigin;
+        delete[] nativeRegion;
         return CL_INVALID_HOST_PTR;
     }
     nativePtr = (void*)ptrPointerData->pointer;
@@ -5257,6 +5365,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillImageNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeOrigin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5266,6 +5375,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueFillImageNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeOrigin;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5345,6 +5456,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
         nativeDst_origin = convertArray(env, dst_origin);
         if (nativeDst_origin == NULL)
         {
+            delete[] nativeSrc_origin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5353,6 +5465,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeSrc_origin;
+            delete[] nativeDst_origin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5362,6 +5476,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeSrc_origin;
+            delete[] nativeDst_origin;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5440,6 +5557,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeSrc_origin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5450,6 +5568,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyImageToBufferNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeSrc_origin;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5527,6 +5647,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeDst_origin;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5536,6 +5657,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueCopyBufferToImageNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeDst_origin;
+            delete[] nativeRegion;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5689,6 +5812,7 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
         nativeRegion = convertArray(env, region);
         if (nativeRegion == NULL)
         {
+            delete[] nativeOrigin;
             return NULL;
         }
     }
@@ -5698,6 +5822,8 @@ JNIEXPORT jobject JNICALL Java_org_jocl_CL_clEnqueueMapImageNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeOrigin;
+            delete[] nativeRegion;
             return NULL;
         }
     }
@@ -5846,6 +5972,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueMigrateMemObjectsNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeMem_objects;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5919,6 +6046,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
         nativeGlobal_work_size = convertArray(env, global_work_size);
         if (nativeGlobal_work_size == NULL)
         {
+            delete[] nativeGlobal_work_offset;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5927,6 +6055,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
         nativeLocal_work_size = convertArray(env, local_work_size);
         if (nativeLocal_work_size == NULL)
         {
+            delete[] nativeGlobal_work_offset;
+            delete[] nativeGlobal_work_size;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -5936,6 +6066,9 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNDRangeKernelNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeGlobal_work_offset;
+            delete[] nativeGlobal_work_size;
+            delete[] nativeLocal_work_size;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -6075,9 +6208,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
     if (args_mem_loc != NULL)
     {
         jsize args_mem_locLength = env->GetArrayLength(args_mem_loc);
-        nativeArgs_mem_loc = new void*[(size_t)args_mem_locLength];
+        nativeArgs_mem_loc = new (std::nothrow) void*[(size_t)args_mem_locLength];
         if (nativeArgs_mem_loc == NULL)
         {
+            delete[] nativeMem_list;
             ThrowByName(env, "java/lang/OutOfMemoryError",
                 "Out of memory during args mem loc array creation");
             return CL_OUT_OF_HOST_MEMORY;
@@ -6089,6 +6223,10 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
             {
                 nativeArgs_mem_loc[(size_t)i] = (void*)env->GetLongField(mem_loc, NativePointerObject_nativePointer);
             }
+            else
+            {
+                nativeArgs_mem_loc[(size_t)i] = nullptr;
+            }
         }
     }
     nativeNum_events_in_wait_list = (cl_uint)num_events_in_wait_list;
@@ -6097,6 +6235,8 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueNativeKernelNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeMem_list;
+            delete[] nativeArgs_mem_loc;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -6320,6 +6460,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMFreeNative
         callbackInfo = initCallbackInfo(env, pfn_free_func, user_data);
         if (callbackInfo == NULL)
         {
+            delete[] nativeSvm_pointers;
             return CL_OUT_OF_HOST_MEMORY;
         }
         nativeUser_data = (void*)callbackInfo;
@@ -6330,6 +6471,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueSVMFreeNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeSvm_pointers;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -7128,6 +7270,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueAcquireGLObjectsNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeMem_objects;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
@@ -7191,6 +7334,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clEnqueueReleaseGLObjectsNative
         nativeEvent_wait_list = createEventList(env, event_wait_list, nativeNum_events_in_wait_list);
         if (nativeEvent_wait_list == NULL)
         {
+            delete[] nativeMem_objects;
             return CL_OUT_OF_HOST_MEMORY;
         }
     }
