@@ -7228,7 +7228,7 @@ JNIEXPORT jint JNICALL Java_org_jocl_CL_clGetGLContextInfoAPPLENative
     // Native variables declaration
     cl_context nativeContext = NULL;
     void *nativeParam_glContext = 0;
-    long nativeParam_name = 0;
+    cl_gl_platform_info nativeParam_name = 0;
     size_t nativeParam_value_size = 0;
     void *nativeParam_value = NULL;
     size_t nativeParam_value_size_ret = 0;
