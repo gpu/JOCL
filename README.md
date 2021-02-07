@@ -9,7 +9,7 @@ JOCL is available in [Maven Central](http://search.maven.org/#search|ga|1|g%3A%2
     <dependency>
         <groupId>org.jocl</groupId>
         <artifactId>jocl</artifactId>
-        <version>2.0.2</version>
+        <version>2.0.3</version>
     </dependency>
 
 
