@@ -58,7 +58,7 @@ public final class CL
     {
         if (!nativeLibraryLoaded)
         {
-            String versionString = "2_0_2";
+            String versionString = "2_0_3";
             String libraryBaseName = "JOCL_" + versionString;
             String libraryName = 
                 LibUtils.createPlatformLibraryName(libraryBaseName);
