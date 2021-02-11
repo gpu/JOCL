@@ -591,7 +591,7 @@ public final class LibUtils
         {
             return ArchType.X86_64;
         }
-        if (osArch.startsWith("arm64"))
+        if (osArch.startsWith("arm64") || osArch.equals("aarch64"))
         {
             return ArchType.ARM64;
         }
