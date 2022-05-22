@@ -40,6 +40,12 @@
 #include "CLFunctions.hpp"
 #include "FunctionPointerUtils.hpp"
 
+#ifdef JNI_VERSION_1_8
+#define JNI_ENV_TYPE void**
+#else
+#define JNI_ENV_TYPE JNIEnv**
+#endif
+
 // Static method IDs for the "function pointer" interfaces
 static jmethodID CreateContextFunction_function; // (Ljava/lang/String;Lorg/jocl/Pointer;JLjava/lang/Object;)V
 static jmethodID BuildProgramFunction_function; // (Lorg/jocl/cl_program;Ljava/lang/Object;)V
@@ -64,7 +70,7 @@ void registerAllNatives(JNIEnv *env, jclass cls);
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void *reserved)
 {
     JNIEnv *env = NULL;
-    if (jvm->GetEnv((void**)&env, JNI_VERSION_1_4))
+    if (jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4))
     {
         return JNI_ERR;
     }
@@ -174,10 +180,10 @@ void CL_CALLBACK CreateContextFunction(const char *errinfo, const void *private_
     jobject user_data = callbackInfo->globalUser_data;
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     jstring errinfoString = env->NewStringUTF(errinfo);
@@ -209,10 +215,10 @@ void CL_CALLBACK BuildProgramFunction(cl_program program, void *user_dataInfo)
     Logger::log(LOG_DEBUGTRACE, "Executing BuildProgramFunction\n");
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     CallbackInfo *callbackInfo = (CallbackInfo*)user_dataInfo;
@@ -251,10 +257,10 @@ void CL_CALLBACK EnqueueNativeKernelFunction(void *argsInfo)
     Logger::log(LOG_DEBUGTRACE, "Executing EnqueueNativeKernelFunction\n");
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     CallbackInfo *callbackInfo = (CallbackInfo*)argsInfo;
@@ -288,10 +294,10 @@ void CL_CALLBACK MemObjectDestructorCallback(cl_mem memobj, void *user_dataInfo)
     Logger::log(LOG_DEBUGTRACE, "Executing MemObjectDestructorCallback\n");
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     CallbackInfo *callbackInfo = (CallbackInfo*)user_dataInfo;
@@ -331,10 +337,10 @@ void CL_CALLBACK EventCallback(cl_event event, cl_int command_exec_callback_type
     Logger::log(LOG_DEBUGTRACE, "Executing EventCallback\n");
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     CallbackInfo *callbackInfo = (CallbackInfo*)user_dataInfo;
@@ -374,10 +380,10 @@ void CL_CALLBACK PrintfCallbackFunction(cl_context context, cl_uint printf_data_
     Logger::log(LOG_DEBUGTRACE, "Executing PrintfCallbackFunction\n");
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     CallbackInfo *callbackInfo = (CallbackInfo*)user_dataInfo;
@@ -423,10 +429,10 @@ void CL_CALLBACK SVMFreeCallbackFunction(cl_command_queue queue, cl_uint num_svn
     Logger::log(LOG_DEBUGTRACE, "Executing SVMFreeCallbackFunction\n");
 
     JNIEnv *env = NULL;
-    jint attached = globalJvm->GetEnv((void**)&env, JNI_VERSION_1_4);
+    jint attached = globalJvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_4);
     if (attached != JNI_OK)
     {
-        globalJvm->AttachCurrentThread((void**)&env, NULL);
+        globalJvm->AttachCurrentThread((JNI_ENV_TYPE)&env, NULL);
     }
 
     CallbackInfo *callbackInfo = (CallbackInfo*)user_dataInfo;
