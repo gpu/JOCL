@@ -101,6 +101,7 @@ class LibInitializer
         {
             return new String[]
             {
+                "libpocl.so", // portablecl.org
                 "/system/vendor/lib/libOpenCL.so", // Qualcomm
                 "/system/vendor/lib/egl/libGLES_mali.so", // ARM MALI SDK
                 "/system/vendor/lib/libPVROCL.so", // PowerVR SDK
