@@ -111,6 +111,14 @@ class LibInitializer
                 defaultLibName
             };
         }
+        if (OSType.LINUX.equals(osType))
+        {
+            return new String[]
+            {
+                "libOpenCL.so.1",
+                defaultLibName
+            };
+        }
         return new String[]
         {
             defaultLibName
