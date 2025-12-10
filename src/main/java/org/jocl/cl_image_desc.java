@@ -88,7 +88,7 @@ public class cl_image_desc
      * The size in bytes of each 2D slice in the 3D image or the size
      * in bytes of each image in a 1D or 2D image array. This must be
      * 0 if host_ptr is NULL. If host_ptr is not NULL, image_slice_pitch
-     * can be either 0 or >= image_row_pitch * image_height for a 2D
+     * can be either 0 or &gt;= image_row_pitch * image_height for a 2D
      * image array or 3D image and can be either 0 or &gt;=
      * image_row_pitch for a 1D image array. If host_ptr is not NULL and
      * image_slice_pitch = 0, image_slice_pitch is calculated as

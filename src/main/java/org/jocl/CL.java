@@ -12367,7 +12367,7 @@ public final class CL
 
     /**
      * <p>
-     *       Allows the implementation to release the resources allocated by the OpenCL compiler for <>platform</code>.
+     *       Allows the implementation to release the resources allocated by the OpenCL compiler for platform</code>.
      *   </p>
      *
      * <div title="clUnloadPlatformCompiler">
