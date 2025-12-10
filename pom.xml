@@ -184,6 +184,11 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	
+	<properties>
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
 
 	<!-- Fix for jdk.version < 1.8 -->
 	<!-- http://stackoverflow.com/a/22981151 -->
