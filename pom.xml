@@ -1,198 +1,226 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-     </parent>
+	<modelVersion>4.0.0</modelVersion>
 
-    <modelVersion>4.0.0</modelVersion>
+	<groupId>org.jocl</groupId>
+	<artifactId>jocl</artifactId>
+	<version>2.0.6-SNAPSHOT</version>
 
-    <groupId>org.jocl</groupId>
-    <artifactId>jocl</artifactId>
-    <version>2.0.6-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-    <packaging>jar</packaging>
+	<name>JOCL</name>
+	<description>Java bindings for OpenCL</description>
+	<url>http://www.jocl.org</url>
 
-    <name>JOCL</name>
-    <description>Java bindings for OpenCL</description>
-    <url>http://www.jocl.org</url>
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<url>http://jocl.org/downloads/LICENSE.TXT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-    <licenses>
-        <license>
-            <name>MIT</name>
-            <url>http://jocl.org/downloads/LICENSE.TXT</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+	<developers>
+		<developer>
+			<name>Marco Hutter</name>
+			<email>jocl@jocl.org</email>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
 
-    <developers>
-        <developer>
-            <name>Marco Hutter</name>
-            <email>jocl@jocl.org</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
+	<scm>
+		<connection>scm:git:git@github.com:gpu/JOCL.git</connection>
+		<developerConnection>scm:git:git@github.com:gpu/JOCL.git</developerConnection>
+		<url>git@github.com:gpu/JOCL.git</url>
+	</scm>
 
-    <scm>
-        <connection>scm:git:git@github.com:gpu/JOCL.git</connection>
-        <developerConnection>scm:git:git@github.com:gpu/JOCL.git</developerConnection>
-        <url>git@github.com:gpu/JOCL.git</url>
-    </scm>
+	<build>
+		<defaultGoal>package</defaultGoal>
 
-    <build>
-        <defaultGoal>package</defaultGoal>
+		<plugins>
 
-        <plugins>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.8.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.4.3</version>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4.3</version>
 
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                </configuration>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
 
-                <executions>
+				<executions>
 
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}/nativeLibraries/</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>**/*.dll</include>
-                                        <include>**/*.jnilib</include>
-                                        <include>**/*.dylib</include>
-                                        <include>**/*.so</include>
-                                    </includes>
-                                </resource>
-                                <resource>
-                                    <directory>${basedir}/../../nativeLibraries/</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>**/*.dll</include>
-                                        <include>**/*.jnilib</include>
-                                        <include>**/*.dylib</include>
-                                        <include>**/*.so</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
+					<execution>
+						<id>copy-resources</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/lib</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/nativeLibraries/</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>**/*.dll</include>
+										<include>**/*.jnilib</include>
+										<include>**/*.dylib</include>
+										<include>**/*.so</include>
+									</includes>
+								</resource>
+								<resource>
+									<directory>${basedir}/../../nativeLibraries/</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>**/*.dll</include>
+										<include>**/*.jnilib</include>
+										<include>**/*.dylib</include>
+										<include>**/*.so</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 
-                </executions>
+				</executions>
 
-            </plugin>
+			</plugin>
 
 
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.7</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
-                <configuration>
-                    <forkMode>once</forkMode>
-                    <argLine>-Djava.library.path=${project.basedir}/nativeLibraries</argLine>
-                </configuration>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.18.1</version>
+				<configuration>
+					<forkMode>once</forkMode>
+					<argLine>-Djava.library.path=${project.basedir}/nativeLibraries</argLine>
+				</configuration>
+			</plugin>
 
-        </plugins>
-    </build>
+		</plugins>
+	</build>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>central</id>
+			<name>Maven Central Snapshots Repository</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
-    <!-- Fix for jdk.version < 1.8 -->
-    <!-- http://stackoverflow.com/a/22981151 -->
-    <profiles>
-        <profile>
-            <id>doclint-java8-disable</id>
-            <activation>
-                <jdk>[1.8,)</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                            <additionalparam>-Xdoclint:none</additionalparam>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-site-plugin</artifactId>
-                        <version>3.3</version>
-                        <configuration>
-                            <reportPlugins>
-                                <plugin>
-                                    <groupId>org.apache.maven.plugins</groupId>
-                                    <artifactId>maven-javadoc-plugin</artifactId>
-                                    <configuration>
-                                        <additionalparam>-Xdoclint:none</additionalparam>
-                                    </configuration>
-                                </plugin>
-                            </reportPlugins>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<!-- Fix for jdk.version < 1.8 -->
+	<!-- http://stackoverflow.com/a/22981151 -->
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-site-plugin</artifactId>
+						<version>3.3</version>
+						<configuration>
+							<reportPlugins>
+								<plugin>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-javadoc-plugin</artifactId>
+									<configuration>
+										<additionalparam>-Xdoclint:none</additionalparam>
+									</configuration>
+								</plugin>
+							</reportPlugins>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
