@@ -9,7 +9,7 @@ JOCL is available in [Maven Central](http://search.maven.org/#search|ga|1|g%3A%2
     <dependency>
         <groupId>org.jocl</groupId>
         <artifactId>jocl</artifactId>
-        <version>2.0.5</version>
+        <version>2.0.6</version>
     </dependency>
 
 
@@ -175,4 +175,5 @@ In order to remove the machine that has been created for building
 JOCL, execute
 
     vagrant destroy 
+
 
